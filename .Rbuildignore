@@ -1,0 +1,17 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.Rhistory$
+^\.RData$
+.Rprofile
+^README.md$
+figure$
+cache$
+vignettes/*.tex$
+vignettes/*.log$
+vignettes/*.gz$
+vignettes/*.aux$
+vignettes/*.bbl$
+vignettes/*.pdf$
+inst/db
+^docs$
+^LICENSE\.md$
