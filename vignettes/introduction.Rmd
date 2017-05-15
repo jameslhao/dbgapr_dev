@@ -9,13 +9,13 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Overview
+# Introduction to dbgapr
 $~$
 
 
 The Database of Genotypes and Phenotypes ([dbGaP](https://www.ncbi.nlm.nih.gov/gap)) is a National Institutes of Health (NIH) sponsored repository charged to archive, curate and distribute information produced by studies investigating the interaction of genotype and phenotype. The individual level genotype and phenotype data are distributed in different consent groups through the dbGaP Authorized Access System. 
 
-Due to the large number and complicated structures of the dbGaP data files, it often requires significant amount of effort to process, view, and understand the data files before anything else. The dbgapr is a collection of functions that make it easier to organize, view, and use the phenotype data downloaded from the dbGaP. The following are a few highlights of the package. 
+Due to the large number and complicated structures of the dbGaP data files, it often requires significant amount of effort to process, view, and understand the data files before anything else. **The dbgapr is a collection of functions that make it easier to organize, view, and use the phenotype data downloaded from the dbGaP**. The following are a few highlights of the package. 
 
 * Organize downloaded phenotype data files in a central location by studies.
 * Make data meta-info readily available for search and view.
