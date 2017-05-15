@@ -129,7 +129,6 @@ setMethod("initialize",
 
               .Object <- callNextMethod()
 
-              cat("Initializing class Commons ...\n")
 
               ##############################
               # Define home directory
@@ -265,7 +264,7 @@ setMethod("initialize",
                       type = 'setup'
                       level = 'info'
                       show = F
-                      mesg = paste("Initialize project_setup.log", sep="") 
+                      mesg = paste("The project_setup.log is initialized", sep="") 
                       writeLog(.Object,  type = type, level = level, message = mesg, show = show) 
 
                       if (file.exists(prjSetupLog)) {
@@ -280,6 +279,8 @@ setMethod("initialize",
                           type = 'logfile'
                           manageArchive(.Object, workFile = logFile, archiveDir = logArchDir, type = type, maxSizeInMb = 1, keptDay = 90, minFileAge = 1)
                       }
+
+                      cat("Class Commons is initialized.\n")
                   }
                   else {
                       type = 'setup'

@@ -43,249 +43,10 @@ setMethod(
               str_trim(prjDir)
               prjDir <- checkInputPath(object, prjDir)
 
-              if (is.null(prjDir) == T | prjDir == "") {
-                  cat("[INFO] The input project directory is empty. No change is made.\n")
-              }
-              else {
-
-                  currPrjDir = ""
-
-                  # Look up prj_dir from dbgapr_config file 
-                  confFile = object@configFile
-
-                  if (is.null(confFile) == T) {
-                      type = 'setup'
-                      level = 'error'
-                      show = T
-                      mesg = paste("No project directory registered. Checkout ?prjConfig to see how to register it.", sep="") 
-                      writeLog(object,  type = type, level = level, message = mesg, show = show)
-                  }
-
-                  # check confFile
-                  if (nchar(confFile) != 0) {
-
-                      if (!file.exists(confFile)) {
-
-                          ##############################
-                          # Config file not exists
-                          ##############################
-
-                          #### Create a brand new prjDir #### 
-                          if (!file.exists(prjDir)) {
-                              dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
-                          }
-
-
-                          if (dir.exists(prjDir) ) {
-                              type = 'setup'
-                              level = 'info'
-                              show = T
-                              mesg = paste("The new project directory is created. --- ", prjDir, sep="")
-                              writeLog(object,  type = type, level = level, message = mesg, show = show)
-                          }
-                          else {
-                              type = 'setup'
-                              level = 'error'
-                              show = T
-                              mesg = paste("The input prject directory fails to be created. Current default project directory remains to be --- ", currPrjDir, sep="")
-                              writeLog(object,  type = type, level = level, message = mesg, show = show)
-                          }
-                      }
-                      # confFile exists
-                      else {
-
-                          confDF <- fromJSON(confFile, flatten=TRUE)
-
-                          # Get current prjDir from confDF 
-                          current <- NULL  	# necessary for passing CMD check 
-                          currPrjDir <- (subset(confDF, current == 'yes'))$prj_dir 
-
-                          # Check currPrjDir
-                          if (is.null(currPrjDir) == T) {
-                              type = 'setup'
-                              level = 'error'
-                              show = T
-                              mesg = paste("No current project directory registered. Checkout ?prjConfig to see how to register it.", sep="") 
-                              writeLog(object,  type = type, level = level, message = mesg, show = show)
-                          }
-
-                          if (nchar(currPrjDir) != 0) {
-
-                              # Check input prjDir
-                              if (!dir.exists(prjDir)) {
-
-                                  # Compare input prjDir with currPrjDir
-                                  if (prjDir %in% confDF$prj_dir == T) {
-
-                                      #### Create prjDir if it is a previously configured confPrjDir, but no longer exists ####
-                                      dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
-
-                                      if (dir.exists(prjDir) ) {
-                                          type = 'setup'
-                                          level = 'info'
-                                          show = T
-                                          mesg = paste("The new project directory is created. --- ", prjDir, sep="")
-                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
-                                      }
-                                      else {
-                                          type = 'setup'
-                                          level = 'error'
-                                          show = T
-                                          mesg = paste("The input prject directory fails to be created. Current default project directory remains to be --- ", currPrjDir, sep="")
-                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
-                                      }
-                                  }
-                                  # prjDir not found in currPrjDir -- new prjDir
-                                  else {
-
-                                      # Prompt to confirm the change
-                                      cat("\n")
-                                      cat("[INFO] The input prorject directory is different from the current default.\n")  
-                                      cat("       Input   : ", prjDir, "\n")  
-                                      cat("       Default : ", currPrjDir, "\n")  
-                                      cat("\n")
-                                      cat("Are you sure you want to make the change? (yes/no)\n")
-                                      yesOrNo <- readline(prompt = "   ")
-                                      cat("\n")
-
-                                      if (nchar(yesOrNo) == 0) {
-                                          yesOrNo = 'no'
-                                      }
-
-                                      # Change current prjDir and update prjConfig
-                                      if ( grepl('^yes$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T | grepl('^y$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T ) {
-
-                                          #### Create prject directory ####
-
-                                          dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
-
-                                          ##############################
-                                          # Updare project_config.json
-                                          ##############################
-                                          # The initial project_config.json file creation is done through prjConfig().
-                                          # All the json file update is done here.
-
-                                          # Get max id
-                                          maxId <- max(confDF$id, na.rm = TRUE)
-                                          newId = strtoi(maxId)+ 1
-
-                                          # Reset value of column 'current' to 'no' for all rows
-                                          current <- rep('no', nrow(confDF))
-                                          confDF[['current']] <- current 
-
-                                          # Append the new path as a new row to confDF with a new 'updated' date 
-                                          newRow = c(newId, prjDir,  'yes', toString(as.POSIXlt(Sys.time())), toString(as.POSIXlt(Sys.time())))
-                                          newConfDF = rbind(confDF, newRow)
-
-                                          # Sort the dataframe by 'updated' date, the newest date on top 
-                                          sortedNewConfDF <- newConfDF[order(newConfDF['updated'], decreasing=T),]
-
-                                          # Convert to newConfJson
-                                          newConfJson <- toJSON(sortedNewConfDF, pretty=T)
-
-                                          # Update the prjConf json file
-                                          write(newConfJson, file = confFile, ncolumns = if(is.character(newConfJson)) 1 else 5, append = F, sep = "\n")
-
-                                          type = 'setup'
-                                          level = 'info'
-                                          show = T
-                                          mesg = paste("The new project directory is created and the project config file is updated. --- ", prjDir, sep="")
-                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
-                                      }
-                                      else {
-                                          cat("[INFO] No change is made. Curret default project directory is --- ", currPrjDir, "\n")
-                                      }
-                                  } # end prjDir not found in currPrjDir
-                              } # end prjDir exist
-
-                          }
-                          # currPrjDir empty value 
-                          else {
-                              type = 'setup'
-                              level = 'error'
-                              show = T
-                              mesg = paste("No current project registered in the project config file. Checkout ?prjConfig to see how to register it.", sep="")
-                              writeLog(object,  type = type, level = level, message = mesg, show = show)
-                          }
-
-                          #### Update 'current' status of existing row ####
-
-                          # prjDir is previously configured confPrjDir 
-                          if (prjDir %in% confDF$prj_dir == T) {
-
-                              # prjDir exists 
-                              if (dir.exists(prjDir)) {
-
-                                  #### Change status to current if it is not already current #### 
-                                  if (currPrjDir != prjDir) {
-
-                                      # Prompt to confirm the change
-                                      cat("\n")
-                                      cat("[INFO] The input project directory was previously configured, but it is no longer current. \n")
-                                      cat("       Current prjDir : ", currPrjDir, "\n")  
-                                      cat("       Input prjDir   : ", prjDir, "\n")  
-                                      cat("\n")
-
-                                      cat("\n")
-                                      cat("Are you sure you want to reinstate it as the current one? (yes/no)\n")
-                                      yesOrNo <- readline(prompt = "   ")
-                                      cat("\n")
-
-                                      if (nchar(yesOrNo) == 0) {
-                                          yesOrNo = 'no'
-                                      }
-
-                                      # Change current prjDir and update prjConfig
-                                      if ( grepl('^yes$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T | grepl('^y$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T ) {
-
-                                          # Reset value of column 'current' to 'no' for all rows
-                                          current <- rep('no', nrow(confDF))
-                                          confDF[['current']] <- current 
-
-                                          # The row that matches input prjDir
-                                          prj_dir <- NULL  	# necessary for passing CMD check 
-                                          matchRow <- (subset(confDF, prj_dir == prjDir))
-
-                                          # compose replace row 
-                                          replaceRow <- c(matchRow$id, matchRow$prj_dir, 'yes', matchRow$created,  toString(as.POSIXlt(Sys.time())))
-
-                                          # replace the match row
-                                          matchRowIndex = which(confDF$prj_dir == prjDir)
-                                          confDF[matchRowIndex, ] <- replaceRow
-                                          updatedConfDF <- confDF
-
-                                          # Sort the dataframe by 'updated' date, the newest date on top 
-                                          sortedUpdatedConfDF <- updatedConfDF[order(updatedConfDF['updated'], decreasing=T),]
-                                          #sortedNewConfDF <- newConfDF[order(newConfDF['updated'], decreasing=T),]
-
-                                          ## Convert to newConfJson
-                                          newConfJson <- toJSON(sortedUpdatedConfDF, pretty=T)
-
-                                          ## Update the prjConf json file
-                                          write(newConfJson, file = confFile, ncolumns = if(is.character(newConfJson)) 1 else 5, append = F, sep = "\n")
-
-                                          type = 'setup'
-                                          level = 'info'
-                                          show = T
-                                          mesg = paste("The current project directory is reset and the project config file is updated. --- ", prjDir, sep="")
-                                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
-
-                                      }
-                                  }
-
-                              }
-
-                          }
-                      } # end confile exists
-                  }
-                  # confFile empty value
-                  else {
-                      type = 'setup'
-                      level = 'error'
-                      show = T
-                      mesg = paste("The user project directory info is not registered. Checkout ?projConf to see how to register it.", sep = "")
-                      writeLog(object,  type = type, level = level, message = mesg, show = show) 
-                  }
+              ################
+              # S3 function
+              ################
+              realityCheck <- function(prjDir) {
 
                   #######################
                   # Reality check
@@ -384,7 +145,283 @@ setMethod(
                       writeLog(object,  type = type, level = level, message = mesg, show = show)
                       return(FALSE)
                   }
+              } # end realityCheck()
+
+              createOk = FALSE
+
+              if (is.null(prjDir) == T | prjDir == "") {
+                  cat("[INFO] The input project directory is empty. No change is made.\n")
+              }
+              else {
+
+                  currPrjDir = ""
+
+                  # Look up prj_dir from dbgapr_config file 
+                  confFile = object@configFile
+
+                  if (is.null(confFile) == T) {
+                      type = 'setup'
+                      level = 'error'
+                      show = T
+                      mesg = paste("No project directory registered. Checkout ?prjConfig to see how to register it.", sep="") 
+                      writeLog(object,  type = type, level = level, message = mesg, show = show)
+                  }
+
+                  # check confFile
+                  if (nchar(confFile) != 0) {
+
+                      if (!file.exists(confFile)) {
+
+                          ##############################
+                          # Config file not exists
+                          ##############################
+
+                          #### Create a brand new prjDir #### 
+                          if (!file.exists(prjDir)) {
+                              dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+                          }
+
+
+                          if (dir.exists(prjDir) ) {
+                              type = 'setup'
+                              level = 'info'
+                              show = T
+                              mesg = paste("The new project directory is created. --- ", prjDir, sep="")
+                              writeLog(object,  type = type, level = level, message = mesg, show = show)
+
+                              # Reality check
+                              createOk <- realityCheck(prjDir)
+
+                              # Important reminder to users 
+                              message("\nPlease re-initialize the class Commons to make the project directory in effect.\nExample command: c <- Commons()\n") 
+                          }
+                          else {
+                              type = 'setup'
+                              level = 'error'
+                              show = T
+                              mesg = paste("The input prject directory fails to be created. Current default project directory remains to be --- ", currPrjDir, sep="")
+                              writeLog(object,  type = type, level = level, message = mesg, show = show)
+                          }
+                      }
+                      # confFile exists
+                      else {
+
+                          confDF <- fromJSON(confFile, flatten=TRUE)
+
+                          # Get current prjDir from confDF 
+                          current <- NULL  	# necessary for passing CMD check 
+                          currPrjDir <- (subset(confDF, current == 'yes'))$prj_dir 
+
+                          # Check currPrjDir
+                          if (is.null(currPrjDir) == T) {
+                              type = 'setup'
+                              level = 'error'
+                              show = T
+                              mesg = paste("No current project directory registered. Checkout ?prjConfig to see how to register it.", sep="") 
+                              writeLog(object,  type = type, level = level, message = mesg, show = show)
+                          }
+
+                          if (nchar(currPrjDir) != 0) {
+
+                              # Check input prjDir
+                              if (!dir.exists(prjDir)) {
+
+                                  # Compare input prjDir with currPrjDir
+                                  if (prjDir %in% confDF$prj_dir == T) {
+
+                                      #### Create prjDir if it is a previously configured confPrjDir, but no longer exists ####
+                                      dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+
+                                      if (dir.exists(prjDir) ) {
+                                          type = 'setup'
+                                          level = 'info'
+                                          show = T
+                                          mesg = paste("The new project directory is created. --- ", prjDir, sep="")
+                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
+
+                                          # Reality check
+                                          createOk <- realityCheck(prjDir)
+
+                                          # Important reminder to users 
+                                          message("\nPlease re-initialize the class Commons to make the project directory in effect.\nExample command: c <- Commons()\n") 
+                                      }
+                                      else {
+                                          type = 'setup'
+                                          level = 'error'
+                                          show = T
+                                          mesg = paste("The input prject directory fails to be created. Current default project directory remains to be --- ", currPrjDir, sep="")
+                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
+                                      }
+                                  }
+                                  # prjDir not found in currPrjDir -- new prjDir
+                                  else {
+
+                                      # Prompt to confirm the change
+                                      cat("\n")
+                                      cat("[INFO] The input prorject directory is different from the current default.\n")  
+                                      cat("       Input   : ", prjDir, "\n")  
+                                      cat("       Default : ", currPrjDir, "\n")  
+                                      cat("\n")
+                                      cat("Are you sure you want to make the change? (yes/no)\n")
+                                      yesOrNo <- readline(prompt = "   ")
+                                      cat("\n")
+
+                                      if (nchar(yesOrNo) == 0) {
+                                          yesOrNo = 'no'
+                                      }
+
+                                      # Change current prjDir and update prjConfig
+                                      if ( grepl('^yes$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T | grepl('^y$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T ) {
+
+                                          #### Create prject directory ####
+
+                                          dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+
+                                          ##############################
+                                          # Updare project_config.json
+                                          ##############################
+                                          # The initial project_config.json file creation is done through prjConfig().
+                                          # All the json file update is done here.
+
+                                          # Get max id
+                                          maxId <- max(confDF$id, na.rm = TRUE)
+                                          newId = strtoi(maxId)+ 1
+
+                                          # Reset value of column 'current' to 'no' for all rows
+                                          current <- rep('no', nrow(confDF))
+                                          confDF[['current']] <- current 
+
+                                          # Append the new path as a new row to confDF with a new 'updated' date 
+                                          newRow = c(newId, prjDir,  'yes', toString(as.POSIXlt(Sys.time())), toString(as.POSIXlt(Sys.time())))
+                                          newConfDF = rbind(confDF, newRow)
+
+                                          # Sort the dataframe by 'updated' date, the newest date on top 
+                                          sortedNewConfDF <- newConfDF[order(newConfDF['updated'], decreasing=T),]
+
+                                          # Convert to newConfJson
+                                          newConfJson <- toJSON(sortedNewConfDF, pretty=T)
+
+                                          # Update the prjConf json file
+                                          write(newConfJson, file = confFile, ncolumns = if(is.character(newConfJson)) 1 else 5, append = F, sep = "\n")
+
+                                          type = 'setup'
+                                          level = 'info'
+                                          show = T
+                                          mesg = paste("The new project directory is created and the project config file is updated. --- ", prjDir, sep="")
+                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
+
+                                          # Reality check
+                                          createOk <- realityCheck(prjDir)
+
+                                          # Important reminder to users 
+                                          message("\nPlease re-initialize the class Commons to make the project directory in effect.\nExample command: c <- Commons()\n") 
+
+                                          
+                                      }
+                                      else {
+                                          cat("[INFO] No change is made. Curret default project directory is --- ", currPrjDir, "\n")
+                                      }
+                                  } # end prjDir not found in currPrjDir
+                              } # end prjDir exist
+
+                          }
+                          # currPrjDir empty value 
+                          else {
+                              type = 'setup'
+                              level = 'error'
+                              show = T
+                              mesg = paste("No current project registered in the project config file. Checkout ?prjConfig to see how to register it.", sep="")
+                              writeLog(object,  type = type, level = level, message = mesg, show = show)
+                          }
+
+                          #### Update 'current' status of existing row ####
+
+                          # prjDir is previously configured confPrjDir 
+                          if (prjDir %in% confDF$prj_dir == T) {
+
+                              # prjDir exists 
+                              if (dir.exists(prjDir)) {
+
+                                  #### Change status to current if it is not already current #### 
+                                  if (currPrjDir != prjDir) {
+
+                                      # Prompt to confirm the change
+                                      cat("\n")
+                                      cat("[INFO] The input project directory was previously configured, but it is no longer current. \n")
+                                      cat("       Current prjDir : ", currPrjDir, "\n")  
+                                      cat("       Input prjDir   : ", prjDir, "\n")  
+                                      cat("\n")
+
+                                      cat("\n")
+                                      cat("Are you sure you want to reinstate it as the current one? (yes/no)\n")
+                                      yesOrNo <- readline(prompt = "   ")
+                                      cat("\n")
+
+                                      if (nchar(yesOrNo) == 0) {
+                                          yesOrNo = 'no'
+                                      }
+
+                                      # Change current prjDir and update prjConfig
+                                      if ( grepl('^yes$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T | grepl('^y$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T ) {
+
+                                          # Reset value of column 'current' to 'no' for all rows
+                                          current <- rep('no', nrow(confDF))
+                                          confDF[['current']] <- current 
+
+                                          # The row that matches input prjDir
+                                          prj_dir <- NULL  	# necessary for passing CMD check 
+                                          matchRow <- (subset(confDF, prj_dir == prjDir))
+
+                                          # compose replace row 
+                                          replaceRow <- c(matchRow$id, matchRow$prj_dir, 'yes', matchRow$created,  toString(as.POSIXlt(Sys.time())))
+
+                                          # replace the match row
+                                          matchRowIndex = which(confDF$prj_dir == prjDir)
+                                          confDF[matchRowIndex, ] <- replaceRow
+                                          updatedConfDF <- confDF
+
+                                          # Sort the dataframe by 'updated' date, the newest date on top 
+                                          sortedUpdatedConfDF <- updatedConfDF[order(updatedConfDF['updated'], decreasing=T),]
+                                          #sortedNewConfDF <- newConfDF[order(newConfDF['updated'], decreasing=T),]
+
+                                          ## Convert to newConfJson
+                                          newConfJson <- toJSON(sortedUpdatedConfDF, pretty=T)
+
+                                          ## Update the prjConf json file
+                                          write(newConfJson, file = confFile, ncolumns = if(is.character(newConfJson)) 1 else 5, append = F, sep = "\n")
+
+                                          type = 'setup'
+                                          level = 'info'
+                                          show = T
+                                          mesg = paste("The current project directory is reset and the project config file is updated. --- ", prjDir, sep="")
+                                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
+
+                                          # Reality check
+                                          createOk <- realityCheck(prjDir)
+
+                                          # Important reminder to users 
+                                          message("\nPlease re-initialize the class Commons to make the project directory in effect.\nExample command: c <- Commons()\n") 
+                                      }
+                                  }
+
+                              }
+
+                          }
+                      } # end confile exists
+                  }
+                  # confFile empty value
+                  else {
+                      type = 'setup'
+                      level = 'error'
+                      show = T
+                      mesg = paste("The user project directory info is not registered. Checkout ?projConf to see how to register it.", sep = "")
+                      writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                  }
+
+
               } # end prjDir = ""
+
+              return (createOk)
 
 
           })
@@ -3139,7 +3176,7 @@ setMethod(
                           rownames(data) <- seq(length=nrow(data))
 
                           # view data
-                          View(data)
+                          utils::View(data)
                           #return (invisible(data))
                       }
                   }
@@ -4341,7 +4378,9 @@ setMethod(
                   # ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/all_released_study_info 
                   # /c/Users/mars/Documents/.dbgapr/supplemental_data/all_released_study_info.txt.gz
                   infoFile = object@extAllStudyInfoFile 
+
                   infoDF <- read.table(infoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")
+
 
                   if (file.exists(infoFile)) {
                       infoDF <- read.table(infoFile, header=TRUE, fill = TRUE, sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)

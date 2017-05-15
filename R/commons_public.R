@@ -115,7 +115,7 @@ setMethod(f ="getPrjDir",
           signature = c("Commons"),
           definition = function(object, ..., showErr = as.logical(F)) {
 
-              # Look up prj_dir from ~/.dbgapr/project_config.json
+              # Look up prj_dir from ~/ncbi/dbgapr_conf/project_config.json
               confFile = object@configFile
               if (is.null(confFile) == T) {
                   confFile = ""
@@ -1675,6 +1675,7 @@ setMethod(
                   gdata::write.fwf(x=availStudyInfoSubDF, file=availStudyInfo_txtFile, quote=F, justify="left", sep="    ")
 
                   if (showAs != "") {
+
                       viewAllStudyInfo(object, showAs = showAs, editor = editor)
 
                       # invisible return

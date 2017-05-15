@@ -79,10 +79,11 @@ setMethod("initialize",
               # Validate accession
               phsAcc <- cleanObjAcc(.Object, acc = phsAcc, type = 'phs')
 
-              msg <- paste("Initializing class Study with ", phsAcc, "\n", sep="")
-              cat(msg)
 
               .Object@phsAcc <- phsAcc
+
+              msg <- paste("Class Study is initialized with ", phsAcc, ".\n", sep="")
+              cat(msg)
 
               .Object
           })
