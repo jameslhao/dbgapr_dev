@@ -22,7 +22,6 @@ Due to the large number and complicated structures of the dbGaP data files, it o
 
 This document is a step-by-step introduction of how to setup and use the package. **The examples are based on the data of study phs000001.v3.p1 (AREDS). The input accessions should be changed accordingly based on your specific need and the studies to which your data belong.**
 
-  
 ## Project Setup
 
 ### Import the package
