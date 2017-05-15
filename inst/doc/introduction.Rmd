@@ -1,7 +1,7 @@
 ---
 title: "Introduction to dbgapr"
 author: "Luning Hao, NIH/NCBI/dbGaP"
-date: "2017-05-14"
+date: "2017-05-15"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::knitr}
@@ -9,9 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Introduction to dbgapr
-$~$
-
+## Overview
 
 The Database of Genotypes and Phenotypes ([dbGaP](https://www.ncbi.nlm.nih.gov/gap)) is a National Institutes of Health (NIH) sponsored repository charged to archive, curate and distribute information produced by studies investigating the interaction of genotype and phenotype. The individual level genotype and phenotype data are distributed in different consent groups through the dbGaP Authorized Access System. 
 
@@ -24,16 +22,19 @@ Due to the large number and complicated structures of the dbGaP data files, it o
 
 This document is a step-by-step introduction of how to setup and use the package. **The examples are based on the data of study phs000001.v3.p1 (AREDS). The input accessions should be changed accordingly based on your specific need and the studies to which your data belong.**
 
+  
+## Project Setup
 
-$~$
+### Import the package
 
-$~$
-
-# Project Setup
-$~$
+After the dbgapr package is installed, import it to the R console.
 
 
-## List of public functions
+```r
+library('dbgapr')
+```
+
+### List of public functions
 
 All public functions belong to either class `Commons()` or class `Study()`. Run the following to view the list of these functions.
 
@@ -42,7 +43,7 @@ All public functions belong to either class `Commons()` or class `Study()`. Run 
 ?dbgapr
 ```
 
-## Create user project 
+### Create user project 
 
 Before anything else, the very first step is to create an user project directory using `prjConfig()`. The user project directory can be any directory in the file system.
 
@@ -83,7 +84,7 @@ c <- Commons()
 getPrjDir(c, showErr=TRUE)
 ```
 
-## Initiate class Commons again
+### Initiate class Commons again
 
 After the project directory is setup, always remember to **initiate the class `Commons()` again** before anything else.
 
@@ -93,7 +94,7 @@ c <- Commons()
 ```
 
 
-## Data preparation
+### Data preparation
 
 Now it is time to call `prepareData()` and get all the data and metadata ready for search, view, and query. This is a wrapper function that calls other functions descripted next. **When this function is called, the next four functions all the way to `mergeDatasetConsent()` can be skipped.**. However, you may still want to read the instruction of the skipped functions to understand what has been done and how to check the results of each of these steps.
 
@@ -126,7 +127,7 @@ Note:
 `parepareData()` is simply a wrapper function that calls the next four functions described below. It copies user data files to the project directory through `searchCopyPhenoFiles()`, downloads supplemental metadata files from the dbGaP ftp site through `ftpDownload()`, extracts and saves the file meta-info through `recordPrjFileInfo()`, and finally merges the data files of different consents through `mergeDatasetConsent()`. After `prepareData()` is called for the first time, each of these functions can be called individually later if needed.
 
 
-## Copy data files
+### Copy data files
 
 **Ignore this step if `prepareData()` is called.** 
 
@@ -183,7 +184,7 @@ Note:
 > There is no direct way to tell their relationship just by the directory structure. The parent child study relationship however can be queried by calling `getAllStudyInfo()` after the supplemental files are copied and the data dictionary files and parsed in next a few steps.  
 
 
-## Get supplemental files through ftp
+### Get supplemental files through ftp
 
 **Ignore this step if `prepareData()` is called.** 
 
@@ -228,7 +229,7 @@ dir("~/myprj/gapwork/data/phs000001/phs000001.v3/supplemental_data")
       [6] "phs000001.v3_study_variable_info.txt.gz"   
       
       
-##  Record file info
+###  Record file info
 
 **Ignore this step if `prepareData()` is called.** 
 
@@ -250,7 +251,7 @@ file.show("~/.dbgapr/pht_file_info_indiv.json")
 ```
 
 
-##  Merge dataset consents
+###  Merge dataset consents
 
 **Ignore this step if `prepareData()` is called.** 
 
@@ -306,15 +307,10 @@ dir("~/myprj/gapwork/data/phs000001/phs000001.v3/combined/log")
     -------
       [1] "phs000001.v3_study_pht_combo_info.json"
   
-  
-$~$
 
-$~$
+## View, Search, and Query  
 
-# View, Search, and Query  
-$~$
-
-##  Get dbGaP object info
+###  Get dbGaP object info
 
 After data preparation is done, all the data and metadata are ready for search, view, and query by dbGap accessions. There are three types of the dbGaP objects related to phenotype data. They are study, dataset, and variable. To view the meta-info of an individual object, call `accInfo()` as below.  
 
@@ -379,7 +375,7 @@ df <- accInfo(c, acc='phv00000031.v2')    # varible of enum_integer type
       Study         :   phs000001.v3
       
       
-## Get info of all studies       
+### Get info of all studies       
 
 The meta-info of all studies available in the project directory can be queried and viewed by `getAllStudyInfo()`. The study-info is returned as a data frame.
       
@@ -395,7 +391,7 @@ df <- getAllStudyInfo(c, showAs='table')
 df <- getAllStudyInfo(c, showAs='json', editor='notepad') 
 ```
       
-## Get info of all datasets
+### Get info of all datasets
 
 The meta-info of all datasets available in the project directory can be queried and viewed by `getAllDatasetInfo()`. The study-info is returned as a data frame.
       
@@ -414,7 +410,7 @@ df <- getAllDatasetInfo(c, showAs='json', editor='notepad')
 df <-  getAllDatasetInfo(c, showAs='text')
 ```
 
-## Get study variable info
+### Get study variable info
 
 The meta-info of variables under a specified study can be queried and viewed by `getStudyVariableInfo()`. The variable-info is returned as a data frame.
 
@@ -438,7 +434,7 @@ accList = c('phv00054119.v1.p1.c2', 'phv00054118.v1.p1')
 df <- getStudyVariableInfo(s, phvAccList=accList)   
 ```
 
-## Search study variables by terms
+### Search study variables by terms
 
 After viewing the meta-info of multiple variables through above function, specific variables can be selected based on the terms present in either the variable descriptions or the variable names. To conduct the search, use `getPhvAccListByTerms()` as below. 
 
@@ -473,7 +469,7 @@ df <- getPhvAccListByTerms(s, terms_1=t4, searchIn='name', showTable=T)
 df <- getPhvAccListByTerms(s, terms_1=t4, terms_2=t5, searchIn='name', showTable=T)
 ```
 
-##  Get study variable data
+###  Get study variable data
 
 The variable data of the study can be obtained by either a dataset accession or a list of variable accessions. Thi is done by calling `getStudyVariableData()` as below. 
 
@@ -567,7 +563,7 @@ colnames(df)
      ...
     
 
-## Show variable data summary  
+### Show variable data summary  
 
 The metadata and statistical summary of a given variable can be viewed by calling `variableSummary()` as below.
 
@@ -614,15 +610,10 @@ df <- variableSummary(s, phvAcc='phv00000035.v2')         # categorical
       5      5  751
       6      6    2
   
-  
-$~$
 
-$~$
+## Basic Plotting  
 
-# Basic Plotting  
-$~$
-
-##  Variable box-and-whisker plot
+###  Variable box-and-whisker plot
 
 The box-and-whisker plot of a numerical variable vs each category of a categorical variable can be viewed by calling `variableBoxplot()` as below.
 
@@ -632,7 +623,7 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variableBoxplot(s, numPhvAcc='phv00000027.v2', catPhvAcc='phv00000032.v2')
 ```
 
-<img src="figure/boxplot_phv00000027.v2_AGEPHOT_phv00000032.v2_MARITAL.png" title="plot of chunk unnamed-chunk-38" alt="plot of chunk unnamed-chunk-38" width="600px" />
+<img src="figure/boxplot_phv00000027.v2_AGEPHOT_phv00000032.v2_MARITAL.png" title="plot of chunk unnamed-chunk-39" alt="plot of chunk unnamed-chunk-39" width="600px" />
 
 For all plotting functions, the information of the respective variables and the location of saved images is console displayed as shown below. 
 
@@ -655,7 +646,7 @@ For all plotting functions, the information of the respective variables and the 
        C:/Users/foo/myprj/gapwork/temp/ ... 
       
 
-##  Variable scatter plot
+###  Variable scatter plot
 
 The scatter-plot of a numerical variable vs each category of a categorical variable can be viewed by calling `variableScatterplot()` as below.
 
@@ -668,9 +659,9 @@ cat_1 = 'phv00053757.v2'
 df <- variableScatterplot(s, numPhvAcc_1=num_1, numPhvAcc_2=num_2, catPhvAcc=cat_1)
 ```
 
-<img src="figure/scatterplot_phv00000027.v2_AGEPHOT_phv00053747.v2_LNUCSCORE_phv00053757.v2_RNUC.png" title="plot of chunk unnamed-chunk-40" alt="plot of chunk unnamed-chunk-40" width="600px" height="500px" />
+<img src="figure/scatterplot_phv00000027.v2_AGEPHOT_phv00053747.v2_LNUCSCORE_phv00053757.v2_RNUC.png" title="plot of chunk unnamed-chunk-41" alt="plot of chunk unnamed-chunk-41" width="600px" height="500px" />
 
-##  Variable histogram
+###  Variable histogram
 
 The histogram of a numerical variable can be drawn by calling `variableHistogram()` as below.
 
@@ -684,7 +675,7 @@ df <- variableHistogram(s, phvAcc='phv00053747.v2')
 df <- variableHistogram(s, phvAcc='phv00053747.v2', withDensity=F)    
 ```
 
-<img src="figure/histogram_phv00053747.v2_LNUCSCORE.png" title="plot of chunk unnamed-chunk-42" alt="plot of chunk unnamed-chunk-42" width="600px" />
+<img src="figure/histogram_phv00053747.v2_LNUCSCORE.png" title="plot of chunk unnamed-chunk-43" alt="plot of chunk unnamed-chunk-43" width="600px" />
 
 When calling the function with a categorical variable, a barchart of each of the categories is drawn.
 
@@ -695,10 +686,10 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variableHistogram(s, phvAcc='phv00053733.v2')
 ```
 
-<img src="figure/barchart_phv00053733.v2_ADVSTAT.png" title="plot of chunk unnamed-chunk-44" alt="plot of chunk unnamed-chunk-44" width="600px" />
+<img src="figure/barchart_phv00053733.v2_ADVSTAT.png" title="plot of chunk unnamed-chunk-45" alt="plot of chunk unnamed-chunk-45" width="600px" />
 
 
-##  Variable piechart
+###  Variable piechart
 
 The pie-chart of subject count of the different categories of a categorical variable can be viewed by calling `variablePiechart()` as below.
 
@@ -708,9 +699,9 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variablePiechart(s, catPhvAcc='phv00053764.v2')
 ```
 
-<img src="figure/boxplot_phv00053764.v2_LPSC.png" title="plot of chunk unnamed-chunk-46" alt="plot of chunk unnamed-chunk-46" width="600px" />
+<img src="figure/boxplot_phv00053764.v2_LPSC.png" title="plot of chunk unnamed-chunk-47" alt="plot of chunk unnamed-chunk-47" width="600px" />
 
-##  Variable Venndiagram 
+###  Variable Venndiagram 
 
 The Venndiagram that shows the overlapping subject between a specified list of variables can be viewed by calling `variableVenndiagram()` as below.
 
@@ -721,9 +712,9 @@ acc_list = c('phv00054139.v1', 'phv00053796.v2', 'phv00000089.v2')
 df <- variableVenndiagram(s, phvAccList=acc_list)
 ```
 
-<img src="figure/VennDiagram_AGECT_phv00054139.v1_DT_PROA_phv00053796.v2_SYST07_phv00000089.v2.png" title="plot of chunk unnamed-chunk-48" alt="plot of chunk unnamed-chunk-48" width="600px" />
+<img src="figure/VennDiagram_AGECT_phv00054139.v1_DT_PROA_phv00053796.v2_SYST07_phv00000089.v2.png" title="plot of chunk unnamed-chunk-49" alt="plot of chunk unnamed-chunk-49" width="600px" />
 
-##  Variable correlation heatmap
+###  Variable correlation heatmap
 
 The correlation graph between different categories of a given categorical variable can be viewed by calling `variableCorrelHeatmap()` as below.
 
@@ -738,7 +729,7 @@ num_acc_list = c('phv00000007.v2', 'phv00053794.v2', 'phv00053786.v2', 'phv00000
 df <- variableCorrelHeatmap(s, catPhvAcc=catPhvAcc, numPhvAccList=numPhvAcc_list cc_list))
 ```
 
-<img src="figure/correlmatrix_SCHOOL_phv00000035.v2_RCORBASE_phv00000007.v2_DT_LYC_phv00053794.v2_DT_VITE_phv00053786.v2_DIAS12_phv00000106.v2.png" title="plot of chunk unnamed-chunk-50" alt="plot of chunk unnamed-chunk-50" width="600px" />
+<img src="figure/correlmatrix_SCHOOL_phv00000035.v2_RCORBASE_phv00000007.v2_DT_LYC_phv00053794.v2_DT_VITE_phv00053786.v2_DIAS12_phv00000106.v2.png" title="plot of chunk unnamed-chunk-51" alt="plot of chunk unnamed-chunk-51" width="600px" />
 
 
 > Write to dbgap-help@ncbi.nlm.nih.gov for any questions.
