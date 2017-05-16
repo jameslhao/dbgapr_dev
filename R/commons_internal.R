@@ -3095,6 +3095,7 @@ setMethod(
           f = "displayTable",
           signature = c("Commons"),
           definition = function(object, ..., file = "", data = data.frame()) {
+
               file <- checkInputPath(object, file)
 
               # Detect CSV delimiter 
@@ -3120,8 +3121,9 @@ setMethod(
                           rownames(data) <- seq(length=nrow(data))
 
                           # View data
+                          # Note: Do not call utils:View(data). Otherwise, Rstudio table viewer won't work.  
+                          View <- NULL # mute R CMD check note
                           View(data)
-                          #return (invisible(data))
                       }
                       else {
                           type = 'process'
@@ -3171,13 +3173,16 @@ setMethod(
                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
                       }
 
+
                       if (nrow(data) > 0) {
 
                           rownames(data) <- seq(length=nrow(data))
 
-                          # view data
-                          utils::View(data)
-                          #return (invisible(data))
+                          # View data 
+                          # Note: Do not call utils:View(data). Otherwise, Rstudio table viewer won't work.  
+                          View <- NULL # mute R CMD check note
+                          View(data)
+
                       }
                   }
                   else {

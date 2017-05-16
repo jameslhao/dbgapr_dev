@@ -18,13 +18,15 @@ NULL
 #' @importFrom dplyr group_by do distinct 
 #' @importFrom grDevices dev.off rgb
 #' @importFrom stats complete.cases cor median sd
-#' @importFrom utils View download.file untar head read.csv read.table write.csv write.table 
+#' @importFrom utils download.file untar head read.csv read.table write.csv write.table 
 #' @rdname Commons-class 
 #' @examples 
 #' \dontrun{
 #'
 #' c <- Commons()
 #'}
+
+# ATTN! Do not includ View when @importFrom utils. Otherwise, the Rstudio table viewer will not work. 
 Commons <- setClass(
 
                     # Set the name of the class
@@ -128,7 +130,6 @@ setMethod("initialize",
           function(.Object, ...) {
 
               .Object <- callNextMethod()
-
 
               ##############################
               # Define home directory

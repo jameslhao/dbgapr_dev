@@ -1,3 +1,6 @@
+.*.swo
+.*.swp
+.nfs*
 .Rproj.user
 .Rhistory
 .RData
