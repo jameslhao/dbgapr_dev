@@ -12,7 +12,7 @@
 
 <meta name="author" content="Luning Hao, NIH/NCBI/dbGaP" />
 
-<meta name="date" content="2017-05-15" />
+<meta name="date" content="2017-05-16" />
 
 <title>Introduction to dbgapr</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introduction to dbgapr</h1>
 <h4 class="author"><em>Luning Hao, NIH/NCBI/dbGaP</em></h4>
-<h4 class="date"><em>2017-05-15</em></h4>
+<h4 class="date"><em>2017-05-16</em></h4>
 
 
 
@@ -102,12 +102,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h3>Create user project</h3>
 <p>Before anything else, the very first step is to create an user project directory using <code>prjConfig()</code>. The user project directory can be any directory in the file system.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">Commons</span>()
-<span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;/home/foo/myprj&quot;</span>)</code></pre></div>
-<p>By the way, various forms of the directory or file paths are acceptable by the functions of this package. Assuming ‘/home/foo’ or ‘C:/Users/foo’ is a <strong>system home directory</strong>, all forms of the directory (or file) path shown below can be used.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;/home/foo/myprj&quot;</span>)        <span class="co"># all platforms</span>
+<span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;/home/username/myprj&quot;</span>)</code></pre></div>
+<p>By the way, various forms of the directory or file paths are acceptable by the functions of this package. Assuming ‘/home/username’ or ‘C:/Users/foo’ is a <strong>system home directory</strong>, all forms of the directory (or file) path shown below can be used.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;/home/username/myprj&quot;</span>)        <span class="co"># all platforms</span>
 <span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;~/myprj&quot;</span>)                <span class="co"># all platforms</span>
-<span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;C:/Users/foo/myprj&quot;</span>)     <span class="co"># Windows</span>
-<span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;C:</span><span class="ch">\\</span><span class="st">Users</span><span class="ch">\\</span><span class="st">foo</span><span class="ch">\\</span><span class="st">myprj&quot;</span>)  <span class="co"># Windows</span></code></pre></div>
+<span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;C:/Users/username/myprj&quot;</span>)     <span class="co"># Windows</span>
+<span class="kw">prjConfig</span>(c, <span class="dt">prjDir=</span><span class="st">&quot;C:</span><span class="ch">\\</span><span class="st">Users</span><span class="ch">\\</span><span class="st">username</span><span class="ch">\\</span><span class="st">myprj&quot;</span>)  <span class="co"># Windows</span></code></pre></div>
 <p>You may confirm the project directory is created by the following.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj&quot;</span>)</code></pre></div>
 <pre><code>output:
@@ -128,7 +128,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Now it is time to call <code>prepareData()</code> and get all the data and metadata ready for search, view, and query. This is a wrapper function that calls other functions descripted next. <strong>When this function is called, the next four functions all the way to <code>mergeDatasetConsent()</code> can be skipped.</strong>. However, you may still want to read the instruction of the skipped functions to understand what has been done and how to check the results of each of these steps.</p>
 <p><strong>The step may take quite a while to finish.</strong></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">Commons</span>()
-<span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/foo/my_data'</span>)</code></pre></div>
+<span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/username/decrypted_dbgap_data_dir'</span>)</code></pre></div>
 <p>Note:</p>
 <blockquote>
 <p>The userDataDir is the top level directory that contains all the dbGaP phenotype data files intended to be copied (or moved) to the project directory. Before calling this function.</p>
@@ -138,7 +138,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </blockquote>
 <p>If you have many studies, running through all of them may take too long to complete. In this case, it is suggested to prepare the data one study at a time.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">Commons</span>()
-<span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/foo/my_data'</span>, <span class="dt">phsAcc=</span><span class="st">'phs000001.v3.p1'</span>)</code></pre></div>
+<span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/username/decrypted_dbgap_data_dir'</span>, <span class="dt">phsAcc=</span><span class="st">'phs000001.v3.p1'</span>)</code></pre></div>
 <p>Note:</p>
 <blockquote>
 <p><strong>Skip next four steps if above function is called.</strong>. This is because <code>parepareData()</code> is simply a wrapper function that calls the next four functions described below. It copies user data files to the project directory through <code>searchCopyPhenoFiles()</code>, downloads supplemental metadata files from the dbGaP ftp site through <code>ftpDownload()</code>, extracts and saves the file meta-info through <code>recordPrjFileInfo()</code>, and finally merges the data files of different consents through <code>mergeDatasetConsent()</code>. After <code>prepareData()</code> is called for the first time, each of these functions can be called individually later if needed.</p>
@@ -149,12 +149,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p><strong>Ignore this step if <code>prepareData()</code> is called.</strong></p>
 <p>Once the project directory is setup, the decrypted data files and meta-info (data dictionary) files need to be copied (or moved) to the directory. This is done by <code>searchCopyPhenoFiles()</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">Commons</span>()
-<span class="kw">searchCopyPhenoFiles</span>(c, <span class="dt">userDataDir=</span><span class="st">'~/my_data'</span>)
+<span class="kw">searchCopyPhenoFiles</span>(c, <span class="dt">userDataDir=</span><span class="st">'~/decrypted_dbgap_data_dir'</span>)
 <span class="co"># or to only copy the files of a specific study</span>
-<span class="kw">searchCopyPhenoFiles</span>(c, <span class="dt">userDataDir=</span><span class="st">'~/my_data'</span>, <span class="dt">phsAcc=</span><span class="st">&quot;phs000001.v3.p1&quot;</span>)</code></pre></div>
+<span class="kw">searchCopyPhenoFiles</span>(c, <span class="dt">userDataDir=</span><span class="st">'~/decrypted_dbgap_data_dir'</span>, <span class="dt">phsAcc=</span><span class="st">&quot;phs000001.v3.p1&quot;</span>)</code></pre></div>
 <p>To move instead of copy the files to the project directory, run the followng.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">Commons</span>()
-<span class="kw">searchCopyPhenoFiles</span>(c, <span class="dt">userDataDir=</span><span class="st">'~/my_data'</span>, <span class="dt">copyOrMove =</span> <span class="st">'move'</span>)</code></pre></div>
+<span class="kw">searchCopyPhenoFiles</span>(c, <span class="dt">userDataDir=</span><span class="st">'~/decrypted_dbgap_data_dir'</span>, <span class="dt">copyOrMove =</span> <span class="st">'move'</span>)</code></pre></div>
 <p>You may confirm the copying is successful by listing the phenotype dataset or data dictionary files such as below.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3/original&quot;</span>)</code></pre></div>
 <pre><code>output:
@@ -408,7 +408,7 @@ df &lt;-<span class="st"> </span><span class="kw">getDatasetDataByPhtAcc</span>(
 <span class="co"># or</span>
 <span class="co"># variable data of a set of specified subjects in a dataset </span>
 <span class="co"># The subject id file is a plain text file with one dbGaP_Subject_ID per line.</span>
-subj_file =<span class="st"> &quot;~/my_data/subj_ids.txt&quot;</span>
+subj_file =<span class="st"> &quot;~/temp/subj_ids.txt&quot;</span>
 df &lt;-<span class="st"> </span><span class="kw">getDatasetDataByPhtAcc</span>(s, <span class="dt">phtAcc=</span><span class="st">'pht000371.v2'</span>, <span class="dt">subjIdsOrFile=</span>subj_file)</code></pre></div>
 <p>Note:</p>
 <blockquote>

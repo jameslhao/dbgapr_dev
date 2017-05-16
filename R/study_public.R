@@ -479,9 +479,11 @@ setMethod(
                       }
                   }
               }
+              
+
               # Allow not list and vector as input. Convert to vector of it is a list.
               
-              if (is.null(phvAccList) == TRUE) {
+              if (length(phvAccList) == 0) {
                   varDF <- getPhtData(inputPhtAcc, phtAcc, colNameWithAcc)
                   return (varDF)
               }

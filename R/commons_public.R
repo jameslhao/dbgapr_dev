@@ -1257,8 +1257,6 @@ setMethod(
           signature = c("Commons"),
           definition = function(object, acc, ..., display = TRUE) {
 
-              print("AAAAccc")
-
               # Trim heading and trailing space
               acc <- trimws(acc)
               type = ''

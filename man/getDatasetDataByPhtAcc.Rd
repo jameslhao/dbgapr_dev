@@ -3,12 +3,12 @@
 \docType{methods}
 \name{getDatasetDataByPhtAcc}
 \alias{getDatasetDataByPhtAcc}
-\alias{getDatasetDataByPhtAcc,Study-method}
+\alias{getDatasetDataByPhtAcc,Study,character-method}
 \title{(internal) Get data by dataset accession}
 \usage{
 getDatasetDataByPhtAcc(object, phtAcc, ...)
 
-\S4method{getDatasetDataByPhtAcc}{Study}(object, phtAcc, ...,
+\S4method{getDatasetDataByPhtAcc}{Study,character}(object, phtAcc, ...,
   subjIdsOrFile = NULL, colNameWithAcc = FALSE)
 }
 \arguments{
@@ -30,7 +30,7 @@ The method returns the data of the given dataset. For large dataset, it may take
 }
 \section{Methods (by class)}{
 \itemize{
-\item \code{Study}: A method of class Study
+\item \code{object = Study,phtAcc = character}: A method of class Study
 }}
 
 \examples{

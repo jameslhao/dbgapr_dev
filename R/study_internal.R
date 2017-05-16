@@ -609,7 +609,7 @@ setGeneric(
 #' @describeIn getDatasetDataByPhtAcc A method of class Study 
 setMethod(
           f = "getDatasetDataByPhtAcc",
-          signature = c("Study"),
+          signature = c("Study", "character"),
           definition = function(object, phtAcc, ..., subjIdsOrFile = NULL, colNameWithAcc = FALSE) {
 
               phsAcc = object@phsAcc

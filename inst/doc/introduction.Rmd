@@ -1,7 +1,7 @@
 ---
 title: "Introduction to dbgapr"
 author: "Luning Hao, NIH/NCBI/dbGaP"
-date: "2017-05-15"
+date: "2017-05-16"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::knitr}
@@ -49,17 +49,17 @@ Before anything else, the very first step is to create an user project directory
 
 ```r
 c <- Commons()
-prjConfig(c, prjDir="/home/foo/myprj")
+prjConfig(c, prjDir="/home/username/myprj")
 ```
 
-By the way, various forms of the directory or file paths are acceptable by the functions of this package. Assuming '/home/foo' or 'C:/Users/foo' is a **system home directory**, all forms of the directory (or file) path shown below can be used.
+By the way, various forms of the directory or file paths are acceptable by the functions of this package. Assuming '/home/username' or 'C:/Users/foo' is a **system home directory**, all forms of the directory (or file) path shown below can be used.
 
 
 ```r
-prjConfig(c, prjDir="/home/foo/myprj")        # all platforms
+prjConfig(c, prjDir="/home/username/myprj")        # all platforms
 prjConfig(c, prjDir="~/myprj")                # all platforms
-prjConfig(c, prjDir="C:/Users/foo/myprj")     # Windows
-prjConfig(c, prjDir="C:\\Users\\foo\\myprj")  # Windows
+prjConfig(c, prjDir="C:/Users/username/myprj")     # Windows
+prjConfig(c, prjDir="C:\\Users\\username\\myprj")  # Windows
 ```
 
 You may confirm the project directory is created by the following.
@@ -102,7 +102,7 @@ Now it is time to call `prepareData()` and get all the data and metadata ready f
 
 ```r
 c <- Commons()
-prepareData(c, userDataDir='/home/foo/my_data')
+prepareData(c, userDataDir='/home/username/decrypted_dbgap_data_dir')
 ```
 
 Note:
@@ -117,7 +117,7 @@ If you have many studies, running through all of them may take too long to compl
 
 ```r
 c <- Commons()
-prepareData(c, userDataDir='/home/foo/my_data', phsAcc='phs000001.v3.p1')
+prepareData(c, userDataDir='/home/username/decrypted_dbgap_data_dir', phsAcc='phs000001.v3.p1')
 ```
 
 Note:
@@ -135,9 +135,9 @@ Once the project directory is setup, the decrypted data files and meta-info (dat
 
 ```r
 c <- Commons()
-searchCopyPhenoFiles(c, userDataDir='~/my_data')
+searchCopyPhenoFiles(c, userDataDir='~/decrypted_dbgap_data_dir')
 # or to only copy the files of a specific study
-searchCopyPhenoFiles(c, userDataDir='~/my_data', phsAcc="phs000001.v3.p1")
+searchCopyPhenoFiles(c, userDataDir='~/decrypted_dbgap_data_dir', phsAcc="phs000001.v3.p1")
 ```
 
 To move instead of copy the files to the project directory, run the followng.
@@ -145,7 +145,7 @@ To move instead of copy the files to the project directory, run the followng.
 
 ```r
 c <- Commons()
-searchCopyPhenoFiles(c, userDataDir='~/my_data', copyOrMove = 'move')
+searchCopyPhenoFiles(c, userDataDir='~/decrypted_dbgap_data_dir', copyOrMove = 'move')
 ```
 
 You may confirm the copying is successful by listing the phenotype dataset or data dictionary files such as below. 
@@ -499,7 +499,7 @@ df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', subjIdsOrFile=subj_ids)
 # or
 # variable data of a set of specified subjects in a dataset 
 # The subject id file is a plain text file with one dbGaP_Subject_ID per line.
-subj_file = "~/my_data/subj_ids.txt"
+subj_file = "~/temp/subj_ids.txt"
 df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', subjIdsOrFile=subj_file)
 ```
 

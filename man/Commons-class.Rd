@@ -6,7 +6,7 @@
 \alias{Commons}
 \title{Base class of dbgapr package}
 \description{
-The class contains the methods commonly used by all classes and methods in the package. The related functions include setting up the user project directory, copying the decrypted dbGaP phenotype data (datasets) files to the project directory, ftp download of the meta-data (data dictionary) files, merging the datasets split into different consents groups, reviewing and retrieving the data and meta-data by accessions, etc.
+The class contains the functions shared by all functions of the package.
 }
 \examples{
 \dontrun{
