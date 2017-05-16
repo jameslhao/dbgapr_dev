@@ -6,7 +6,7 @@ NULL
 
 #' Class Study 
 #'
-#' The class contains the methods that handle the data of a specified study. The functions of this class include viewing and retrieving the data and meta-data of the specified study by accessions, visulizing variable data through a variety of plotting methods, etc. The data (datasets, variables) and meta-data (data ditionary) files of the study need to be available under the user project directory before calling the functions under this class. A dbGaP study accession is rerquired for initializing the class.
+#' The class contains the functions that handle the data of a specified study.
 #'
 #' @import methods
 #' @slot phsAcc a character string. A dbGaP study accession.
