@@ -40,7 +40,7 @@ setMethod(
           f = "createPrjDir",
           signature = c("Commons","character"),
           definition = function(object, prjDir) {
-              str_trim(prjDir)
+              stringr::str_trim(prjDir)
               prjDir <- checkInputPath(object, prjDir)
 
               ################
@@ -149,6 +149,7 @@ setMethod(
 
               createOk = FALSE
 
+
               if (is.null(prjDir) == T | prjDir == "") {
                   cat("[INFO] The input project directory is empty. No change is made.\n")
               }
@@ -177,31 +178,33 @@ setMethod(
                           ##############################
 
                           #### Create a brand new prjDir #### 
-                          if (!file.exists(prjDir)) {
+                          if (!dir.exists(prjDir)) {
                               dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+
+                              if (dir.exists(prjDir) ) {
+
+                                  type = 'setup'
+                                  level = 'info'
+                                  show = T
+                                  mesg = paste("The new project directory is created. --- ", prjDir, sep="")
+                                  writeLog(object,  type = type, level = level, message = mesg, show = show)
+                              }
                           }
 
-
                           if (dir.exists(prjDir) ) {
-                              type = 'setup'
-                              level = 'info'
-                              show = T
-                              mesg = paste("The new project directory is created. --- ", prjDir, sep="")
-                              writeLog(object,  type = type, level = level, message = mesg, show = show)
 
                               # Reality check
                               createOk <- realityCheck(prjDir)
-
-                              # Important reminder to users 
-                              message("\nPlease re-initialize the class Commons to make the project directory in effect.\nExample command: c <- Commons()\n") 
                           }
                           else {
+
                               type = 'setup'
                               level = 'error'
                               show = T
                               mesg = paste("The input prject directory fails to be created. Current default project directory remains to be --- ", currPrjDir, sep="")
                               writeLog(object,  type = type, level = level, message = mesg, show = show)
                           }
+
                       }
                       # confFile exists
                       else {
@@ -211,6 +214,7 @@ setMethod(
                           # Get current prjDir from confDF 
                           current <- NULL  	# necessary for passing CMD check 
                           currPrjDir <- (subset(confDF, current == 'yes'))$prj_dir 
+
 
                           # Check currPrjDir
                           if (is.null(currPrjDir) == T) {
@@ -223,106 +227,110 @@ setMethod(
 
                           if (nchar(currPrjDir) != 0) {
 
-                              # Check input prjDir
+                              #### Create prjDir if it does not exist 
                               if (!dir.exists(prjDir)) {
+                                  dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
 
-                                  # Compare input prjDir with currPrjDir
-                                  if (prjDir %in% confDF$prj_dir == T) {
-
-                                      #### Create prjDir if it is a previously configured confPrjDir, but no longer exists ####
-                                      dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
-
-                                      if (dir.exists(prjDir) ) {
-                                          type = 'setup'
-                                          level = 'info'
-                                          show = T
-                                          mesg = paste("The new project directory is created. --- ", prjDir, sep="")
-                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
-
-                                          # Reality check
-                                          createOk <- realityCheck(prjDir)
-
-                                          # Important reminder to users 
-                                          message("\nPlease re-initialize the class Commons to make the project directory in effect.\nExample command: c <- Commons()\n") 
-                                      }
-                                      else {
-                                          type = 'setup'
-                                          level = 'error'
-                                          show = T
-                                          mesg = paste("The input prject directory fails to be created. Current default project directory remains to be --- ", currPrjDir, sep="")
-                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
-                                      }
+                                  if (dir.exists(prjDir) ) {
+                                      type = 'setup'
+                                      level = 'info'
+                                      show = T
+                                      mesg = paste("The new project directory is created. --- ", prjDir, sep="")
+                                      writeLog(object,  type = type, level = level, message = mesg, show = show)
                                   }
-                                  # prjDir not found in currPrjDir -- new prjDir
+                              }
+
+                              if (dir.exists(prjDir) ) {
+
+                                  # Reality check
+                                  createOk <- realityCheck(prjDir)
+
+                              }
+                              else {
+                                  type = 'setup'
+                                  level = 'error'
+                                  show = T
+                                  mesg = paste("The input prject directory fails to be created. Current default project directory remains to be --- ", currPrjDir, sep="")
+                                  writeLog(object,  type = type, level = level, message = mesg, show = show)
+                              }
+
+
+                              ######################################
+                              # Record to config file
+                              ######################################
+
+                              # Compare input prjDir with currPrjDir
+                              # prjDir not found in currPrjDir -- new prjDir
+                              if (prjDir %in% confDF$prj_dir == F) {
+
+
+                                  # Prompt to confirm the change
+                                  cat("\n")
+                                  cat("[INFO] The input prorject directory is different from the current default.\n")  
+                                  cat("       Input   : ", prjDir, "\n")  
+                                  cat("       Default : ", currPrjDir, "\n")  
+                                  cat("\n")
+                                  cat("Are you sure you want to make the change? (yes/no)\n")
+                                  yesOrNo <- readline(prompt = "   ")
+                                  cat("\n")
+
+                                  if (nchar(yesOrNo) == 0) {
+                                      yesOrNo = 'no'
+                                  }
+
+                                  # Change current prjDir and update prjConfig
+                                  if ( grepl('^yes$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T | grepl('^y$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T ) {
+
+                                      #### Create prject directory ####
+
+
+                                      ##############################
+                                      # Updare project_config.json
+                                      ##############################
+                                      # The initial project_config.json file creation is done through prjConfig().
+                                      # All the json file update is done here.
+
+                                      # Get max id
+                                      maxId <- max(confDF$id, na.rm = TRUE)
+                                      newId = strtoi(maxId)+ 1
+
+                                      # Reset value of column 'current' to 'no' for all rows
+                                      current <- rep('no', nrow(confDF))
+                                      confDF[['current']] <- current 
+
+                                      # Append the new path as a new row to confDF with a new 'updated' date 
+                                      newRow = c(newId, prjDir,  'yes', toString(as.POSIXlt(Sys.time())), toString(as.POSIXlt(Sys.time())))
+                                      newConfDF = rbind(confDF, newRow)
+
+                                      # Sort the dataframe by 'updated' date, the newest date on top 
+                                      sortedNewConfDF <- newConfDF[order(newConfDF['updated'], decreasing=T),]
+
+                                      # Convert to newConfJson
+                                      newConfJson <- toJSON(sortedNewConfDF, pretty=T)
+
+                                      # Update the prjConf json file
+                                      write(newConfJson, file = confFile, ncolumns = if(is.character(newConfJson)) 1 else 5, append = F, sep = "\n")
+
+
+
+                                      type = 'setup'
+                                      level = 'info'
+                                      show = T
+                                      mesg = paste("The new project directory is created and the project config file is updated. --- ", prjDir, sep="")
+                                      writeLog(object,  type = type, level = level, message = mesg, show = show)
+
+                                      # Reality check
+                                      createOk <- realityCheck(prjDir)
+
+                                      # Important reminder to users 
+                                      message("\nBefore going forward, please run the command such as below to make the project directory change in effect.\nc <- Commons()\n") 
+
+                                  }
                                   else {
+                                      cat("[INFO] No change is made. Curret default project directory is --- ", currPrjDir, "\n")
+                                  }
+                              } # end prjDir not found in currPrjDir
 
-                                      # Prompt to confirm the change
-                                      cat("\n")
-                                      cat("[INFO] The input prorject directory is different from the current default.\n")  
-                                      cat("       Input   : ", prjDir, "\n")  
-                                      cat("       Default : ", currPrjDir, "\n")  
-                                      cat("\n")
-                                      cat("Are you sure you want to make the change? (yes/no)\n")
-                                      yesOrNo <- readline(prompt = "   ")
-                                      cat("\n")
-
-                                      if (nchar(yesOrNo) == 0) {
-                                          yesOrNo = 'no'
-                                      }
-
-                                      # Change current prjDir and update prjConfig
-                                      if ( grepl('^yes$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T | grepl('^y$', yesOrNo, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T ) {
-
-                                          #### Create prject directory ####
-
-                                          dir.create(prjDir, showWarnings = TRUE, recursive = FALSE, mode = "0777")
-
-                                          ##############################
-                                          # Updare project_config.json
-                                          ##############################
-                                          # The initial project_config.json file creation is done through prjConfig().
-                                          # All the json file update is done here.
-
-                                          # Get max id
-                                          maxId <- max(confDF$id, na.rm = TRUE)
-                                          newId = strtoi(maxId)+ 1
-
-                                          # Reset value of column 'current' to 'no' for all rows
-                                          current <- rep('no', nrow(confDF))
-                                          confDF[['current']] <- current 
-
-                                          # Append the new path as a new row to confDF with a new 'updated' date 
-                                          newRow = c(newId, prjDir,  'yes', toString(as.POSIXlt(Sys.time())), toString(as.POSIXlt(Sys.time())))
-                                          newConfDF = rbind(confDF, newRow)
-
-                                          # Sort the dataframe by 'updated' date, the newest date on top 
-                                          sortedNewConfDF <- newConfDF[order(newConfDF['updated'], decreasing=T),]
-
-                                          # Convert to newConfJson
-                                          newConfJson <- toJSON(sortedNewConfDF, pretty=T)
-
-                                          # Update the prjConf json file
-                                          write(newConfJson, file = confFile, ncolumns = if(is.character(newConfJson)) 1 else 5, append = F, sep = "\n")
-
-                                          type = 'setup'
-                                          level = 'info'
-                                          show = T
-                                          mesg = paste("The new project directory is created and the project config file is updated. --- ", prjDir, sep="")
-                                          writeLog(object,  type = type, level = level, message = mesg, show = show)
-
-                                          # Reality check
-                                          createOk <- realityCheck(prjDir)
-
-                                          # Important reminder to users 
-                                          message("\nPlease re-initialize the class Commons to make the project directory in effect.\nExample command: c <- Commons()\n") 
-
-                                          
-                                      }
-                                      else {
-                                          cat("[INFO] No change is made. Curret default project directory is --- ", currPrjDir, "\n")
-                                      }
-                                  } # end prjDir not found in currPrjDir
-                              } # end prjDir exist
 
                           }
                           # currPrjDir empty value 
@@ -334,15 +342,20 @@ setMethod(
                               writeLog(object,  type = type, level = level, message = mesg, show = show)
                           }
 
+
                           #### Update 'current' status of existing row ####
 
                           # prjDir is previously configured confPrjDir 
                           if (prjDir %in% confDF$prj_dir == T) {
 
+
                               # prjDir exists 
                               if (dir.exists(prjDir)) {
 
                                   #### Change status to current if it is not already current #### 
+
+
+
                                   if (currPrjDir != prjDir) {
 
                                       # Prompt to confirm the change
@@ -400,13 +413,22 @@ setMethod(
                                           createOk <- realityCheck(prjDir)
 
                                           # Important reminder to users 
-                                          message("\nPlease re-initialize the class Commons to make the project directory in effect.\nExample command: c <- Commons()\n") 
+                                          message("\nBefore going forward, please run the command such as below to make the project directory change in effect.\nc <- Commons()\n") 
                                       }
+                                  }
+                                  else {
+
+                                      # Input dir is the same as PrjDir 
+                                      mesg = paste("The input prject directory exists and is already current. --- ", prjDir, "\n", sep="")
+                                      cat(mesg)
+
+                                      createOk = TRUE 
                                   }
 
                               }
 
                           }
+
                       } # end confile exists
                   }
                   # confFile empty value
@@ -1125,7 +1147,7 @@ setMethod(
               # phs000461.v1.pht003684.v1.p1.GLAUGEN_POAG_Methylation_Subject.MULTI.txt.gz
               # phs000007.v20.pht000009.v2.p8.c1.ex0_7s.HMB-MDS-IRB.txt.gz 
 
-              pattns = str_match(fileName, "^(phs0*)(\\d+)(\\.v(\\d+))*")
+              pattns = stringr::str_match(fileName, "^(phs0*)(\\d+)(\\.v(\\d+))*")
               fStAccNoP = pattns[1]	 		# phs000007.v20
               fPhsWithZero = pattns[2] 		# phs00000 
               fStId = pattns[3] 				# 7 
@@ -1142,7 +1164,7 @@ setMethod(
               }
 
               # Parse p#
-              pattns = str_match(fileName, "\\.p(\\d+)")
+              pattns = stringr::str_match(fileName, "\\.p(\\d+)")
               fStPId = pattns[2]
 
               # Rconstitute file study accession
@@ -1152,7 +1174,7 @@ setMethod(
               fStAcc = fStAccNoP
 
               # #### Parse ids of phenotype accession ####
-              pattns = str_match(fileName, "(pht0*)(\\d+)(\\.v(\\d+))")
+              pattns = stringr::str_match(fileName, "(pht0*)(\\d+)(\\.v(\\d+))")
 
               fPhtAccNoP = pattns[1]	 		# pht000371.v2
               fPhtWithZero = pattns[2] 		# pht000 
@@ -1233,7 +1255,7 @@ setMethod(
                   if (length(grep("\\.c\\d+\\.", fileName)) > 0) {
                       # phs000363.v7.pht003332.v1.p8.c2.SABRe_Project_2_Immunoassays_l_mpimn04_2005_m_0757s.HMB-NPU-MDS-IRB.txt.gz 
                       # phs000429.v1.pht002481.v1.p1.c1.areds_data_final_11.EDO.txt.gz
-                      pattns = str_match(fileName, "\\.c(\\d+).*\\.(.+)\\.txt")
+                      pattns = stringr::str_match(fileName, "\\.c(\\d+).*\\.(.+)\\.txt")
                       consentCode = paste("c", pattns[2], sep="")				# c1 
                       consentShortName = pattns[3]							# HMB-MDS-IRB
                       multiType = 'Not'
@@ -1395,7 +1417,7 @@ setMethod(
                   line <- x
                   if ( grepl('^#\\s*(.+)(:)(.+)$', line, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T) {
 
-                      pattns = str_match(line, "^#\\s+(.+)(:)(.+)$")
+                      pattns = stringr::str_match(line, "^#\\s+(.+)(:)(.+)$")
                       key = pattns[2]    
                       val = pattns[4]     
 
@@ -1428,7 +1450,7 @@ setMethod(
               result2 <- lapply(lines, function(x) {
                                     line <- x
                                     if ( grepl('^##\\s*(phv.+)$', line, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE) == T) {
-                                        pattns = str_match(line, "^##\\s*(phv.+)$")
+                                        pattns = stringr::str_match(line, "^##\\s*(phv.+)$")
                                         phvCombo = pattns[2]    
                                     }
                                })  
@@ -1579,15 +1601,15 @@ setMethod(
                           # 2016-06-17 12:46:59
                           lines <- paste(readLines(workFile, encoding="UTF-8"))
                           firstLine = lines[1:0]
-                          pattns = str_match(firstLine, "^\\[(.+:\\d+)\\s([a-z A-Z])")
+                          pattns = stringr::str_match(firstLine, "^\\[(.+:\\d+)\\s([a-z A-Z])")
                           firstLineTimeStamp = pattns[2]    
-                          firstLineTimeStampConcat <- str_replace(firstLineTimeStamp, " ", "_")	
+                          firstLineTimeStampConcat <- stringr::str_replace(firstLineTimeStamp, " ", "_")	
 
                           # Do the same for the last line
                           lastLine = lines[length(lines)]
-                          pattns = str_match(lastLine, "^\\[(.+:\\d+)\\s([a-z A-Z])")
+                          pattns = stringr::str_match(lastLine, "^\\[(.+:\\d+)\\s([a-z A-Z])")
                           lastLineTimeStamp = pattns[2]    
-                          lastLineTimeStampConcat <- str_replace(lastLineTimeStamp, " ", "_")	
+                          lastLineTimeStampConcat <- stringr::str_replace(lastLineTimeStamp, " ", "_")	
 
                           if (is.na(lastLineTimeStampConcat)) {
                               currTime = toString(as.POSIXlt(Sys.time()))
@@ -1677,10 +1699,10 @@ setMethod(
               # phs000001.v3.pht000001.v2.p1.genspecphenotype.data_dict.xml
               # phs000001.v3.pht000374.v2.followup.data_dict.xml
               # phs000429.v1.pht002481.v1.areds_data_final_11.data_dict_2012_02_24.xml 
-              pattns = str_match(fileName, "(phs0+\\d+\\.v\\d+)\\.(.+)")
+              pattns = stringr::str_match(fileName, "(phs0+\\d+\\.v\\d+)\\.(.+)")
               fileStAccNoP = pattns[2]
 
-              pattns = str_match(fileName, "(pht0+\\d+\\.v\\d+)\\.(.+)\\.data_dict.*\\.xml$")
+              pattns = stringr::str_match(fileName, "(pht0+\\d+\\.v\\d+)\\.(.+)\\.data_dict.*\\.xml$")
               filePhtAccNoP = pattns[2]		# "pht000001.v2.p1"
               filePhtAbbrev = pattns[3]	# example: "genspecphenotype"
 
@@ -3779,7 +3801,7 @@ setMethod(
 
               if (phtAcc != "") {
 
-                  pattns = str_match(phtAcc, "^(pht0+)(\\d+)\\.v(\\d+)")
+                  pattns = stringr::str_match(phtAcc, "^(pht0+)(\\d+)\\.v(\\d+)")
                   phtAccIds <- list(phtAcc = pattns[1],  phtAccNoVer = pattns[2], phtAccId = pattns[3])
 
                   phtWithZero = pattns[2]
@@ -3833,7 +3855,7 @@ setMethod(
               phsAccIds = list()
 
               if (phsAcc != "") {
-                  pattns = str_match(phsAcc, "^(phs0+)(\\d+)\\.v(\\d+)$")
+                  pattns = stringr::str_match(phsAcc, "^(phs0+)(\\d+)\\.v(\\d+)$")
                   phsWithZero = pattns[2]
                   phsAccId = pattns[3]
                   phsAccNoVer = paste(phsWithZero, phsAccId, sep='')

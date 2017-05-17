@@ -486,7 +486,7 @@ setMethod(
               prjDataDir = object@prjDataDir
 
               # Check accession general format
-              pattns = str_match(acc, "^(ph)(\\w)\\d+")
+              pattns = stringr::str_match(acc, "^(ph)(\\w)\\d+")
               typePatt = pattns[3]    
 
               type = ''

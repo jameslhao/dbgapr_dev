@@ -38,50 +38,67 @@ setMethod(
 
               curTime <- Sys.time()
               confFile = object@configFile
+              prjDotDir = object@prjDotDir
 
-              if (is.null(confFile) == T) {
-                  confFile = ""
-              }
 
-              # Create dbgapr project dir
-              createOk = createPrjDir(object, prjDir)
+              if (dir.exists(prjDotDir)) {
 
-              if (createOk == TRUE) {
-
-                  ######################################
-                  # Create initial config dataframe
-                  ######################################
-                  # ATTN!
-                  # Only the initial creation of the configFile is done through this function.
-                  # All the further updates is carried out by creatPrjDir.
-                  if (!file.exists(confFile)) {
-                      
-                      id <- c(1)
-                      prj_dir <- I(c(prjDir))
-                      created <- as.POSIXlt(c(Sys.time()))
-                      updated <- as.POSIXlt(c(Sys.time()))
-                      current <- c('yes')
-                      confDF <- data.frame(id, prj_dir, current, created, updated)
-                      confJson <- toJSON(confDF, pretty=T)
-
-                      # Append json content
-                      write(confJson, file = confFile, ncolumns = if(is.character(confJson)) 1 else 5, append = F, sep = "\n")
-                      cat("\nThe dbgapr user project configuration file is created --- ", confFile, "\n")
-
-                      # Example json content
-
-                      # {
-                      #  "id": "4",
-                      #  "prj_dir": "/netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4",
-                      #  "current": "yes",
-                      #  "created": "2016-06-15 12:05:54",
-                      #  "updated": "2016-06-16 16:16:58"
-                      # },
-
+                  if (is.null(confFile) == T) {
+                      confFile = ""
                   }
+
+                  # Create dbgapr project dir
+                  createOk = createPrjDir(object, prjDir)
+
+
+                  if (createOk == TRUE) {
+
+                      ######################################
+                      # Create initial config dataframe
+                      ######################################
+                      # ATTN!
+                      # Only the initial creation of the configFile is done through this function.
+                      # All the further updates is carried out by creatPrjDir.
+
+                      if (!file.exists(confFile)) {
+
+
+                          id <- c(1)
+                          prj_dir <- I(c(prjDir))
+                          created <- as.POSIXlt(c(Sys.time()))
+                          updated <- as.POSIXlt(c(Sys.time()))
+                          current <- c('yes')
+                          confDF <- data.frame(id, prj_dir, current, created, updated)
+                          confJson <- toJSON(confDF, pretty=T)
+
+                          # Append json content
+                          write(confJson, file = confFile, ncolumns = if(is.character(confJson)) 1 else 5, append = F, sep = "\n")
+                          cat("\nThe dbgapr user project configuration file is created --- ", confFile, "\n")
+
+                          # Important reminder to users 
+                          message("\nBefore going forward, please run the command such as below to make the project directory change in effect.\nc <- Commons()\n") 
+
+                          # Example json content
+
+                          # {
+                              #  "id": "4",
+                              #  "prj_dir": "/netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4",
+                              #  "current": "yes",
+                              #  "created": "2016-06-15 12:05:54",
+                              #  "updated": "2016-06-16 16:16:58"
+                              # },
+
+                          }
+                      }
+
+                      return(createOk)
+              }
+              else {
+
+                  # 
+                  message("\nThe project config directory (~/ncbi/dbgapr_conf) is missing. It needs to be created through initializing the class Commons.\nExample command: c <- Commons()\n") 
               }
 
-              return(createOk)
           })
 
 
@@ -429,7 +446,7 @@ setMethod(
               userDataDir <- checkInputPath(object, userDataDir)
 
               # Trim head/tail spaces
-              userDataDir = str_trim(userDataDir)
+              userDataDir = stringr::str_trim(userDataDir)
               prjDotDir = object@prjDotDir
               prjDir = object@prjDir
 
@@ -1262,7 +1279,7 @@ setMethod(
               type = ''
 
               # Check accession general format
-              pattns = str_match(acc, "^(ph)(\\w)\\d+")
+              pattns = stringr::str_match(acc, "^(ph)(\\w)\\d+")
               typePatt = pattns[3]
 
               typeOk = FALSE 

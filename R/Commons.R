@@ -8,14 +8,14 @@ NULL
 #' The class contains the functions shared by all functions of the package. 
 #'
 #' @export Commons 
-#' @import stringr  
+
 #' @import jsonlite 
 #' @import gdata 
 #' @import XML 
 #' @import methods 
 #' @import curl 
 #' @import RCurl 
-#' @importFrom dplyr group_by do distinct 
+#' @importFrom dplyr group_by do distinct %>% 
 #' @importFrom grDevices dev.off rgb
 #' @importFrom stats complete.cases cor median sd
 #' @importFrom utils download.file untar head read.csv read.table write.csv write.table 
@@ -162,7 +162,6 @@ setMethod("initialize",
               # New! all-study-info file in dot dir
               extAllStudyInfoFile <- file.path(prjDotExtDataDir, 'all_released_study_info.txt.gz')
               
-
 
               .Object@prjDotDir <- prjDotDir
               .Object@configFile <- confFile 
