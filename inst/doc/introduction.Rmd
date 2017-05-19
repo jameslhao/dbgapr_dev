@@ -1,7 +1,7 @@
 ---
 title: "Introduction to dbgapr"
 author: "Luning Hao, NIH/NCBI/dbGaP"
-date: "2017-05-17"
+date: "2017-05-18"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::knitr}
@@ -309,9 +309,17 @@ dir("~/myprj/gapwork/data/phs000001/phs000001.v3/combined/log")
 
 ## View, Search, and Query  
 
+Note:
+
+> The dbGaP object accessions **can be used as input arguments with or without the p (participant) or c (consent) number**. This is true for study, dataset, and variable accessions. For example, the following various forms of the accessions are all acceptable:  
+> phs000001.v3, phs000001.v3.p1, phs000001.v3.p1.c1,   
+> pht000370.v2, pht000370.v2.p1, pht000370.v2.p1.c1,   
+> phv00054119.v1, phv00054119.v1.p1, phv00054119.v1.p1.c2  
+
 ###  Get dbGaP object info
 
 After data preparation is done, all the data and metadata are ready for search, view, and query by dbGap accessions. There are three types of the dbGaP objects related to phenotype data. They are study, dataset, and variable. To view the meta-info of an individual object, call `accInfo()` as below.  
+
 
 
 ```r
@@ -420,7 +428,7 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- getStudyVariableInfo(s)                   
 # or
 # display result as a table
-df <- getStudyVariableInfo(s, showAs='table')             ⋅
+df <- getStudyVariableInfo(s, showAs='table')
 # or
 # all dataset variables
 df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1')        
@@ -428,9 +436,9 @@ df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1')
 # all dataset variables of numerical type  
 df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1', dataType = 'num')
 # or     
-# a list of variables ⋅
-accList = c('phv00054119.v1.p1.c2', 'phv00054118.v1.p1')
-df <- getStudyVariableInfo(s, phvAccList=accList)   
+# a list of variables
+acc_list = c('phv00054119.v1.p1.c2', 'phv00054118.v1.p1')
+df <- getStudyVariableInfo(s, phvAccList=acc_list)   
 ```
 
 ### Search study variables by terms
@@ -479,7 +487,7 @@ s <- Study(phsAcc = 'phs000001.v3.p1')
 df <- getStudyVariableData(s, phtAcc='pht000370.v2.p1')
 # or
 # get data of a list of variables
-# acc_list = c('phv00054119.v1.p1.c2', 'phv00053733.v2'))
+# acc_list = c('phv00054119.v1.p1.c2', 'phv00053733.v2')
 df <- getStudyVariableData(s, phvAccList=acc_list)
 ```
 
@@ -720,12 +728,9 @@ The correlation graph between different categories of a given categorical variab
 
 ```r
 s <- Study(phsAcc='phs000001.v3.p1')            
-
-phvAcc = 'phv00000031.v2'
 cat_acc = 'phv00000035.v2'
-# or
 num_acc_list = c('phv00000007.v2', 'phv00053794.v2', 'phv00053786.v2', 'phv00000106.v2')
-df <- variableCorrelHeatmap(s, catPhvAcc=catPhvAcc, numPhvAccList=numPhvAcc_list cc_list))
+df <- variableCorrelHeatmap(s, catPhvAcc=cat_acc, numPhvAccList=num_acc_list)
 ```
 
 <img src="figure/correlmatrix_SCHOOL_phv00000035.v2_RCORBASE_phv00000007.v2_DT_LYC_phv00053794.v2_DT_VITE_phv00053786.v2_DIAS12_phv00000106.v2.png" title="plot of chunk unnamed-chunk-51" alt="plot of chunk unnamed-chunk-51" width="600px" />

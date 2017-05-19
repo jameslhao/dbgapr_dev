@@ -188,6 +188,7 @@ setMethod("initialize",
               .Object@lastComboInfoFile <- lastComboInfoFile 
 
 
+
               if (!dir.exists(prjDotDir)) {
                   dir.create(prjDotDir, showWarnings = TRUE, recursive = T, mode = "0777")
               }
@@ -222,12 +223,15 @@ setMethod("initialize",
               prjDir = '' 
               prjDataDir = '' 
               prjTempDir = '' 
+
+              # Note: 
+              # The 3 log dirs below are initialized at here, 
+              # but actual creation is implemented in getPrjDir() 
               procLogArchDir = '' 
               dataProcLog = '' 
               prjSetupLog = ''
 
               if (file.exists(confFile)) {
-
 
                   #########################################
                   # Get current prjDir
@@ -239,18 +243,27 @@ setMethod("initialize",
                   ########################################################################
                   # The physical directories  are created by PrjConfig and creatPrjDir 
                   ########################################################################
+                  
                   prjDirFiles = getPrjDir(.Object, showErr = TRUE)
 
                   # Current dir is the 1st item of the list 
                   # Example "C:\\Users\\mars\\Documents\\R_Dev\\my_dbgapr_project2"
                   prjDir = prjDirFiles$prjDir
 
+
+                  # Null prjDir means no prjDir created
+                  if (is.null(prjDir)) {
+                      prjDir = ""
+                  }
+
                   if (prjDir !=  "") {
+
                       prjDataDir = prjDirFiles$prjDataDir
                       prjTempDir = prjDirFiles$prjTempDir
                       procLogArchDir = prjDirFiles$procLogArchDir
                       dataProcLog = prjDirFiles$dataProcLog
                       prjSetupLog = prjDirFiles$prjSetupLog
+
 
                       # Pass to global
                       .Object@prjDir <- prjDir 
@@ -260,12 +273,6 @@ setMethod("initialize",
                       .Object@dataProcLog <- dataProcLog 
                       .Object@prjSetupLog <- prjSetupLog 
 
-                      # Init the project_setup.log 
-                      type = 'setup'
-                      level = 'info'
-                      show = F
-                      mesg = paste("The project_setup.log is initialized", sep="") 
-                      writeLog(.Object,  type = type, level = level, message = mesg, show = show) 
 
                       if (file.exists(prjSetupLog)) {
                           ############################################
@@ -281,22 +288,14 @@ setMethod("initialize",
                       }
 
                       cat("Class Commons is initialized.\n")
-                  }
-                  else {
-                      type = 'setup'
-                      level = 'error'
-                      show = T
-                      mesg = paste("The current project directory info is missing form the project config file. Checkout ?prjConfig to see how to create it.", sep="")
-                      writeLog(.Object,  type = type, level = level, message = mesg, show = show)
-                  }
 
-              } # end: if (is.null(prjDir))
+                  } # end prjDir != "" 
+
+
+              } # end: file.exists(confFile) 
               else {
-                  type = 'setup'
-                  level = 'error'
-                  show = F
                   mesg = paste("The project config file is not found. Checkout ?prjConfig to see how to create it.", sep="")
-                  writeLog(.Object,  type = type, level = level, message = mesg, show = show)
+                  cat(mesg)
               }
 
               .Object

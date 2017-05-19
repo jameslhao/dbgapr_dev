@@ -207,65 +207,69 @@ setMethod(
                       
                       varCodeValDF <- getExtData(object, type = 'code', phsAcc = phsAcc)
 
-                      #############################
-                      # Console Display Json
-                      #############################
-                      if (showTable == TRUE) {
-                          #dfInList = list(phvInfoDF)
-                          #saveTempAndDisplayJson(object, dfInList = dfInList, editor=editor)
-                          displayTable(object, data = phvInfoDF) 
+                      if (!is.null(varCodeValDF)) {
+
+                          #############################
+                          # Console Display Json
+                          #############################
+                          if (showTable == TRUE) {
+                              #dfInList = list(phvInfoDF)
+                              #saveTempAndDisplayJson(object, dfInList = dfInList, editor=editor)
+                              displayTable(object, data = phvInfoDF) 
+                          }
+                          else {
+                              if (showBrief == TRUE) {
+
+                                  # Process each row of the phvInfoDF and display in plain-text
+                                  cat("\n")
+                                  cat("Variable Info:\n")
+                                  lapply(split(phvInfoDF,1:nrow(phvInfoDF)), function(rowDF) {
+
+                                      varAcc <- unlist(rowDF$variable_accession)
+                                      varName <- unlist(rowDF$name)
+                                      varType <- rowDF$calculated_type
+                                      varUnit <- rowDF$units
+                                      #varCodeVal <- rowDF$code_value_combo
+                                      varDesc <- trim(paste(rowDF$description, collapse=""))
+
+
+                                      ###############################
+                                      # Build variable CodeValCombo
+                                      ###############################
+                                      codeValCombo <- buildVarCodeValCombo(object, catVarAcc = varAcc, varCodeValDF = varCodeValDF)
+
+                                      # Replace '|' with ' | ' for better display
+                                      codeValCombo <- gsub("\\|", " \\| ", codeValCombo)
+
+                                      ##########################
+                                      # Left justified dsiplay
+                                      ##########################
+
+                                      if (is.na(codeValCombo)) {
+                                          str1 <- paste(varName, " (", varAcc, ") [", varType, "]  :\n",  sep="")
+                                          display <- sprintf("  %2s", c(str1, varDesc)) # left justified
+                                          cat(display)
+                                      }
+                                      else {
+                                          str1 <- paste(varName, " (", varAcc, ") [", varType, "]  :\n",  sep="")
+                                          display <- sprintf("  %2s", c(str1, varDesc)) # left justified
+                                          cat(display)
+                                          cat("\n")
+
+                                          # display CodeValCombo
+                                          str2 <- paste("code value  :\n", sep="")
+                                          display <- sprintf("  %2s", c(str2, codeValCombo)) # left justified
+                                          cat(display)
+                                      }
+                                      cat("\n\n")
+                                  })
+                              } 
+                          }
+
+                          ##### Return Dataframe #####
+                          return (invisible(phvInfoDF)) 
                       }
-                      else {
-                          if (showBrief == TRUE) {
 
-                              # Process each row of the phvInfoDF and display in plain-text
-                              cat("\n")
-                              cat("Variable Info:\n")
-                              lapply(split(phvInfoDF,1:nrow(phvInfoDF)), function(rowDF) {
-
-                                         varAcc <- unlist(rowDF$variable_accession)
-                                         varName <- unlist(rowDF$name)
-                                         varType <- rowDF$calculated_type
-                                         varUnit <- rowDF$units
-                                         #varCodeVal <- rowDF$code_value_combo
-                                         varDesc <- trim(paste(rowDF$description, collapse=""))
-
-
-                                         ###############################
-                                         # Build variable CodeValCombo
-                                         ###############################
-                                         codeValCombo <- buildVarCodeValCombo(object, catVarAcc = varAcc, varCodeValDF = varCodeValDF)
-
-                                         # Replace '|' with ' | ' for better display
-                                         codeValCombo <- gsub("\\|", " \\| ", codeValCombo)
-
-                                         ##########################
-                                         # Left justified dsiplay
-                                         ##########################
-
-                                         if (is.na(codeValCombo)) {
-                                             str1 <- paste(varName, " (", varAcc, ") [", varType, "]  :\n",  sep="")
-                                             display <- sprintf("  %2s", c(str1, varDesc)) # left justified
-                                             cat(display)
-                                         }
-                                         else {
-                                             str1 <- paste(varName, " (", varAcc, ") [", varType, "]  :\n",  sep="")
-                                             display <- sprintf("  %2s", c(str1, varDesc)) # left justified
-                                             cat(display)
-                                             cat("\n")
-
-                                             # display CodeValCombo
-                                             str2 <- paste("code value  :\n", sep="")
-                                             display <- sprintf("  %2s", c(str2, codeValCombo)) # left justified
-                                             cat(display)
-                                         }
-                                         cat("\n\n")
-})
-                          } 
-                      }
-
-                      ##### Return Dataframe #####
-                      return (invisible(phvInfoDF)) 
                   }
                   else {
                       cat("\n")
@@ -408,36 +412,52 @@ setMethod(
 
               phsAcc = object@phsAcc
 
+
+              # Remove p# and c# if exist
+              temp_list <- sapply(phvAccList, function(acc){
+                  # Remove p#, c# if exists
+                  acc <- gsub("(\\.p\\d+).*$", "", acc)
+
+                  # Trim heading and trailing space
+                  acc <- trimws(acc)
+                })
+
+                phvAccList <- as.vector(temp_list)
+
               ###########################
               # Get all vairable list
               ###########################
               studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc)
-              subDF <- unique(studyDataDicInfo['variable_accession'])
-              allVarList <- subDF[['variable_accession']] 
 
-              ##################################################################
-              # Fiind out the items in phvAccList but not in allVarList
-              ##################################################################
-              notInAllList <- setdiff(phvAccList, allVarList) 
-              cleanPhvAccList <- setdiff(phvAccList, notInAllList)
+              if (!is.null(studyDataDicInfo)) {
 
-              if (length(cleanPhvAccList) > 0 ) {
-                  validPhvCombo = paste(cleanPhvAccList, collapse = ", ")
-                  errmsg = paste("[INFO] Valid variables: ", validPhvCombo, "\n", sep="")
-                  #cat(errmsg)
-              }
-              else {
-                  errmsg = paste("[ERROR] No valid variable found in the input variable accession list. Check to make sure the input variables belong to the class study.", sep="")
-                  message(errmsg)
-              }
-              if (length(notInAllList) > 0) {
-                  inValidPhvCombo = paste(notInAllList, collapse = ", ")
-                  errmsg = paste("[INFO] Invalid variables: ", inValidPhvCombo, sep="")
-                  cat(errmsg)
-                  cat("\n")
-              }
+                  subDF <- unique(studyDataDicInfo['variable_accession'])
+                  allVarList <- subDF[['variable_accession']] 
 
-              return(cleanPhvAccList)
+                  ##################################################################
+                  # Fiind out the items in phvAccList but not in allVarList
+                  ##################################################################
+                  notInAllList <- setdiff(phvAccList, allVarList) 
+                  cleanPhvAccList <- setdiff(phvAccList, notInAllList)
+
+                  if (length(cleanPhvAccList) > 0 ) {
+                      validPhvCombo = paste(cleanPhvAccList, collapse = ", ")
+                      errmsg = paste("[INFO] Valid variables: ", validPhvCombo, "\n", sep="")
+                      #cat(errmsg)
+                  }
+                  else {
+                      errmsg = paste("[ERROR] No valid variable found in the input variable accession list. Check to make sure the input variables belong to the class study.", sep="")
+                      message(errmsg)
+                  }
+                  if (length(notInAllList) > 0) {
+                      inValidPhvCombo = paste(notInAllList, collapse = ", ")
+                      errmsg = paste("[INFO] Invalid variables: ", inValidPhvCombo, sep="")
+                      cat(errmsg)
+                      cat("\n")
+                  }
+
+                  return(cleanPhvAccList)
+              }
           })
 
 
@@ -523,27 +543,32 @@ setMethod(
                       # New!
                       studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc)
 
-                      # Dataset
-                      if (type == 'pht') {
-                          matchInfoDF <- subset(studyDataDicInfo, studyDataDicInfo$study_accession== phsAcc & studyDataDicInfo$dataset_accession == acc, select = c('study_accession')) 
-                      }
-                      # Variable
-                      else {
-                          matchInfoDF <- subset(studyDataDicInfo, studyDataDicInfo$study_accession == phsAcc & studyDataDicInfo$variable_accession == acc, select = c('study_accession'))
-                      }
-                      # Get unique value 
-                      matchStudyAcc <- toString(matchInfoDF[!duplicated(matchInfoDF), ])
+                      if (!is.null(studyDataDicInfo)) {
 
-                      if (nchar(matchStudyAcc) == 0) {
-                          type = 'process'
-                          level = 'error'
-                          show = T
-                          mesg = paste("The input accession ", acc, " does not belong to the class study ", phsAcc, sep="")
-                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                          # Dataset
+                          if (type == 'pht') {
+                              matchInfoDF <- subset(studyDataDicInfo, studyDataDicInfo$study_accession== phsAcc & studyDataDicInfo$dataset_accession == acc, select = c('study_accession')) 
+                          }
+                          # Variable
+                          else {
+                              matchInfoDF <- subset(studyDataDicInfo, studyDataDicInfo$study_accession == phsAcc & studyDataDicInfo$variable_accession == acc, select = c('study_accession'))
+                          }
+                          # Get unique value 
+                          matchStudyAcc <- toString(matchInfoDF[!duplicated(matchInfoDF), ])
+
+                          if (nchar(matchStudyAcc) == 0) {
+                              type = 'process'
+                              level = 'error'
+                              show = T
+                              mesg = paste("The input accession ", acc, " does not belong to the class study ", phsAcc, sep="")
+                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                          }
+                          else {
+                              return(invisible(matchStudyAcc))
+                          }
+
                       }
-                      else {
-                          return(invisible(matchStudyAcc))
-                      }
+
 
                   } # end type ==
               } # end acc != ''
@@ -622,306 +647,315 @@ setMethod(
               # Get data-dic info
               studyDataDicDF <- getDataDicByStudy(object, phsAcc) 
 
-              if (phtAcc != "") {
+              if (!is.null(studyDataDicDF)) {
 
-                  inputObjPhsAcc <- checkObjStudyByAcc(object, acc = phtAcc)
+                  if (phtAcc != "") {
 
-                  if (!is.null(inputObjPhsAcc)) {
+                      inputObjPhsAcc <- checkObjStudyByAcc(object, acc = phtAcc)
 
-                      if (phsAcc == inputObjPhsAcc) {
+                      if (!is.null(inputObjPhsAcc)) {
 
-
-                          phsAcc = object@phsAcc
-                          prjDir = object@prjDir
-                          prjDataDir = object@prjDataDir
-                          studyDir = file.path(prjDir, "gapwork", "data", phsAcc)
-                          prjDotDir = object@prjDotDir
-                          fileInfoFile = object@fileInfoFile
-                          extDataDir = object@extDataDir 
-
-                          # Get Ids from accesssion 
-                          parseIdsFromStAcc =  parseIdsFromStAcc(object, phsAcc = phsAcc)
-                          phsAccNoVer = parseIdsFromStAcc$phsAccNoVer
-                          phtAccIds = parseIdsFromPhtAcc(object, phtAcc = phtAcc)
-                          phtAccId <- phtAccIds$phtAccId
-                          phtAccVer <- phtAccIds$phtAccVer
-
-                          ######################
-                          # Get sharedIdVar
-                          ######################
-                          #extPhenoSharedIdNamesFile = object@extPhenoSharedIdNamesFile 
-                          #phenoSharedIdNames <- read.table(extPhenoSharedIdNamesFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8") 
-
-                          # Get sharedVariableName
-                          #specialVarDF <- phenoSharedIdNames   # ATTN!! phenoSharedIdNames rda under the data/ directory
+                          if (phsAcc == inputObjPhsAcc) {
 
 
-                          # ExtData sharedIdNames
-                          # New!
-                          specialVarDF <- getExtData(object, type = 'id', phsAcc = phsAcc)
+                              phsAcc = object@phsAcc
+                              prjDir = object@prjDir
+                              prjDataDir = object@prjDataDir
+                              studyDir = file.path(prjDir, "gapwork", "data", phsAcc)
+                              prjDotDir = object@prjDotDir
+                              fileInfoFile = object@fileInfoFile
+                              extDataDir = object@extDataDir 
 
-                          sharedVarSet <- subset(specialVarDF, specialVarDF$dataset_id == phtAccId & specialVarDF$dataset_version == phtAccVer & specialVarDF$subject_or_sample == 'subject') 
+                              # Get Ids from accesssion 
+                              parseIdsFromStAcc =  parseIdsFromStAcc(object, phsAcc = phsAcc)
+                              phsAccNoVer = parseIdsFromStAcc$phsAccNoVer
+                              phtAccIds = parseIdsFromPhtAcc(object, phtAcc = phtAcc)
+                              phtAccId <- phtAccIds$phtAccId
+                              phtAccVer <- phtAccIds$phtAccVer
 
-                          sharedVarSubset = head(sharedVarSet, 1)
-                          #specialVarName = subset(sharedVarSubset, select = c("variable_name"))$variable_name
-                          #specialVarId = subset(sharedVarSubset, select = c("variable_id"))$variable_id
-                          specialVarName = sharedVarSubset[["variable_name"]]
-                          specialVarId = sharedVarSubset[["variable_id"]]
+                              ######################
+                              # Get sharedIdVar
+                              ######################
+                              #extPhenoSharedIdNamesFile = object@extPhenoSharedIdNamesFile 
+                              #phenoSharedIdNames <- read.table(extPhenoSharedIdNamesFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8") 
 
-
-                          ###############################################
-                          # Compose path to study pht combo info json 
-                          ###############################################
-                          # Study pht info file
-                          # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/phs000651/phs000651.v7/combined/log/phs000651.v7_study_pht_combo_info.json
-                          phtComboInfoFileName = paste(phsAcc, "_study_pht_combo_info.json", sep="")
-                          phtComboInfoFile = file.path(prjDataDir, phsAccNoVer, phsAcc, 'combined', 'log', phtComboInfoFileName) 
-
-                          if (file.exists(phtComboInfoFile)) {
-
-                              phtComboInfoDF <- fromJSON(phtComboInfoFile, flatten=TRUE)
-                              matchPhtComoInfoDF = subset(phtComboInfoDF, phtComboInfoDF$fPhtAcc == phtAcc)
-
-                              if (nrow(matchPhtComoInfoDF) > 0) {
-                                  matchPathToComboFile = toString(matchPhtComoInfoDF$pathToFile)		# needs to convert to string
-
-                                  if (file.exists(matchPathToComboFile)) {
-
-                                      phtComboDataDF <- read.table(matchPathToComboFile, header = T, fill = TRUE, sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8") 
-                                      ######################
-                                      # Rename ID columns
-                                      ######################
-                                      firstColName = colnames(phtComboDataDF)[1]
-
-                                      # Test if the 1st column is not dbGaP subject id such as pht002481.v1 of phs000429.v1
-                                      matchGapSubjId <- grepl("dbgap.*subj.*$", firstColName, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
-
-                                      ###### Deal with the file that has dbgap_sample_id as the 1st column ######
-                                      # such as: phs000651.v7_pht003525.v4_union_c1-c2.txt 
-                                      # The 1st two columns are "dbGaP_Sample_ID" "SAMPID"
-
-                                      ###### Check 1st column name to see if it is a sample-id column #####
-                                      matchColName <- grep("subj", firstColName ,ignore.case=TRUE,value=TRUE)
-
-                                      if(identical(matchColName, character(0))) {
-                                          cat("\n")
-                                          type = 'process'
-                                          level = 'warn'
-                                          show = F
-                                          mesg = paste("The 1st column of the dataset file is not dbgap_subject_id column ", phtAcc, "\n", sep="")
-                                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
-                                      }
-                                      else {
-
-                                          #################################
-                                          # ATTN! Special case 
-                                          #################################
-                                          # When 1st column is not dbGaP subject id such as pht002481.v1 of phs000429.v1
-                                          firstColName = colnames(phtComboDataDF)[1]
-
-                                          finalVarDF <- data.frame()
-
-                                          # If dbGaP and submitted subj id columns both exist
-                                          if (matchGapSubjId) {
-
-                                              # Note: When 1st col is dbGaP subject id column, the submitted id column may not be the 2nd col. 
-                                              # It could be somewhere in the middle.
-
-                                              # Set aprt of first, specialVar, and rest columns
-                                              firstCol = subset(phtComboDataDF, select=c(firstColName))
-                                              specialVarCol = subset(phtComboDataDF, select=c(specialVarName))
-                                              restColDF <- phtComboDataDF[, -c(1:1)] # delete columns 1 through 1
-
-                                              # Move existing specialVarCol in restColDF to first position 
-                                              # Example: pht003554.v4 of phs000572.v7
-                                              # "SUBJID" "FamID" "Sex" "AD" ... "Race" "Ethnicity" "dataset_consent" 
-                                              df <- restColDF
-                                              specialVarAndRestColDF <- df[,c(which(colnames(df)==specialVarName),which(colnames(df)!=specialVarName))]
+                              # Get sharedVariableName
+                              #specialVarDF <- phenoSharedIdNames   # ATTN!! phenoSharedIdNames rda under the data/ directory
 
 
-                                              # Append Submitted_Subject_ID col to it
-                                              # Example:
-                                              # "Submitted_Subject_ID" "SUBJID" "FamID" ... "Race" "Ethnicity" "dataset_consent"
-                                              specialVarAndRestColDF['Submitted_Subject_ID'] <-specialVarCol 
-                                              # Move it to first position
-                                              df <- specialVarAndRestColDF 
-                                              specialVarAndRestColDF <- df[,c(which(colnames(df)=="Submitted_Subject_ID"),which(colnames(df)!="Submitted_Subject_ID"))]
+                              # ExtData sharedIdNames
+                              # New!
+                              specialVarDF <- getExtData(object, type = 'id', phsAcc = phsAcc)
+
+                              if (!is.null(specialVarDF)) {
+
+                                  sharedVarSet <- subset(specialVarDF, specialVarDF$dataset_id == phtAccId & specialVarDF$dataset_version == phtAccVer & specialVarDF$subject_or_sample == 'subject') 
+
+                                  sharedVarSubset = head(sharedVarSet, 1)
+                                  #specialVarName = subset(sharedVarSubset, select = c("variable_name"))$variable_name
+                                  #specialVarId = subset(sharedVarSubset, select = c("variable_id"))$variable_id
+                                  specialVarName = sharedVarSubset[["variable_name"]]
+                                  specialVarId = sharedVarSubset[["variable_id"]]
 
 
-                                              # Further append the firstCol and rename it to "dbGaP_Subject_ID"
-                                              # "dbGaP_Subject_ID" "Submitted_Subject_ID" "SUBJID" "FamID" "Sex" ..."Race" "Ethnicity" "dataset_consent"
-                                              specialVarAndRestColDF['dbGaP_Subject_ID'] <- firstCol 
-                                              df <- specialVarAndRestColDF 
-                                              finalVarDF <- df[,c(which(colnames(df)=="dbGaP_Subject_ID"),which(colnames(df)!="dbGaP_Subject_ID"))]
+                                  ###############################################
+                                  # Compose path to study pht combo info json 
+                                  ###############################################
+                                  # Study pht info file
+                                  # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/phs000651/phs000651.v7/combined/log/phs000651.v7_study_pht_combo_info.json
+                                  phtComboInfoFileName = paste(phsAcc, "_study_pht_combo_info.json", sep="")
+                                  phtComboInfoFile = file.path(prjDataDir, phsAccNoVer, phsAcc, 'combined', 'log', phtComboInfoFileName) 
+
+                                  if (file.exists(phtComboInfoFile)) {
+
+                                      phtComboInfoDF <- fromJSON(phtComboInfoFile, flatten=TRUE)
+                                      matchPhtComoInfoDF = subset(phtComboInfoDF, phtComboInfoDF$fPhtAcc == phtAcc)
+
+                                      if (nrow(matchPhtComoInfoDF) > 0) {
+                                          matchPathToComboFile = toString(matchPhtComoInfoDF$pathToFile)		# needs to convert to string
+
+                                          if (file.exists(matchPathToComboFile)) {
+
+                                              phtComboDataDF <- read.table(matchPathToComboFile, header = T, fill = TRUE, sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8") 
+                                              ######################
+                                              # Rename ID columns
+                                              ######################
+                                              firstColName = colnames(phtComboDataDF)[1]
+
+                                              # Test if the 1st column is not dbGaP subject id such as pht002481.v1 of phs000429.v1
+                                              matchGapSubjId <- grepl("dbgap.*subj.*$", firstColName, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
+
+                                              ###### Deal with the file that has dbgap_sample_id as the 1st column ######
+                                              # such as: phs000651.v7_pht003525.v4_union_c1-c2.txt 
+                                              # The 1st two columns are "dbGaP_Sample_ID" "SAMPID"
+
+                                              ###### Check 1st column name to see if it is a sample-id column #####
+                                              matchColName <- grep("subj", firstColName ,ignore.case=TRUE,value=TRUE)
+
+                                              if(identical(matchColName, character(0))) {
+                                                  cat("\n")
+                                                  type = 'process'
+                                                  level = 'warn'
+                                                  show = F
+                                                  mesg = paste("The 1st column of the dataset file is not dbgap_subject_id column ", phtAcc, "\n", sep="")
+                                                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                              }
+                                              else {
+
+                                                  #################################
+                                                  # ATTN! Special case 
+                                                  #################################
+                                                  # When 1st column is not dbGaP subject id such as pht002481.v1 of phs000429.v1
+                                                  firstColName = colnames(phtComboDataDF)[1]
+
+                                                  finalVarDF <- data.frame()
+
+                                                  # If dbGaP and submitted subj id columns both exist
+                                                  if (matchGapSubjId) {
+
+                                                      # Note: When 1st col is dbGaP subject id column, the submitted id column may not be the 2nd col. 
+                                                      # It could be somewhere in the middle.
+
+                                                      # Set aprt of first, specialVar, and rest columns
+                                                      firstCol = subset(phtComboDataDF, select=c(firstColName))
+                                                      specialVarCol = subset(phtComboDataDF, select=c(specialVarName))
+                                                      restColDF <- phtComboDataDF[, -c(1:1)] # delete columns 1 through 1
+
+                                                      # Move existing specialVarCol in restColDF to first position 
+                                                      # Example: pht003554.v4 of phs000572.v7
+                                                      # "SUBJID" "FamID" "Sex" "AD" ... "Race" "Ethnicity" "dataset_consent" 
+                                                      df <- restColDF
+                                                      specialVarAndRestColDF <- df[,c(which(colnames(df)==specialVarName),which(colnames(df)!=specialVarName))]
 
 
-                                              # Final output example: ( pht000371.v2, phs000001.v3)
-                                              # dbGaP_Subject_ID Submitted_Subject_ID  ID2 HASGENSP AMDSTAT CATARACT COR LPSCBASE
-                                              # 1            52465                 G380 G380        Y      12        9   2        0
-                                              # 2            52618                 G543 G543        Y       6        1   0        0
-
-                                          }
-                                          # If only submitted subj id column exists
-                                          else {
-                                              firstCol = subset(phtComboDataDF, select=c(firstColName))
-
-                                              # Append Submitted_Subject_ID col to the comboDF 
-                                              phtComboDataDF['Submitted_Subject_ID'] <-firstCol 
-                                              # Move it to first position
-                                              df <- phtComboDataDF 
-                                              finalVarDF <- df[,c(which(colnames(df)=="Submitted_Subject_ID"),which(colnames(df)!="Submitted_Subject_ID"))]
-
-                                              # Final output example: (pht002481.v1 of phs000429.v1)
-                                              # Submitted_Subject_ID SUBJID case_control SEX SCHOOL ENROLLAGE WHITE axisrr axisrl
-                                              # 1                 G004   G004            0   2      5        61     1      0    165
-                                              # 2                 G005   G005            0   2      1        70     1     90     85
-
-                                          }
-
-                                          # Continue only if fltered data.frame is not empty
+                                                      # Append Submitted_Subject_ID col to it
+                                                      # Example:
+                                                      # "Submitted_Subject_ID" "SUBJID" "FamID" ... "Race" "Ethnicity" "dataset_consent"
+                                                      specialVarAndRestColDF['Submitted_Subject_ID'] <-specialVarCol 
+                                                      # Move it to first position
+                                                      df <- specialVarAndRestColDF 
+                                                      specialVarAndRestColDF <- df[,c(which(colnames(df)=="Submitted_Subject_ID"),which(colnames(df)!="Submitted_Subject_ID"))]
 
 
-                                          if (nrow(finalVarDF) > 0) {
-
-                                              #####################################
-                                              # Make column name a NameAcc Combo
-                                              # By further processing finalVarDF
-                                              #####################################
-
-                                              ##########################
-                                              # Get Variable-Meta Info 
-                                              ##########################
-                                              studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc)
-
-                                              if (nrow(studyDataDicInfo) > 0) {
-
-                                                  ################################################################
-                                                  # Parse out phvAccList from info-header of Indiv dataset file
-                                                  ################################################################
-                                                  fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
-                                                  thisFileInfoDF <- dplyr::filter(fileInfoDF, fileInfoDF$fPhtAcc == phtAcc & fileInfoDF$consentType == 'Indiv')
-                                                  pathToFile = thisFileInfoDF$pathToFile[1]
-                                                  multiType = 'Not'
-                                                  headerInfoSets = parsePhtHeaderFromFile(object, phtFile = pathToFile, phtFileType = multiType) 
-                                                  fieldPhvs = headerInfoSets[1]
-
-                                                  # Remove p#.c# of each item in the list 
-                                                  # phv00195355.v4.p4.c1 to phv00195355.v4
-                                                  cleanFieldPhvs <- sapply(fieldPhvs, function(x) gsub("\\.p\\d+.*$", "", x), simplify=F)
-
-                                                  #######################################################################
-                                                  # Move specialVarPhv to the front of the list of cleanFieldPhvs
-                                                  #######################################################################
-                                                  # Note: The speicalVar column in a dataset (pht) table may not be the first column
-                                                  # after the ID columns. 
-
-                                                  # Get vector item match specialVarId
-                                                  # Return logical vector
-                                                  # [1] FALSE FALSE FALSE FALSE  TRUE FALSE ...
-                                                  pattn = paste0("phv0*", specialVarId)
-                                                  logicPhvs <- sapply(cleanFieldPhvs, function(x) grepl(pattn, x), simplify=F)[[1]]
-                                                  # Get TRUE index of the logical vector 
-                                                  svIndex <- which(ll <- logicPhvs) 
-                                                  # Example: phv00053742.v2  (ID2)
-                                                  svPhvAcc <- cleanFieldPhvs[[1]][svIndex]
-
-                                                  # Get specialVar item only
-                                                  x <-  cleanFieldPhvs[[1]]
-                                                  # Remove specialVar item
-                                                  x<-x[-which(x==svPhvAcc)]
-                                                  # Combine two vector and now speicalVarPhvAcc is the 1st item
-                                                  finalFieldPhvs <- c(svPhvAcc, x)
+                                                      # Further append the firstCol and rename it to "dbGaP_Subject_ID"
+                                                      # "dbGaP_Subject_ID" "Submitted_Subject_ID" "SUBJID" "FamID" "Sex" ..."Race" "Ethnicity" "dataset_consent"
+                                                      specialVarAndRestColDF['dbGaP_Subject_ID'] <- firstCol 
+                                                      df <- specialVarAndRestColDF 
+                                                      finalVarDF <- df[,c(which(colnames(df)=="dbGaP_Subject_ID"),which(colnames(df)!="dbGaP_Subject_ID"))]
 
 
-                                                  ################################
-                                                  # Compose varNameAccCombo list
-                                                  ################################
-                                                  # Important! To speed up, make sure checkList is FALSE.
-                                                  varNameAccComboList <- getVarNameAccCombos(object, phvAccList = finalFieldPhvs, studyDataDicDF = studyDataDicDF, checkList = FALSE)
-
-                                                  # Display column names as combo
-                                                  newColName = vector()
-
-                                                  # Note: newVarNameList already has specialVarName, so only additional fileds needed are
-                                                  # 'dbGaP_Subject_ID', 'Submitted_Subject_ID' at the begining, and "dataset_consent" at the end.
-                                                  if (colNameWithAcc == T) {
-
-                                                      if(matchGapSubjId) {
-
-                                                          # Add starting id columns and ending dataset_consent columns 
-                                                          newColNames = c('dbGaP_Subject_ID', 'Submitted_Subject_ID', varNameAccComboList, "dataset_consent")
-                                                          #newColNames = c('dbGaP_Subject_ID', 'Submitted_Subject_ID', varNameAccComboList, "dataset_consent")
-
-                                                      }
-                                                      else {
-                                                          #newColNames = c('Submitted_Subject_ID', varNameAccComboList, "dataset_consent")
-                                                          newColNames = c('Submitted_Subject_ID', varNameAccComboList, "dataset_consent")
-                                                      }
-                                                      colnames(finalVarDF) <- newColNames
+                                                      # Final output example: ( pht000371.v2, phs000001.v3)
+                                                      # dbGaP_Subject_ID Submitted_Subject_ID  ID2 HASGENSP AMDSTAT CATARACT COR LPSCBASE
+                                                      # 1            52465                 G380 G380        Y      12        9   2        0
+                                                      # 2            52618                 G543 G543        Y       6        1   0        0
 
                                                   }
+                                                  # If only submitted subj id column exists
                                                   else {
-                                                      # Strip Acc from varNameAccCombo and add .num extension for duplicate items
-                                                      # From 
-                                                      # 'AGEPHOT_phv00000027.v2', 'LNUCSCORE_phv00053747.v2', 'LNUCSCORE_phv00000006.v2', 'DIABAGE_phv00054122.v1'
-                                                      # to
-                                                      # "AGEPHOT"     "LNUCSCORE"   "LNUCSCORE.1" "DIABAGE"
-                                                      newVarNameList <- stripColNameAcc(object, colNameAccList = unlist(varNameAccComboList)) 
+                                                      firstCol = subset(phtComboDataDF, select=c(firstColName))
 
-                                                      if(matchGapSubjId) {
-                                                          newColNames = c('dbGaP_Subject_ID', 'Submitted_Subject_ID', newVarNameList, "dataset_consent")
-                                                      }
-                                                      else {
-                                                          newColNames = c('Submitted_Subject_ID', newVarNameList, "dataset_consent")
-                                                      }
-                                                      colnames(finalVarDF) <- newColNames
+                                                      # Append Submitted_Subject_ID col to the comboDF 
+                                                      phtComboDataDF['Submitted_Subject_ID'] <-firstCol 
+                                                      # Move it to first position
+                                                      df <- phtComboDataDF 
+                                                      finalVarDF <- df[,c(which(colnames(df)=="Submitted_Subject_ID"),which(colnames(df)!="Submitted_Subject_ID"))]
+
+                                                      # Final output example: (pht002481.v1 of phs000429.v1)
+                                                      # Submitted_Subject_ID SUBJID case_control SEX SCHOOL ENROLLAGE WHITE axisrr axisrl
+                                                      # 1                 G004   G004            0   2      5        61     1      0    165
+                                                      # 2                 G005   G005            0   2      1        70     1     90     85
 
                                                   }
+
+                                                  # Continue only if fltered data.frame is not empty
+
+
+                                                  if (nrow(finalVarDF) > 0) {
+
+                                                      #####################################
+                                                      # Make column name a NameAcc Combo
+                                                      # By further processing finalVarDF
+                                                      #####################################
+
+                                                      ##########################
+                                                      # Get Variable-Meta Info 
+                                                      ##########################
+                                                      studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc)
+
+                                                      if (nrow(studyDataDicInfo) > 0) {
+
+                                                          ################################################################
+                                                          # Parse out phvAccList from info-header of Indiv dataset file
+                                                          ################################################################
+                                                          fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
+                                                          thisFileInfoDF <- dplyr::filter(fileInfoDF, fileInfoDF$fPhtAcc == phtAcc & fileInfoDF$consentType == 'Indiv')
+                                                          pathToFile = thisFileInfoDF$pathToFile[1]
+                                                          multiType = 'Not'
+                                                          headerInfoSets = parsePhtHeaderFromFile(object, phtFile = pathToFile, phtFileType = multiType) 
+                                                          fieldPhvs = headerInfoSets[1]
+
+                                                          # Remove p#.c# of each item in the list 
+                                                          # phv00195355.v4.p4.c1 to phv00195355.v4
+                                                          cleanFieldPhvs <- sapply(fieldPhvs, function(x) gsub("\\.p\\d+.*$", "", x), simplify=F)
+
+                                                          #######################################################################
+                                                          # Move specialVarPhv to the front of the list of cleanFieldPhvs
+                                                          #######################################################################
+                                                          # Note: The speicalVar column in a dataset (pht) table may not be the first column
+                                                          # after the ID columns. 
+
+                                                          # Get vector item match specialVarId
+                                                          # Return logical vector
+                                                          # [1] FALSE FALSE FALSE FALSE  TRUE FALSE ...
+                                                          pattn = paste0("phv0*", specialVarId)
+                                                          logicPhvs <- sapply(cleanFieldPhvs, function(x) grepl(pattn, x), simplify=F)[[1]]
+                                                          # Get TRUE index of the logical vector 
+                                                          svIndex <- which(ll <- logicPhvs) 
+                                                          # Example: phv00053742.v2  (ID2)
+                                                          svPhvAcc <- cleanFieldPhvs[[1]][svIndex]
+
+                                                          # Get specialVar item only
+                                                          x <-  cleanFieldPhvs[[1]]
+                                                          # Remove specialVar item
+                                                          x<-x[-which(x==svPhvAcc)]
+                                                          # Combine two vector and now speicalVarPhvAcc is the 1st item
+                                                          finalFieldPhvs <- c(svPhvAcc, x)
+
+
+                                                          ################################
+                                                          # Compose varNameAccCombo list
+                                                          ################################
+                                                          # Important! To speed up, make sure checkList is FALSE.
+                                                          varNameAccComboList <- getVarNameAccCombos(object, phvAccList = finalFieldPhvs, studyDataDicDF = studyDataDicDF, checkList = FALSE)
+
+                                                          # Display column names as combo
+                                                          newColName = vector()
+
+                                                          # Note: newVarNameList already has specialVarName, so only additional fileds needed are
+                                                          # 'dbGaP_Subject_ID', 'Submitted_Subject_ID' at the begining, and "dataset_consent" at the end.
+                                                          if (colNameWithAcc == T) {
+
+                                                              if(matchGapSubjId) {
+
+                                                                  # Add starting id columns and ending dataset_consent columns 
+                                                                  newColNames = c('dbGaP_Subject_ID', 'Submitted_Subject_ID', varNameAccComboList, "dataset_consent")
+                                                                  #newColNames = c('dbGaP_Subject_ID', 'Submitted_Subject_ID', varNameAccComboList, "dataset_consent")
+
+                                                              }
+                                                              else {
+                                                                  #newColNames = c('Submitted_Subject_ID', varNameAccComboList, "dataset_consent")
+                                                                  newColNames = c('Submitted_Subject_ID', varNameAccComboList, "dataset_consent")
+                                                              }
+                                                              colnames(finalVarDF) <- newColNames
+
+                                                          }
+                                                          else {
+                                                              # Strip Acc from varNameAccCombo and add .num extension for duplicate items
+                                                              # From 
+                                                              # 'AGEPHOT_phv00000027.v2', 'LNUCSCORE_phv00053747.v2', 'LNUCSCORE_phv00000006.v2', 'DIABAGE_phv00054122.v1'
+                                                              # to
+                                                              # "AGEPHOT"     "LNUCSCORE"   "LNUCSCORE.1" "DIABAGE"
+                                                              newVarNameList <- stripColNameAcc(object, colNameAccList = unlist(varNameAccComboList)) 
+
+                                                              if(matchGapSubjId) {
+                                                                  newColNames = c('dbGaP_Subject_ID', 'Submitted_Subject_ID', newVarNameList, "dataset_consent")
+                                                              }
+                                                              else {
+                                                                  newColNames = c('Submitted_Subject_ID', newVarNameList, "dataset_consent")
+                                                              }
+                                                              colnames(finalVarDF) <- newColNames
+
+                                                          }
+
+                                                          return(finalVarDF)
+
+                                                      }
+
+                                                  } # end colNameWithAcc == TRUE 
 
                                                   return(finalVarDF)
 
-                                              }
 
-                                          } # end colNameWithAcc == TRUE 
+                                              } # end of identical(matchColName)
 
-                                          return(finalVarDF)
+                                          }
+                                          else {
+                                              cat("\n")
+                                              type = 'process'
+                                              level = 'error'
+                                              show = T
+                                              mesg = paste("The dataset data combo file is not found. Check ?searchMergeDatasetConsents to see how to create it. --- ", matchPathToComboFile, "\n", sep="")
+                                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                          }
 
-
-                                      } # end of identical(matchColName)
-
+                                      }
+                                      else {
+                                          cat("\n")
+                                          type = 'process'
+                                          level = 'error'
+                                          show = T
+                                          mesg = paste("The Study class is instantiated with the study accsssion ", phsAcc, ". The input dataset accession ", phtAcc, " however does not match any datasets available for the study.\n", sep="")
+                                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                      }
                                   }
                                   else {
                                       cat("\n")
                                       type = 'process'
                                       level = 'error'
                                       show = T
-                                      mesg = paste("The dataset data combo file is not found. Check ?searchMergeDatasetConsents to see how to create it. --- ", matchPathToComboFile, "\n", sep="")
+                                      mesg = paste("The dataset data combo info file is not found. Check ?searchMergeDatasetConsents to see how to create it. --- ", phtComboInfoFile, "\n", sep="")
                                       writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                   }
 
-                              }
-                              else {
-                                  cat("\n")
-                                  type = 'process'
-                                  level = 'error'
-                                  show = T
-                                  mesg = paste("The Study class is instantiated with the study accsssion ", phsAcc, ". The input dataset accession ", phtAcc, " however does not match any datasets available for the study.\n", sep="")
-                                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
-                              }
-                          }
-                          else {
-                              cat("\n")
-                              type = 'process'
-                              level = 'error'
-                              show = T
-                              mesg = paste("The dataset data combo info file is not found. Check ?searchMergeDatasetConsents to see how to create it. --- ", phtComboInfoFile, "\n", sep="")
-                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
-                          }
+                              } # end !is.null(specialVarDF)
 
-                      } # end ObjPhsAcc == phsAcc
-                  }
 
-              } # end phtAcc != ""
+                          } # end ObjPhsAcc == phsAcc
+                      }
+
+                  } # end phtAcc != ""
+              } # end !is.null(studyDataDicDF)
+
 
           })
 
@@ -1001,390 +1035,394 @@ setMethod(
                   # ExtData sharedIdNames
                   # New!
                   specialVarDF <- getExtData(object, type = 'id', phsAcc = phsAcc)
+                  allStudyInfo <- getExtData(object, type = 'study')
 
-                  # Get StudyDataDicDF
-                  parseIdsFromStAcc =  parseIdsFromStAcc(object, phsAcc = phsAcc)
-                  phsAccNoVer = parseIdsFromStAcc$phsAccNoVer
-                  studyDataDicDF <- getDataDicByStudy(object, phsAcc) 
 
-                  ##############################
-                  # Loop through each phvAcc 
-                  ##############################
-                  # to get respective dataset files and read merge the files 
-                  mergePhtFile <- function(phvAcc, phsAcc, dataDicDF, specialVarName){
+                  if (!is.null(specialVarDF) & !is.null(allStudyInfo)) {
 
-                      #inputObjPhsAcc <- checkObjStudyByAcc(object, acc = phvAcc)
-                      inputObjPhsAcc <- phsAcc 
+                      # Get StudyDataDicDF
+                      parseIdsFromStAcc =  parseIdsFromStAcc(object, phsAcc = phsAcc)
+                      phsAccNoVer = parseIdsFromStAcc$phsAccNoVer
+                      studyDataDicDF <- getDataDicByStudy(object, phsAcc) 
 
-                      ###########################################
-                      # Look for matching phtAcc and phsAcc 
-                      ###########################################
-                      # Note: This could return multiple rows of different dataset_versions
-                      matchVarDF <- subset(dataDicDF,  dataDicDF$variable_accession==phvAcc) 
+                      ##############################
+                      # Loop through each phvAcc 
+                      ##############################
+                      # to get respective dataset files and read merge the files 
+                      mergePhtFile <- function(phvAcc, phsAcc, dataDicDF, specialVarName){
 
-                      #######################
-                      # Get phtAcc
-                      #######################
-                      # ATTN! Multiple rows may be returned due to multiple dataset version for a variable.
-                      # Randomly select the first phtAcc and use it to find out the avaiable one
-                      availPhtAcc = ""
-                      if (nrow(matchVarDF) > 1) {
-                          randPhtAcc <- matchVarDF$dataset_accession[1]
-                          # Get avaiable phtAcc
-                          availPhtAcc <- getAvailPhtVer(object, randPhtAcc=randPhtAcc, phsAcc=phsAcc)
-                      }
-                      else {
-                          availPhtAcc <- toString(matchVarDF$dataset_accession[1])
-                      }
-
-                      ###########################
-                      # Process column names  
-                      ############################
-                      if (!is.null(availPhtAcc)) {
-
-                          # Rest matchVarDF to the available dataset_version
-                          matchVarDF <- subset(matchVarDF,  matchVarDF$dataset_accession==availPhtAcc) 
-                          matchPhtAcc <- availPhtAcc 
-                          matchStAcc <- phsAcc
-
-                          matchVarName <- matchVarDF$name
-                          matchVarType <- matchVarDF$calculated_type
-
-                          # Get specialVarName given phtAcc, studyAcc
-                          # Parse ids from phsAcc
-                          parseIdsFromStAcc =  parseIdsFromStAcc(object, phsAcc = matchStAcc)
-                          matchStAccNoVer = parseIdsFromStAcc$phsAccNoVer
-                          matchStId = parseIdsFromStAcc$phsAccId
-                          matchStVer = parseIdsFromStAcc$phsAccVer
-
-                          # Parse ids from phtAcc
-                          phtAccIds = parseIdsFromPhtAcc(object, phtAcc = matchPhtAcc)
-                          matchPhtId = phtAccIds$phtAccId
-                          matchPhtVer = phtAccIds$phtAccVer
-
-                          # Compose path to pht file
-                          # Example location of pht info file:
-                          # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/phs000001/phs000001.v3.p1/combined/log/phs000001.v3.p1_study_pht_combo_info.json
-
+                          #inputObjPhsAcc <- checkObjStudyByAcc(object, acc = phvAcc)
+                          inputObjPhsAcc <- phsAcc 
 
                           ###########################################
-                          # Get Pht Data from Consent-Combined file
+                          # Look for matching phtAcc and phsAcc 
                           ###########################################
-                          phtInfoFileName = paste(matchStAcc, '_study_pht_combo_info.json', sep="")
-                          phtInfoFile = file.path(prjDataDir, matchStAccNoVer, matchStAcc, 'combined', 'log', phtInfoFileName) 
+                          # Note: This could return multiple rows of different dataset_versions
+                          matchVarDF <- subset(dataDicDF,  dataDicDF$variable_accession==phvAcc) 
 
-
-                          phtInfoFileDF <- fromJSON(phtInfoFile, flatten=TRUE)
-                          fileInfoMatchDF <- subset(phtInfoFileDF, phtInfoFileDF$fPhtAccNoP==matchPhtAcc) 
-                          pathToFile = unlist(fileInfoMatchDF$pathToFile)
-
-                          ##########################################
-                          # Decide whether convert empty to na
-                          ##########################################
-                          phtDataDF = ''
-
-                          if (emptyToNa == T) {
-                              ##########################
-                              # ATTN!!! Empty --> NA
-                              ##########################
-                              # ATTN!!! Read data with empty space value converted to NA
-
-                              ###### The combined csv data file is not .gz file, so read.csv works #####
-                              phtDataDF <- read.csv(file=pathToFile, header=TRUE, sep="\t", encoding="UTF-8", stringsAsFactors=FALSE, na.strings=c(""," ","NA"))
+                          #######################
+                          # Get phtAcc
+                          #######################
+                          # ATTN! Multiple rows may be returned due to multiple dataset version for a variable.
+                          # Randomly select the first phtAcc and use it to find out the avaiable one
+                          availPhtAcc = ""
+                          if (nrow(matchVarDF) > 1) {
+                              randPhtAcc <- matchVarDF$dataset_accession[1]
+                              # Get avaiable phtAcc
+                              availPhtAcc <- getAvailPhtVer(object, randPhtAcc=randPhtAcc, phsAcc=phsAcc)
                           }
                           else {
-                              phtDataDF <- read.csv(file=pathToFile, header=TRUE, sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
+                              availPhtAcc <- toString(matchVarDF$dataset_accession[1])
                           }
 
-                          firstColName = colnames(phtDataDF)[1] 
+                          ###########################
+                          # Process column names  
+                          ############################
+                          if (!is.null(availPhtAcc)) {
 
-                          ###### Check 1st column name to make sure it is a subj-id column #####
-                          subjIdColName <- grep("subj", firstColName ,ignore.case=TRUE,value=TRUE)
+                              # Rest matchVarDF to the available dataset_version
+                              matchVarDF <- subset(matchVarDF,  matchVarDF$dataset_accession==availPhtAcc) 
+                              matchPhtAcc <- availPhtAcc 
+                              matchStAcc <- phsAcc
+
+                              matchVarName <- matchVarDF$name
+                              matchVarType <- matchVarDF$calculated_type
+
+                              # Get specialVarName given phtAcc, studyAcc
+                              # Parse ids from phsAcc
+                              parseIdsFromStAcc =  parseIdsFromStAcc(object, phsAcc = matchStAcc)
+                              matchStAccNoVer = parseIdsFromStAcc$phsAccNoVer
+                              matchStId = parseIdsFromStAcc$phsAccId
+                              matchStVer = parseIdsFromStAcc$phsAccVer
+
+                              # Parse ids from phtAcc
+                              phtAccIds = parseIdsFromPhtAcc(object, phtAcc = matchPhtAcc)
+                              matchPhtId = phtAccIds$phtAccId
+                              matchPhtVer = phtAccIds$phtAccVer
+
+                              # Compose path to pht file
+                              # Example location of pht info file:
+                              # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/phs000001/phs000001.v3.p1/combined/log/phs000001.v3.p1_study_pht_combo_info.json
 
 
-                          # Report error if the 1st column does not contain 'subj'
-                          # No match
-                          if (length(subjIdColName) == 0) {
+                              ###########################################
+                              # Get Pht Data from Consent-Combined file
+                              ###########################################
+                              phtInfoFileName = paste(matchStAcc, '_study_pht_combo_info.json', sep="")
+                              phtInfoFile = file.path(prjDataDir, matchStAccNoVer, matchStAcc, 'combined', 'log', phtInfoFileName) 
+
+
+                              phtInfoFileDF <- fromJSON(phtInfoFile, flatten=TRUE)
+                              fileInfoMatchDF <- subset(phtInfoFileDF, phtInfoFileDF$fPhtAccNoP==matchPhtAcc) 
+                              pathToFile = unlist(fileInfoMatchDF$pathToFile)
+
+                              ##########################################
+                              # Decide whether convert empty to na
+                              ##########################################
+                              phtDataDF = ''
+
+                              if (emptyToNa == T) {
+                                  ##########################
+                                  # ATTN!!! Empty --> NA
+                                  ##########################
+                                  # ATTN!!! Read data with empty space value converted to NA
+
+                                  ###### The combined csv data file is not .gz file, so read.csv works #####
+                                  phtDataDF <- read.csv(file=pathToFile, header=TRUE, sep="\t", encoding="UTF-8", stringsAsFactors=FALSE, na.strings=c(""," ","NA"))
+                              }
+                              else {
+                                  phtDataDF <- read.csv(file=pathToFile, header=TRUE, sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
+                              }
+
+                              firstColName = colnames(phtDataDF)[1] 
+
+                              ###### Check 1st column name to make sure it is a subj-id column #####
+                              subjIdColName <- grep("subj", firstColName ,ignore.case=TRUE,value=TRUE)
+
+
+                              # Report error if the 1st column does not contain 'subj'
+                              # No match
+                              if (length(subjIdColName) == 0) {
+                                  type = 'process'
+                                  level = 'error'
+                                  show = F
+                                  mesg = paste("The dataset first column name does not match string 'subj'. PhtAcc: ", matchPhtAcc, " FilePath: ", pathToFile, sep="")
+                                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
+
+                                  return()
+                              }
+                              else {
+
+                                  # subset subjId and this variable columns
+                                  # such as colnames: "SUBJID"   "recylnum" 
+
+                                  #######################
+                                  # ATTN! Speical case
+                                  #######################
+                                  # Note: input phv could be itself a SubjID variable
+
+                                  if (firstColName != matchVarName) {
+
+                                      if (firstColName != specialVarName) {
+                                          subjIdThisVarDF = subset(phtDataDF, select = c(firstColName, specialVarName, matchVarName))  
+                                      }
+                                      else {
+                                          subjIdThisVarDF = subset(phtDataDF, select = c(firstColName, matchVarName))  
+                                      }
+                                  }
+                                  # When firstColName is matchVarName
+                                  else {
+                                      subjIdThisVarDF = subset(phtDataDF, select = c(firstColName))  
+                                  }
+
+                                  return (subjIdThisVarDF)
+                              }
+                          }
+                          else {
                               type = 'process'
                               level = 'error'
                               show = F
-                              mesg = paste("The dataset first column name does not match string 'subj'. PhtAcc: ", matchPhtAcc, " FilePath: ", pathToFile, sep="")
+                              mesg = paste("The input phvAcc ", phvAcc, " doesn't belong the defined study ", phsAcc, sep="")
                               writeLog(object,  type = type, level = level, message = mesg, show = show) 
 
-                              return()
+                              return(NULL)
+                          }
+
+                      } # end of mergePhtFile
+
+                      ####################################
+                      # Get root_study given this phsAcc 
+                      ####################################
+                      # ATTN! The specialIdName table is only available from parent study e.g phs000007 but not phs000282 or phs000401
+                      #extStudyInfoFile = object@extStudyInfoFile
+                      #rootAndThisStudyInfo <- read.table(extStudyInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8") 
+
+                      thisStudyInfo <- subset(allStudyInfo, allStudyInfo$this_study_accession==phsAcc) 
+                      thisStudyId = thisStudyInfo$this_study_id
+                      thisStudyVer = thisStudyInfo$this_study_version
+
+                      #rootStAcc = thisStudyInfo$root_study_accession
+
+                      ######################################
+                      # Get SpecialVarName (sharedId) 
+                      ######################################
+                      #parseIdsFromRootStAcc =  parseIdsFromStAcc(object, phsAcc = rootStAcc)
+                      #rootStAccNoVer = parseIdsFromRootStAcc$phsAccNoVer
+                      #rootStId = parseIdsFromRootStAcc$phsAccId
+                      #rootStVer = parseIdsFromRootStAcc$phsAccVer
+                      # Get match SpecialVarName
+                      #specialVarDF <- getExtData(object, type = 'id', phsAcc = phsAcc)
+
+                      # ATTN: the subject_or_smaple needs to be 'subject'
+                      matchspecialVarDF <- dplyr::filter(specialVarDF, specialVarDF$study_id==thisStudyId & specialVarDF$study_version==thisStudyVer & specialVarDF$subject_or_sample =='subject') 
+
+                      # Choose the 1st row from the multiple rows returned in matchspecialVarDF 
+                      # Since they are all should be the same
+                      specialVarName = head(matchspecialVarDF, 1)$variable_name
+
+                      ###############################################
+                      # Calling mergePhtFile
+                      ###############################################
+                      # Return a list of data frames
+                      retList <- lapply(cleanPhvAccList, FUN=function(x) mergePhtFile(phvAcc = x, phsAcc = phsAcc, dataDicDF = studyDataDicDF, specialVarName = specialVarName)) 
+
+                      #################################################
+
+
+                      ##########################################################
+                      # Merge all dataframes in the list by dbGaP_Subject_ID 
+                      ##########################################################
+                      # Reduce() func repeats the mergeTwo process 
+
+                      # S3 function
+                      mergeTwo <- function(x, y) {
+
+                          ##############################################
+                          # Decide to merge with compound ids or not
+                          ##############################################
+                          # This is necessary to avoid duplicated second column after merge. 
+                          firstColName = colnames(x)[1]
+                          matchGapSubjId <- grepl("dbgap.*subj.*$", firstColName, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
+                          # If dbGaP and submitted subj id columns both exist
+                          # merge by both columns
+                          if (matchGapSubjId) {
+
+                              #########################################################
+                              # Note: SpecialVar col may not be the second column
+                              #########################################################
+                              #secondColName = colnames(x)[2]
+                              merge(x, y, all=TRUE, by=c(firstColName, specialVarName))
+                          }
+                          # If submitted subj id column is the 1st (and only) id column 
+                          # merge by both 1st column 
+                          else {
+                              merge(x, y, all=TRUE, by=c(firstColName))
+                          }
+                      }
+
+                      # Remove null from the list
+                      retListNoNull <- retList[!sapply(retList, is.null)]
+
+                      if (length(retListNoNull) > 0) {
+
+                          # Reduce: applies mergeTwo func to each item of retList
+                          mergedVarDF <- Reduce(mergeTwo, retList)
+
+
+                          #######################
+                          # ATTN! Speical case
+                          #######################
+                          # ATTN: Sometimes the pht data file has dbGaP_Subject_ID column missing and 
+                          # starts with SpecialVarName. 
+                          # In this case, add a Submitted_Subject_ID as the 1st column. 
+                          #
+                          # Example: for phs000429.v1 dataset data file phs000429.v1.pht002481.v1.p1.c1.areds_data_final_11.EDO.txt.gz,
+                          # The 1st column is not dbGaP_Subject_Id, instead it starts with the speicialVarName
+                          # SUBJID case_control SEX SCHOOL ENROLLAGE WHITE axisrr axisrl resphnum lesphnum recylnum lecylnum RE_ERR_R LE_ERR_R AVG_ERR_R
+
+                          ### Check if the 1st column is a dbGaP_Subject_Id column
+                          firstColName = colnames(mergedVarDF)[1]
+                          matchGapSubjId <- grepl("dbgap.*subj.*$", firstColName, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
+
+                          finalVarDF = data.frame() 
+                          # Normal case
+                          if(matchGapSubjId) {
+                              # Subset dbgap_subj_id and special_id 
+                              #gapIdSpecialVarIdDF = subset(mergedVarDF, select = c(colnames(datasetDataDF)[1], specialVarName))
+
+                              ######################################
+                              # ATTN! Normalize the Id column names
+                              ######################################
+                              # Rename the 1st and 2nd columns
+
+                              # Example mergedVarDF at this point
+                              # "dbGaP.SubjID" "ID2" "AGEPHOT" "LNUCSCORE.x" "LNUCSCORE.y"  "DIABAGE"
+
+                              # The goal is to make it (duplicated submited subject id one with normalized name and another the original name)
+                              # "dbGaP_Subject_ID" "Submitted_Sujcect_ID" "ID2" "AGEPHOT" "LNUCSCORE.x" "LNUCSCORE.y"  "DIABAGE"
+
+                              # Break 1st, specialVarName, and rest of columns apart 
+                              firstColName = colnames(mergedVarDF)[1]
+                              secondColName = colnames(mergedVarDF)[2]
+
+                              firstCol = subset(mergedVarDF, select=c(firstColName))
+                              secondCol = subset(mergedVarDF, select=c(secondColName))
+                              restColDF <- mergedVarDF[, -c(1:1)] # delete columns 1 through 1
+
+                              # For restColDF, append a new "Submitted_Subject_ID" column that is a duplicate of the second (specialVarName) column
+                              restColDF['Submitted_Subject_ID'] <- secondCol 
+                              # Move the new column from the last to first
+                              df <- restColDF
+                              secondAndRestColDF <- df[,c(which(colnames(df)=="Submitted_Subject_ID"),which(colnames(df)!="Submitted_Subject_ID"))]
+
+                              # Further append the firstCol and rename it to "dbGaP_Subject_ID"
+                              secondAndRestColDF['dbGaP_Subject_ID'] <- firstCol 
+                              # Move the new column from the last to first
+                              df <- secondAndRestColDF 
+                              finalVarDF <- df[,c(which(colnames(df)=="dbGaP_Subject_ID"),which(colnames(df)!="dbGaP_Subject_ID"))]
+
+                          }
+                          # Speical case where 1st column is submitted subject id
+                          else {
+                              ######################################
+                              # ATTN! Normalize the Id column names
+                              ######################################
+                              # Append a new column that is duplicate of the first column (it should be specialVarName) but named as 'Submitted_Subject_ID' 
+                              mergedVarDF["Submitted_Subject_ID"] <- mergedVarDF[[firstColName]] 
+
+                              # Move the new column from the last to first
+                              df <- mergedVarDF
+                              finalVarDF <- df[,c(which(colnames(df)=="Submitted_Subject_ID"),which(colnames(df)!="Submitted_Subject_ID"))]
+                          }
+
+
+                          ######################################
+                          # Include phvAcc in the column names
+                          ######################################
+                          # This is necessary to avoid the different phv with identical name. For example: 
+                          # phvAccList = c('phv00000027.v2', 'phv00053747.v2', 'phv00000006.v2', 'phv00054122.v1')
+                          # returns the following where phv53747 and phv6 has the same name LUNCSCORE.
+                          #
+                          #	  dbGaP_Subject_ID Submitted_Subject_ID AGEPHOT LNUCSCORE.x LNUCSCORE.y DIABAGE
+                          #	  d  1                1                 1379    74.2        2.08        2.08      NA
+                          #	  d  2                2                 4861    69.6        3.39        3.39      NA
+                          #	  d  3                3                 3642    73.4        2.95        2.95      61
+                          #	  d  4                4                 5400    79.1        4.09        4.09      N
+                          #
+                          # In this case, the column names are changed autumatically to LUNCSCORE.x and LUNCSOCRE.y,
+                          # that causes trouble when, as an example, trying to subset the data based on the original column name LUNCSCORE.
+                          # It is there for safe to use phvAcc as column names when working with the data of list of phv acc.
+
+                          ################################
+                          # Compose varNameAccCombo
+                          ################################
+                          # varNameAcccCommbo example: 'AGEPHOT_phv00000027.v2', 'LNUCSCORE_phv00053747.v2', 'LNUCSCORE_phv00000006.v2', 'DIABAGE_phv00054122.v1'
+                          #cleanPhvAccList <- as.list(cleanPhvAccList)
+                          cleanPhvAccList <- as.vector(cleanPhvAccList)
+
+                          # Make sure checkList = FALSE
+                          varNameAccComboList <- getVarNameAccCombos(object, phvAccList = cleanPhvAccList, studyDataDicDf = studyDataDicDF, checkList = FALSE)
+
+                          firstColName = colnames(finalVarDF)[1]
+                          secondColName = colnames(finalVarDF)[2]
+
+                          # Display column names as combo
+                          if (colNameWithAcc == T) {
+
+                              # Normal case where 1st column is dbGaP_Subject_Id
+                              if (matchGapSubjId) {
+                                  # Break 1st, specialVarName, and rest of columns apart 
+                                  thirdColName = colnames(finalVarDF)[3]
+
+                                  newColNames = c(firstColName, secondColName, thirdColName, varNameAccComboList)
+                              }
+                              # Speical case where 1st column is Submitted_Subject_ID 
+                              else {
+                                  #newColNames = c('Submitted_Subject_ID', varNameAccComboList)
+                                  newColNames = c(firstColName, varNameAccComboList)
+                              }
+                              colnames(finalVarDF) <- newColNames
                           }
                           else {
 
-                              # subset subjId and this variable columns
-                              # such as colnames: "SUBJID"   "recylnum" 
+                              # Strip Acc from varNameAccCombo and add .num extension for duplicate items
+                              # From 
+                              # 'AGEPHOT_phv00000027.v2', 'LNUCSCORE_phv00053747.v2', 'LNUCSCORE_phv00000006.v2', 'DIABAGE_phv00054122.v1'
+                              # to
+                              # "AGEPHOT"     "LNUCSCORE"   "LNUCSCORE.1" "DIABAGE"
+                              newVarNameList <- stripColNameAcc(object, colNameAccList = unlist(varNameAccComboList)) 
 
-                              #######################
-                              # ATTN! Speical case
-                              #######################
-                              # Note: input phv could be itself a SubjID variable
+                              # Normal case where 1st column is dbGaP_Subject_Id
+                              if (matchGapSubjId) {
+                                  thirdColName = colnames(finalVarDF)[3]
 
-                              if (firstColName != matchVarName) {
-
-                                  if (firstColName != specialVarName) {
-                                      subjIdThisVarDF = subset(phtDataDF, select = c(firstColName, specialVarName, matchVarName))  
-                                  }
-                                  else {
-                                      subjIdThisVarDF = subset(phtDataDF, select = c(firstColName, matchVarName))  
-                                  }
+                                  #newColNames = c('dbGaP_Subject_ID', 'Submitted_Subject_ID', varNameAccComboList)
+                                  newColNames = c(firstColName, secondColName, thirdColName, newVarNameList)
                               }
-                              # When firstColName is matchVarName
+                              # Speical case where 1st column is Submitted_Subject_ID 
                               else {
-                                  subjIdThisVarDF = subset(phtDataDF, select = c(firstColName))  
+                                  newColNames = c(firstColName, newVarNameList)
                               }
-
-                              return (subjIdThisVarDF)
+                              colnames(finalVarDF) <- newColNames
                           }
+
+                          return (finalVarDF)
                       }
                       else {
+
+                          phvAccListCombo = paste(cleanPhvAccList, collapse = ", ") 
+
+                          cat("\n")
                           type = 'process'
                           level = 'error'
-                          show = F
-                          mesg = paste("The input phvAcc ", phvAcc, " doesn't belong the defined study ", phsAcc, sep="")
+                          show = T
+                          mesg = paste("None of the variables in the input PhvAccList belong study ", phsAcc, " There is no data is returned. \n   ", " --- ", phvAccListCombo,  "\n", sep="")
                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
 
-                          return(NULL)
                       }
 
-                  } # end of mergePhtFile
+                  } # end !is.null(specialVarDF)
 
-                  ####################################
-                  # Get root_study given this phsAcc 
-                  ####################################
-                  # ATTN! The specialIdName table is only available from parent study e.g phs000007 but not phs000282 or phs000401
-                  #extStudyInfoFile = object@extStudyInfoFile
-                  #rootAndThisStudyInfo <- read.table(extStudyInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8") 
-
-                  # New!
-                  allStudyInfo <- getExtData(object, type = 'study')
-                  thisStudyInfo <- subset(allStudyInfo, allStudyInfo$this_study_accession==phsAcc) 
-                  rootStAcc = thisStudyInfo$root_study_accession
-                  thisStudyId = thisStudyInfo$this_study_id
-                  thisStudyVer = thisStudyInfo$this_study_version
-
-                  ######################################
-                  # Get SpecialVarName (sharedId) 
-                  ######################################
-                  parseIdsFromRootStAcc =  parseIdsFromStAcc(object, phsAcc = rootStAcc)
-                  rootStAccNoVer = parseIdsFromRootStAcc$phsAccNoVer
-                  rootStId = parseIdsFromRootStAcc$phsAccId
-                  rootStVer = parseIdsFromRootStAcc$phsAccVer
-                  # Get match SpecialVarName
-                  specialVarDF <- getExtData(object, type = 'id', phsAcc = phsAcc)
-
-                  # ATTN: the subject_or_smaple needs to be 'subject'
-                  matchspecialVarDF <- dplyr::filter(specialVarDF, specialVarDF$study_id==thisStudyId & specialVarDF$study_version==thisStudyVer & specialVarDF$subject_or_sample =='subject') 
-
-                  # Choose the 1st row from the multiple rows returned in matchspecialVarDF 
-                  # Since they are all should be the same
-                  specialVarName = head(matchspecialVarDF, 1)$variable_name
-
-                  ###############################################
-                  # Calling mergePhtFile
-                  ###############################################
-                  # Return a list of data frames
-                  retList <- lapply(cleanPhvAccList, FUN=function(x) mergePhtFile(phvAcc = x, phsAcc = phsAcc, dataDicDF = studyDataDicDF, specialVarName = specialVarName)) 
-
-                  #################################################
-
-
-                  ##########################################################
-                  # Merge all dataframes in the list by dbGaP_Subject_ID 
-                  ##########################################################
-                  # Reduce() func repeats the mergeTwo process 
-
-                  # S3 function
-                  mergeTwo <- function(x, y) {
-
-                      ##############################################
-                      # Decide to merge with compound ids or not
-                      ##############################################
-                      # This is necessary to avoid duplicated second column after merge. 
-                      firstColName = colnames(x)[1]
-                      matchGapSubjId <- grepl("dbgap.*subj.*$", firstColName, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
-                      # If dbGaP and submitted subj id columns both exist
-                      # merge by both columns
-                      if (matchGapSubjId) {
-
-                          #########################################################
-                          # Note: SpecialVar col may not be the second column
-                          #########################################################
-                          #secondColName = colnames(x)[2]
-                          merge(x, y, all=TRUE, by=c(firstColName, specialVarName))
-                      }
-                      # If submitted subj id column is the 1st (and only) id column 
-                      # merge by both 1st column 
-                      else {
-                          merge(x, y, all=TRUE, by=c(firstColName))
-                      }
-                  }
-
-                  # Remove null from the list
-                  retListNoNull <- retList[!sapply(retList, is.null)]
-
-                  if (length(retListNoNull) > 0) {
-
-                      # Reduce: applies mergeTwo func to each item of retList
-                      mergedVarDF <- Reduce(mergeTwo, retList)
-
-
-                      #######################
-                      # ATTN! Speical case
-                      #######################
-                      # ATTN: Sometimes the pht data file has dbGaP_Subject_ID column missing and 
-                      # starts with SpecialVarName. 
-                      # In this case, add a Submitted_Subject_ID as the 1st column. 
-                      #
-                      # Example: for phs000429.v1 dataset data file phs000429.v1.pht002481.v1.p1.c1.areds_data_final_11.EDO.txt.gz,
-                      # The 1st column is not dbGaP_Subject_Id, instead it starts with the speicialVarName
-                      # SUBJID case_control SEX SCHOOL ENROLLAGE WHITE axisrr axisrl resphnum lesphnum recylnum lecylnum RE_ERR_R LE_ERR_R AVG_ERR_R
-
-                      ### Check if the 1st column is a dbGaP_Subject_Id column
-                      firstColName = colnames(mergedVarDF)[1]
-                      matchGapSubjId <- grepl("dbgap.*subj.*$", firstColName, ignore.case = TRUE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
-
-                      finalVarDF = data.frame() 
-                      # Normal case
-                      if(matchGapSubjId) {
-                          # Subset dbgap_subj_id and special_id 
-                          #gapIdSpecialVarIdDF = subset(mergedVarDF, select = c(colnames(datasetDataDF)[1], specialVarName))
-
-                          ######################################
-                          # ATTN! Normalize the Id column names
-                          ######################################
-                          # Rename the 1st and 2nd columns
-
-                          # Example mergedVarDF at this point
-                          # "dbGaP.SubjID" "ID2" "AGEPHOT" "LNUCSCORE.x" "LNUCSCORE.y"  "DIABAGE"
-
-                          # The goal is to make it (duplicated submited subject id one with normalized name and another the original name)
-                          # "dbGaP_Subject_ID" "Submitted_Sujcect_ID" "ID2" "AGEPHOT" "LNUCSCORE.x" "LNUCSCORE.y"  "DIABAGE"
-
-                          # Break 1st, specialVarName, and rest of columns apart 
-                          firstColName = colnames(mergedVarDF)[1]
-                          secondColName = colnames(mergedVarDF)[2]
-
-                          firstCol = subset(mergedVarDF, select=c(firstColName))
-                          secondCol = subset(mergedVarDF, select=c(secondColName))
-                          restColDF <- mergedVarDF[, -c(1:1)] # delete columns 1 through 1
-
-                          # For restColDF, append a new "Submitted_Subject_ID" column that is a duplicate of the second (specialVarName) column
-                          restColDF['Submitted_Subject_ID'] <- secondCol 
-                          # Move the new column from the last to first
-                          df <- restColDF
-                          secondAndRestColDF <- df[,c(which(colnames(df)=="Submitted_Subject_ID"),which(colnames(df)!="Submitted_Subject_ID"))]
-
-                          # Further append the firstCol and rename it to "dbGaP_Subject_ID"
-                          secondAndRestColDF['dbGaP_Subject_ID'] <- firstCol 
-                          # Move the new column from the last to first
-                          df <- secondAndRestColDF 
-                          finalVarDF <- df[,c(which(colnames(df)=="dbGaP_Subject_ID"),which(colnames(df)!="dbGaP_Subject_ID"))]
-
-                      }
-                      # Speical case where 1st column is submitted subject id
-                      else {
-                          ######################################
-                          # ATTN! Normalize the Id column names
-                          ######################################
-                          # Append a new column that is duplicate of the first column (it should be specialVarName) but named as 'Submitted_Subject_ID' 
-                          mergedVarDF["Submitted_Subject_ID"] <- mergedVarDF[[firstColName]] 
-
-                          # Move the new column from the last to first
-                          df <- mergedVarDF
-                          finalVarDF <- df[,c(which(colnames(df)=="Submitted_Subject_ID"),which(colnames(df)!="Submitted_Subject_ID"))]
-                      }
-
-
-                      ######################################
-                      # Include phvAcc in the column names
-                      ######################################
-                      # This is necessary to avoid the different phv with identical name. For example: 
-                      # phvAccList = c('phv00000027.v2', 'phv00053747.v2', 'phv00000006.v2', 'phv00054122.v1')
-                      # returns the following where phv53747 and phv6 has the same name LUNCSCORE.
-                      #
-                      #	  dbGaP_Subject_ID Submitted_Subject_ID AGEPHOT LNUCSCORE.x LNUCSCORE.y DIABAGE
-                      #	  d  1                1                 1379    74.2        2.08        2.08      NA
-                      #	  d  2                2                 4861    69.6        3.39        3.39      NA
-                      #	  d  3                3                 3642    73.4        2.95        2.95      61
-                      #	  d  4                4                 5400    79.1        4.09        4.09      N
-                      #
-                      # In this case, the column names are changed autumatically to LUNCSCORE.x and LUNCSOCRE.y,
-                      # that causes trouble when, as an example, trying to subset the data based on the original column name LUNCSCORE.
-                      # It is there for safe to use phvAcc as column names when working with the data of list of phv acc.
-
-                      ################################
-                      # Compose varNameAccCombo
-                      ################################
-                      # varNameAcccCommbo example: 'AGEPHOT_phv00000027.v2', 'LNUCSCORE_phv00053747.v2', 'LNUCSCORE_phv00000006.v2', 'DIABAGE_phv00054122.v1'
-                      #cleanPhvAccList <- as.list(cleanPhvAccList)
-                      cleanPhvAccList <- as.vector(cleanPhvAccList)
-
-                      # Make sure checkList = FALSE
-                      varNameAccComboList <- getVarNameAccCombos(object, phvAccList = cleanPhvAccList, studyDataDicDf = studyDataDicDF, checkList = FALSE)
-
-                      firstColName = colnames(finalVarDF)[1]
-                      secondColName = colnames(finalVarDF)[2]
-
-                      # Display column names as combo
-                      if (colNameWithAcc == T) {
-
-                          # Normal case where 1st column is dbGaP_Subject_Id
-                          if (matchGapSubjId) {
-                              # Break 1st, specialVarName, and rest of columns apart 
-                              thirdColName = colnames(finalVarDF)[3]
-
-                              newColNames = c(firstColName, secondColName, thirdColName, varNameAccComboList)
-                          }
-                          # Speical case where 1st column is Submitted_Subject_ID 
-                          else {
-                              #newColNames = c('Submitted_Subject_ID', varNameAccComboList)
-                              newColNames = c(firstColName, varNameAccComboList)
-                          }
-                          colnames(finalVarDF) <- newColNames
-                      }
-                      else {
-
-                          # Strip Acc from varNameAccCombo and add .num extension for duplicate items
-                          # From 
-                          # 'AGEPHOT_phv00000027.v2', 'LNUCSCORE_phv00053747.v2', 'LNUCSCORE_phv00000006.v2', 'DIABAGE_phv00054122.v1'
-                          # to
-                          # "AGEPHOT"     "LNUCSCORE"   "LNUCSCORE.1" "DIABAGE"
-                          newVarNameList <- stripColNameAcc(object, colNameAccList = unlist(varNameAccComboList)) 
-
-                          # Normal case where 1st column is dbGaP_Subject_Id
-                          if (matchGapSubjId) {
-                              thirdColName = colnames(finalVarDF)[3]
-
-                              #newColNames = c('dbGaP_Subject_ID', 'Submitted_Subject_ID', varNameAccComboList)
-                              newColNames = c(firstColName, secondColName, thirdColName, newVarNameList)
-                          }
-                          # Speical case where 1st column is Submitted_Subject_ID 
-                          else {
-                              print("HHHHH22")
-                              #newColNames = c('Submitted_Subject_ID', varNameAccComboList)
-                              newColNames = c(firstColName, newVarNameList)
-                          }
-                          colnames(finalVarDF) <- newColNames
-                      }
-
-                      return (finalVarDF)
-                  }
-                  else {
-
-                      phvAccListCombo = paste(cleanPhvAccList, collapse = ", ") 
-
-                      cat("\n")
-                      type = 'process'
-                      level = 'error'
-                      show = T
-                      mesg = paste("None of the variables in the input PhvAccList belong study ", phsAcc, " There is no data is returned. \n   ", " --- ", phvAccListCombo,  "\n", sep="")
-                      writeLog(object,  type = type, level = level, message = mesg, show = show) 
-
-                  }
 
               } # end length cleanPhvAccList == 0 
 

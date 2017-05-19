@@ -147,16 +147,14 @@ setMethod(f ="getPrjDir",
 
               if(nchar(confFile) != 0) {
 
+
                   if (file.exists(confFile)) {
 
                       # Get current prjDir from confDF 
                       confDF <- fromJSON(confFile, flatten=TRUE)
 
                       currPrjDir <- (subset(confDF, confDF$current == 'yes'))$prj_dir
-
-                      if (is.null(currPrjDir) == T) {
-                          currPrjDir = ""
-                      }
+                      
 
                       #################################
                       # Create prjSetupLog file 
@@ -168,15 +166,13 @@ setMethod(f ="getPrjDir",
                       ############################################################
                       # Check currPrjDir and associate dirs with class object
                       ############################################################
-                      if (nchar(currPrjDir) != 0) {
+                      if (!is.null(currPrjDir)) {
 
                           # currPrjDir configured but physical dir not found 
                           if (!dir.exists(currPrjDir)) {
-                              type = 'setup'
-                              level = 'info'
-                              show = T
-                              mesg = paste("Previously configured prject directory no longer exists ---", currPrjDir, ". Checkout ?projConfig to see how to re-create it.", sep="") 
-                              writeLog(object,  type = type, level = level, message = mesg, show = show)
+
+                              mesg = paste("The previously configured prject directory no longer exists ---", currPrjDir, ". Checkout ?projConfig to see how to re-create it.", sep="") 
+                              message(mesg)
                           }
                           else {
 
@@ -212,12 +208,12 @@ setMethod(f ="getPrjDir",
 
                               # Create file
                               if (!file.exists(dataProcLog)) {
-                                  #dir.create(dataProcLog, showWarnings = TRUE, recursive = F, mode = "0777")
-                                  type = 'setup'
-                                  level = 'info'
-                                  show = T
-                                  mesg = paste("Initial creationg of this log file.", sep="")
-                                  writeLog(object,  type = type, level = level, message = mesg, show = show)
+
+                                  # Initilize log file
+                                  currTime = toString(as.POSIXlt(Sys.time()))
+                                  logFile = dataProcLog
+                                  logData = paste("[", currTime, "] ", "Initial creationg of this log file.", "\n", sep="")
+                                  write(logData, file = logFile, ncolumns = 1, append = T, sep = "\n")
                               }
 
                               # make it availabe to class
@@ -226,83 +222,82 @@ setMethod(f ="getPrjDir",
                               object@dataProcLog <- dataProcLog 
                               object@procLogArchDir <- procLogArchDir 
                               object@prjSetupLog <- prjSetupLog 
+
+
+                              ####################
+                              # check PrjDir
+                              ####################
+
+                              # check prjDir saved in object
+                              prjDir = object@prjDir
+
+                              if (is.null(prjDir) == T) {
+                                  prjDir = ""
+                              }
+
+                              # prjDir has no value (not provided)
+                              if (nchar(prjDir) == 0) {
+                                  mesg = paste("There is no project directory info associated with the class object. Please re-initialized the class object.", "\n", sep="")
+                                  cat(mesg)
+                              }
+                              # prjDir has value (provided)
+                              else {
+
+                                  # input prjDir differs from currPrjDir 
+                                  if (prjDir != currPrjDir) {
+
+                                      type = 'setup'
+                                      level = 'error'
+                                      show = T
+                                      mesg = paste(
+                                          "The currently  configured prject directory is --- ", 
+                                          currPrjDir, ".\n",
+                                          "   It is different from the one associated with the class object. --- ", 
+                                          prjDir, ".\n",
+                                          "   Please re-initialize the class object Commons to make the two consistent.", "\n", sep=""
+                                      )
+                                      cat(mesg)
+
+                                  }
+                              }
+
+
+                              if (prjDir != "") {
+                                  if (!dir.exists(prjDir)) {
+                                      message("\nPreviously configured current project directory no longer exists. Checkout ?prjConfig() to see how to re-configure it. --- ", prjDir, "\n") 
+                                  }
+                              }
+
+
+                              ##########################
+                              # List of dirs as output
+                              ##########################
+                              prjDirFiles = list('prjDir' = prjDir, 'prjDataDir' = prjDataDir, 'prjTempDir' = prjTempDir, 'procLogArchDir' = procLogArchDir, 'dataProcLog' = dataProcLog, 'prjSetupLog' = prjSetupLog)
+
+                              return(prjDirFiles)
                           }
+
+
                       }
                       # currPrjDir has no value
                       else {
-                          type = 'setup'
-                          level = 'error'
-                          show = T
-                          mesg = paste("Previously configured prject directory no longer exists --- ", currPrjDir, ". Checkout ?prjConfig to see how to re-create it.", sep="")
-                          writeLog(object,  type = type, level = level, message = mesg, show = show)
+                          mesg = paste("Previously configured prject directory no longer exists --- ", currPrjDir, ". Checkout ?prjConfig to see how to re-create it.", "\n", sep="")
+                          cat(mesg)
                       }
                   }
                   # confFile not exist 
                   else {
-                      type = 'setup'
-                      level = 'error'
-                      show = T
-                      mesg = paste("The project config file is not found. Checkout ?prjConfig to see how to create it.", sep="")
-                      writeLog(object,  type = type, level = level, message = mesg, show = show)
+                      mesg = paste("The project config file is not found. Checkout ?prjConfig to see how to create it.", "\n", sep="")
+                      cat(mesg)
                   }
               }
               # confFile has no value
               else {
-                  type = 'setup'
-                  level = 'error'
-                  show = T
-                  mesg = paste("The project config file is not found . Checkout ?prjConfig to see how to create it.", sep="")
-                  writeLog(object,  type = type, level = level, message = mesg, show = show)
+                  mesg = paste("The project config file is not found . Checkout ?prjConfig to see how to create it.", "\n", sep="")
+                  cat(mesg)
               }
 
 
-              ####################
-              # check PrjDir
-              ####################
-
-              # check prjDir saved in object
-              prjDir = object@prjDir
-
-              if (is.null(prjDir) == T) {
-                  prjDir = ""
-              }
-
-              # prjDir has no value (not provided)
-              if (nchar(prjDir) == 0) {
-                  type = 'setup'
-                  level = 'error'
-                  show = T
-                  mesg = paste("There is no project directory info associated with the class object. Please re-initialized the class object.", sep="")
-                  writeLog(object,  type = type, level = level, message = mesg, show = show)
-              }
-              # prjDir has value (provided)
-              else {
-
-                  # input prjDir differs from currPrjDir 
-                  if (prjDir != currPrjDir) {
-
-                      type = 'setup'
-                      level = 'error'
-                      show = T
-                      mesg = paste(
-                                   "The currently  configured prject directory is --- ", 
-                                   currPrjDir, ".\n",
-                                   "   It is different from the one associated with the class object. --- ", 
-                                   prjDir, ".\n",
-                                   "   Please re-initialize the class object Commons to make the two consistent.", sep=""
-                                   )
-                      writeLog(object,  type = type, level = level, message = mesg, show = show)
-
-                  }
-              }
-
-
-              ##########################
-              # List of dirs as output
-              ##########################
-              prjDirFiles = list('prjDir' = prjDir, 'prjDataDir' = prjDataDir, 'prjTempDir' = prjTempDir, 'procLogArchDir' = procLogArchDir, 'dataProcLog' = dataProcLog, 'prjSetupLog' = prjSetupLog)
-
-              return(prjDirFiles)
           } )
 
 # ----------------------
@@ -361,7 +356,7 @@ setMethod(
                   if (inputPhsAcc == "" | phsAcc != "") {
 
                       # Search and copy user files
-                      cat("\nSearch and copy user files ...\n")
+                      cat("\nSearch and copy user data files ...\n")
                       parsedFileInfoDF <- searchCopyPhenoFiles(object, userDataDir = userDataDir, phsAcc = phsAcc)
 
                       if (!is.null(parsedFileInfoDF)) {
@@ -685,9 +680,8 @@ setMethod(
                       return(2)
                   },
                   finally={
-                      mesg = paste("\nProcessed URL ---", url)
+                      mesg = paste0("Processed URL ---", url, "\n")
                       cat(mesg)
-                      cat("\n")
 
                       #################
                       # Log as error
@@ -717,156 +711,190 @@ setMethod(
               url = paste(baseUrl, "/", basename(destFile), sep = "")
               loadOk_0 <- downloadFile(url, destFile)
 
-
-              ##################################
-              ## Download study specific files 
-              ##################################
-
-              ###### S3 function ftp download by study ######
-              loadOk <- downloadByStudy <- function(studyDir) {
-
-                  # Match studyDir 
-                  # "C:/Users/mars/Documents/myprj/gapwork/data/phs000724/phs000724.v6"
-
-                  ###########################################
-                  # Build ftp Url of supplemental files 
-                  ###########################################
-
-                  # phs000724.v6
-                  dirStudyIdVer = basename(studyDir)
-                  # phs000724
-                  dirStudyId = basename(dirname(studyDir))
-                  # ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/phs000724/phs000724.v6
-                  studyVerUrl = paste0(baseUrl, "/", dirStudyId, "/", dirStudyIdVer);
+              if (file.exists(extAllStudyInfoFile)) {
 
 
-                  # ftp files 
-                  # phs000429.v1_study_info.txt.gz
-                  # phs000429.v1_study_dataset_info.txt.gz
-                  # phs000429.v1_study_variable_info.txt.gz
-                  # phs000429.v1_study_variable_code_value.txt.gz
-                  # phs000429.v1_study_file_manifest.txt.gz
+                  ##################################
+                  ## Download study specific files 
+                  ##################################
 
-                  studyInfoFile = paste0(dirStudyIdVer, "_study_info.txt.gz")
-                  studyDatasetInfoFile = paste0(dirStudyIdVer, "_study_dataset_info.txt.gz")
-                  studyVariableInfoFile = paste0(dirStudyIdVer, "_study_variable_info.txt.gz")
-                  studyVarCodeValFile = paste0(dirStudyIdVer, "_study_variable_code_value.txt.gz")
-                  studyIdVarNameFile = paste0(dirStudyIdVer, "_study_id_variable_name.txt.gz")
-                  studyManifestFile = paste0(dirStudyIdVer, "_study_file_manifest.txt.gz")
+                  ###### S3 function ftp download by study ######
+                  loadOk <- downloadByStudy <- function(studyDir) {
 
-                  #####################
-                  # Create destDir
-                  #####################
-                  destDir = file.path(studyDir, "supplemental_data")
-                  if (!file.exists(destDir)){
-                      dir.create(destDir)
+
+                      # Match studyDir 
+                      # "C:/Users/mars/Documents/myprj/gapwork/data/phs000724/phs000724.v6"
+
+                      ###########################################
+                      # Build ftp Url of supplemental files 
+                      ###########################################
+
+                      # phs000724.v6
+                      dirStudyIdVer = basename(studyDir)
+                      # phs000724
+                      dirStudyId = basename(dirname(studyDir))
+                      # ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/phs000724/phs000724.v6
+                      studyVerUrl = paste0(baseUrl, "/", dirStudyId, "/", dirStudyIdVer);
+
+
+                      # ftp files 
+                      # phs000429.v1_study_info.txt.gz
+                      # phs000429.v1_study_dataset_info.txt.gz
+                      # phs000429.v1_study_variable_info.txt.gz
+                      # phs000429.v1_study_variable_code_value.txt.gz
+                      # phs000429.v1_study_file_manifest.txt.gz
+
+                      studyInfoFile = paste0(dirStudyIdVer, "_study_info.txt.gz")
+                      studyDatasetInfoFile = paste0(dirStudyIdVer, "_study_dataset_info.txt.gz")
+                      studyVariableInfoFile = paste0(dirStudyIdVer, "_study_variable_info.txt.gz")
+                      studyVarCodeValFile = paste0(dirStudyIdVer, "_study_variable_code_value.txt.gz")
+                      studyIdVarNameFile = paste0(dirStudyIdVer, "_study_id_variable_name.txt.gz")
+                      studyManifestFile = paste0(dirStudyIdVer, "_study_file_manifest.txt.gz")
+
+                      #####################
+                      # Create destDir
+                      #####################
+                      destDir = file.path(studyDir, "supplemental_data")
+                      if (!file.exists(destDir)){
+                          dir.create(destDir)
+                      }
+
+                      # study info 
+                      file = studyInfoFile
+                      url = paste0(studyVerUrl, "/", file)
+                      destFile = file.path(destDir, file)
+                      loadOk_1 <- downloadFile(url, destFile)
+
+
+                      # dataset info 
+                      file = studyDatasetInfoFile 
+                      url = paste0(studyVerUrl, "/", file)
+                      destFile = file.path(destDir, file)
+                      loadOk_2 <- downloadFile(url, destFile)
+
+                      # variable info 
+                      file = studyVariableInfoFile 
+                      url = paste0(studyVerUrl, "/", file)
+                      destFile = file.path(destDir, file)
+                      loadOk_3 <- downloadFile(url, destFile)
+
+                      # variable code value
+                      file = studyVarCodeValFile 
+                      url = paste0(studyVerUrl, "/", file)
+                      destFile = file.path(destDir, file)
+                      loadOk_4 <- downloadFile(url, destFile)
+
+                      # variable code value
+                      file = studyIdVarNameFile
+                      url = paste0(studyVerUrl, "/", file)
+                      destFile = file.path(destDir, file)
+                      loadOk_5 <- downloadFile(url, destFile)
+
+                      # manifest 
+                      file = studyManifestFile 
+                      url = paste0(studyVerUrl, "/", file)
+                      destFile = file.path(destDir, file)
+                      loadOk_6 <- downloadFile(url, destFile)
+
+                      loadOk = F 
+                      if (loadOk_0 == 0 & loadOk_1 == 0 & loadOk_2 == 0 & loadOk_3 == 0 & loadOk_4 == 0 & loadOk_5 == 0 & loadOk_6 == 0) {
+                          loadOk = T
+                      }
+
+                      return (loadOk)
                   }
 
-                  # study info 
-                  file = studyInfoFile
-                  url = paste0(studyVerUrl, "/", file)
-                  destFile = file.path(destDir, file)
-                  loadOk_1 <- downloadFile(url, destFile)
+                  # Loop through all files under prjDataDir
+                  if (dir.exists(prjDataDir)) {
+                      # /c/Users/mars/Documents/myprj/gapwork/data/phs000001/phs000001.v3/data_dic
 
-                  # dataset info 
-                  file = studyDatasetInfoFile 
-                  url = paste0(studyVerUrl, "/", file)
-                  destFile = file.path(destDir, file)
-                  loadOk_2 <- downloadFile(url, destFile)
+                      # Get all study-version dirs in the project directory
+                      allDirs <- list.dirs(path = prjDataDir, full.names = TRUE, recursive = T)
 
-                  # variable info 
-                  file = studyVariableInfoFile 
-                  url = paste0(studyVerUrl, "/", file)
-                  destFile = file.path(destDir, file)
-                  loadOk_3 <- downloadFile(url, destFile)
+                      # Keep only the item with study-acc match 
+                      X <- allDirs
+                      studyDirs <- X[grepl("phs\\d+\\.v\\d+$", X)]
 
-                  # variable code value
-                  file = studyVarCodeValFile 
-                  url = paste0(studyVerUrl, "/", file)
-                  destFile = file.path(destDir, file)
-                  loadOk_4 <- downloadFile(url, destFile)
+                      if (length(studyDirs) > 0) {
 
-                  # variable code value
-                  file = studyIdVarNameFile
-                  url = paste0(studyVerUrl, "/", file)
-                  destFile = file.path(destDir, file)
-                  loadOk_5 <- downloadFile(url, destFile)
+                          retList <- lapply(studyDirs, function(studyDir) 
+                          {
 
-                  # manifest 
-                  file = studyManifestFile 
-                  url = paste0(studyVerUrl, "/", file)
-                  destFile = file.path(destDir, file)
-                  loadOk_6 <- downloadFile(url, destFile)
+                              loadOk = F 
 
-                  loadOk = F 
-                  if (loadOk_0 == 0 & loadOk_1 == 0 & loadOk_2 == 0 & loadOk_3 == 0 & loadOk_4 == 0 & loadOk_5 == 0 & loadOk_6 == 0) {
-                      loadOk = T
+                              if (dir.exists(studyDir) & studyDir != prjDataDir ) {
+                                  # Check match study
+                                  if (inputPhsAcc != "") {
+
+                                      if (phsAcc != "") {
+                                          pattn = paste0(phsAcc, "$")
+                                          match <- grepl(pattn, studyDir)
+                                          if (match == TRUE) {
+                                              loadOk <- downloadByStudy(studyDir)
+                                          }
+                                      }
+
+                                  }
+                                  else {
+
+                                      #####################################
+                                      # Select only study-version dir
+                                      #####################################
+                                      # Example value of studyDir:
+                                      #  ~/Documents/R_Dev/my_dbgapr_project21/gapwork/data/phs000572/phs000572.v7
+                                      # "C:\\Users\\mars\\Documents\\R_Dev\\my_dbgapr_project21/gapwork/data/phs000001/phs000001.v3"
+
+                                      # Get study-version directroies such as
+                                      # "C:\\Users\\mars\\Documents\\R_Dev\\my_dbgapr_project21/gapwork/data/phs000001/phs000001.v3"
+                                      # Match study-version 
+                                      match <- grepl("phs\\d+\\.v\\d+$", studyDir)
+                                      if (match == TRUE) {
+                                          loadOk <- downloadByStudy(studyDir)
+                                          return(loadOk)
+                                      }
+                                  }
+                              }
+                          })
+
+                          # remove null value
+                          retList <- unlist(retList[!sapply(retList, is.null)])
+                          allTrue <- all(retList)
+
+                          if (allTrue == F) {
+                              mesg = paste0("\nThe ftp download of at least one supplemental file failed. For more details, lookup the ERROR messages in the log file ", dataProcLog, " .\nThe problem could simply be a temporary glitch of the internet connection. To complete the download, run ftpDownload() again with the study of the file specified. See ?ftoDowload() for details. \nIf the problem persists, write to dbgap-help@ncbi.nlm.nih.gov for help.\n")
+                              message(mesg)
+
+                              type = 'process'
+                              level = 'error'
+                              show = F
+                              writeLog(object,  type = type, level = level, message = mesg, show = show)
+                          }
+
+                          return(allTrue)
+
+                      }
+                      else {
+                          mesg = paste0("\nThere no study directory found under the project data directory. Checkout ?prepareData() to see how to move data files to the directory. --- ",  prjDataDir, "\n") 
+                          message(mesg)
+
+                          type = 'process'
+                          level = 'error'
+                          show = F
+                          writeLog(object,  type = type, level = level, message = mesg, show = show)
+                      }
                   }
-
-                  return (loadOk)
               }
-
-              # Loop through all files under prjDataDir
-              if (dir.exists(prjDataDir)) {
-                  # /c/Users/mars/Documents/myprj/gapwork/data/phs000001/phs000001.v3/data_dic
-
-                  # Get all study-version dirs in the project directory
-                  studyDirs <- list.dirs(path = prjDataDir, full.names = TRUE, recursive = T)
-
-                  retList <- lapply(studyDirs, function(studyDir) 
-                                    {
-
-                                        loadOk = F 
-                                        if (inputPhsAcc != "") {
-
-                                            if (phsAcc != "") {
-                                                pattn = paste0(phsAcc, "$")
-                                                match <- grepl(pattn, studyDir)
-                                                if (match == TRUE) {
-                                                    loadOk <- downloadByStudy(studyDir)
-                                                }
-                                            }
-
-                                        }
-                                        else {
-
-                                            #####################################
-                                            # Select only study-version dir
-                                            #####################################
-                                            # Example value of studyDir:
-                                            #  ~/Documents/R_Dev/my_dbgapr_project21/gapwork/data/phs000572/phs000572.v7
-                                            # "C:\\Users\\mars\\Documents\\R_Dev\\my_dbgapr_project21/gapwork/data/phs000001/phs000001.v3"
-
-                                            # Get study-version directroies such as
-                                            # "C:\\Users\\mars\\Documents\\R_Dev\\my_dbgapr_project21/gapwork/data/phs000001/phs000001.v3"
-                                            # Match study-version 
-                                            match <- grepl("phs\\d+\\.v\\d+$", studyDir)
-                                            if (match == TRUE) {
-                                                loadOk <- downloadByStudy(studyDir)
-                                                return(loadOk)
-                                            }
-                                        }
-
-                                    })
-
-                  # remove null value
-                  retList <- unlist(retList[!sapply(retList, is.null)])
-                  allTrue <- all(retList)
-              }
-
-
-              if (allTrue == F) {
-                  mesg = paste0("\nThe ftp download of at least one supplemental file failed. For more details, lookup the ERROR messages in the log file ", dataProcLog, " .\nThe problem could simply be a temporary glitch of the internet connection. To complete the download, run ftpDownload() again with the study of the file specified. See ?ftoDowload() for details. \nIf the problem persists, write to dbgap-help@ncbi.nlm.nih.gov for help.\n")
-                  message(mesg)
+              else {
 
                   type = 'process'
                   level = 'error'
-                  show = F
-                  mesg = mesg 
-                  writeLog(object,  type = type, level = level, message = mesg, show = show)
+                  show = T
+                  mesg = paste(
+                      "The study-info file is not found. Checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
+                      " --- ", extAllStudyInfoFile, sep="" 
+                  )
+                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
               }
-
-              return(allTrue)
 
           })
 
@@ -1278,6 +1306,7 @@ setMethod(
               acc <- trimws(acc)
               type = ''
 
+
               # Check accession general format
               pattns = stringr::str_match(acc, "^(ph)(\\w)\\d+")
               typePatt = pattns[3]
@@ -1315,266 +1344,276 @@ setMethod(
                       fileInfoArchDir = object@fileInfoArchDir  
 
                       # Get the external studyInfo data
-                      # New!
                       allStudyInfo <- getExtData(object, type = 'study')
 
-                      # Example location of study (no-version) data dictionary
-                      # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/general_info
-                      dataGenInfoDir = file.path(prjDataDir,'general_info') 
-                      if (!dir.exists(dataGenInfoDir)) {
-                          dir.create(dataGenInfoDir, showWarnings = TRUE, recursive = T, mode = "0777")
-                      }
+                      if (!is.null(allStudyInfo)) {
 
-                      # Make sure fileInfoFile is created
-                      if (!file.exists(fileInfoFile)) {
-                          type = 'process'
-                          level = 'error'
-                          show = T
-                          mesg = paste("The phenotype file info file is not found. It needs to be created first. Checkout ?recordPrjFileInfo for more information.  --- ", fileInfoFile, "  ", sep="")
-                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
-                      }
-                      else {
+                          # Example location of study (no-version) data dictionary
+                          # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/general_info
+                          dataGenInfoDir = file.path(prjDataDir,'general_info') 
+                          if (!dir.exists(dataGenInfoDir)) {
+                              dir.create(dataGenInfoDir, showWarnings = TRUE, recursive = T, mode = "0777")
+                          }
 
-                          fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
+                          # Make sure fileInfoFile is created
+                          if (!file.exists(fileInfoFile)) {
+                              type = 'process'
+                              level = 'error'
+                              show = T
+                              mesg = paste("The phenotype file info file is not found. It needs to be created first. Checkout ?recordPrjFileInfo for more information.  --- ", fileInfoFile, "  ", sep="")
+                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                          }
+                          else {
 
-                          studyAccDF <- unique(fileInfoDF[c("fStAcc", "fStAccNoP")])
-                          studyAccList = studyAccDF$fStAccNoP
+                              fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
 
-                          #################################
-                          # Process study accession
-                          #################################
+                              studyAccDF <- unique(fileInfoDF[c("fStAcc", "fStAccNoP")])
+                              studyAccList = studyAccDF$fStAccNoP
 
-                          if (type == 'phs') {
-                              
+                              #################################
+                              # Process study accession
+                              #################################
 
-                              # Go through all available StudyAcc
-                              availStudyInfoList <- lapply(studyAccList, function(x, inputPhsAcc = acc) {
-                                                               thisStudyAcc <- x
+                              if (type == 'phs') {
 
-                                                               if (thisStudyAcc == acc) {
-                                                                   avalThisStudyInfo <- subset(allStudyInfo,allStudyInfo$this_study_accession == thisStudyAcc)
-                                                                   return (avalThisStudyInfo)
-                                                               }
-                                                         })  
 
-                              # Remove null items
-                              matchStudyList <- availStudyInfoList[!sapply(availStudyInfoList, is.null)] 
-                              
-                              subDF <- dplyr::filter(allStudyInfo, allStudyInfo$this_study_accession == acc)
+                                  # Go through all available StudyAcc
+                                  availStudyInfoList <- lapply(studyAccList, function(x, inputPhsAcc = acc) {
+                                      thisStudyAcc <- x
 
-                              
-                              if (length(matchStudyList) > 0) {
+                                      if (thisStudyAcc == acc) {
+                                          avalThisStudyInfo <- subset(allStudyInfo,allStudyInfo$this_study_accession == thisStudyAcc)
+                                          return (avalThisStudyInfo)
+                                      }
+                                  })  
 
-                                  # Display Info
-                                  studyName <- matchStudyList[[1]]$name
-                                  studyDisease <- matchStudyList[[1]]$disease
-                                  rootStudyAcc  <- matchStudyList[[1]]$root_study_accession
-                                  #studyName <- subDF$name
-                                  #studyDisease <- subDF$disease
-                                  #rootStudyAcc <- subDF$root_study_accession
+                                  # Remove null items
+                                  matchStudyList <- availStudyInfoList[!sapply(availStudyInfoList, is.null)] 
 
-                                  if (display == TRUE) {
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Object Type", ":", "Study") 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Accession", ":", acc) 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Name", ":", studyName) 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Disease", ":", studyDisease) 
-                                      cat(info)
-                                      cat("\n")
-                                  }
+                                  subDF <- dplyr::filter(allStudyInfo, allStudyInfo$this_study_accession == acc)
 
-                                  # Is parent study
-                                  if (rootStudyAcc == acc) {
 
-                                      ##########################
-                                      # Lookup child studies
-                                      ##########################
-                                      childStudyDF <- subset(allStudyInfo, allStudyInfo$root_study_accession == acc & allStudyInfo$this_study_accession != acc, select = c('root_study_accession', 'this_study_accession'))
-                                      childStudyList <- as.list(childStudyDF$this_study_accession)
-                                      childStudyAccCombo = paste(childStudyList, collapse = ', ')
+                                  if (length(matchStudyList) > 0) {
 
-                                      if (length(childStudyList) > 0) {
-                                          info <- sprintf("%-13s %-3s %s", "Child Study", ":", childStudyAccCombo) 
+                                      # Display Info
+                                      studyName <- matchStudyList[[1]]$name
+                                      studyDisease <- matchStudyList[[1]]$disease
+                                      rootStudyAcc  <- matchStudyList[[1]]$root_study_accession
+                                      #studyName <- subDF$name
+                                      #studyDisease <- subDF$disease
+                                      #rootStudyAcc <- subDF$root_study_accession
 
+                                      if (display == TRUE) {
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Object Type", ":", "Study") 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Accession", ":", acc) 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Name", ":", studyName) 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Disease", ":", studyDisease) 
+                                          cat(info)
+                                          cat("\n")
+                                      }
+
+                                      # Is parent study
+                                      if (rootStudyAcc == acc) {
+
+                                          ##########################
+                                          # Lookup child studies
+                                          ##########################
+                                          childStudyDF <- subset(allStudyInfo, allStudyInfo$root_study_accession == acc & allStudyInfo$this_study_accession != acc, select = c('root_study_accession', 'this_study_accession'))
+                                          childStudyList <- as.list(childStudyDF$this_study_accession)
+                                          childStudyAccCombo = paste(childStudyList, collapse = ', ')
+
+                                          if (length(childStudyList) > 0) {
+                                              info <- sprintf("%-13s %-3s %s", "Child Study", ":", childStudyAccCombo) 
+
+                                              if (display == TRUE) {
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
+                                          }
+                                      }
+                                      # Has parent study
+                                      else {
+                                          info <- sprintf("%-13s %-3s %s", "Parent Study", ":", rootStudyAcc) 
                                           if (display == TRUE) {
                                               cat(info)
                                               cat("\n")
                                           }
                                       }
-                                  }
-                                  # Has parent study
-                                  else {
-                                      info <- sprintf("%-13s %-3s %s", "Parent Study", ":", rootStudyAcc) 
                                       if (display == TRUE) {
+                                          cat("\n")
+                                      }
+
+                                      matchStudyDF <- matchStudyList[[1]]
+
+                                      return (invisible(matchStudyDF))
+
+                                  }
+                                  else {
+                                      msg <- paste("\n[ERROR] There is no data file available for the input study-version, ", acc, ", under the project directory. Checkout ?searchCopyPhenoFiles to see how to copy downloaded files to project directory.\n", sep = "")
+                                      cat(msg)
+                                  }
+
+                              }
+
+                              #################################
+                              # Process dataset accession
+                              #################################
+
+                              if (type == 'pht') {
+
+                                  # New! Get extData all_study_info 
+                                  allDatasetInfoDF <- getAllDatasetInfo(object)
+                                  subDF <- dplyr::filter(allDatasetInfoDF, allDatasetInfoDF$dataset_accession == acc)
+
+                                  if (nrow(subDF) > 0) {
+
+                                      studyAcc <- subDF$study_accession
+                                      datasetAcc <- subDF$dataset_accession
+                                      datasetName <- subDF$name
+                                      datasetDesc <- subDF$description
+
+                                      if (display == TRUE) {
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Object Type", ":", "Dataset") 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s ( %s )", "Accession", ":", acc, studyAcc) 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Name", ":", datasetName) 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Description", ":", datasetDesc) 
+                                          cat(info)
+                                          cat("\n")
+                                          cat("\n")
+                                      }
+
+
+                                      return (invisible(subDF))
+                                  }
+                                  else {
+                                      errmsg = paste(
+                                          "\n[ERROR] The input dbGaP object accession ", acc, " doesn't have any match with the data of all available studies under the project directory.\n", sep=""
+                                      )
+                                      cat(errmsg)
+
+                                  }
+
+                              }
+
+                              #################################
+                              # Process variable accession
+                              #################################
+
+                              if (type == 'phv') {
+                                  # Get the external studyInfo data
+                                  #studyDatasetInfo <- read.table(extStudyDatasetInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
+                                  availStudyDatasetVarInfoList <- lapply(studyAccList, function(thisPhsAcc, inputPhvAcc = acc) {
+
+                                      varInfoDF <- getExtData(object, type = 'variable', phsAcc = thisPhsAcc)
+
+                                      if (!is.null(varInfoDF)) {
+
+                                          subDF <- dplyr::filter(varInfoDF, varInfoDF$variable_accession == inputPhvAcc)
+
+                                          # Loop through all available studies.
+                                          # Only match study has non-zero retura.n
+                                          if (nrow(subDF) > 0) {
+
+                                              # Multipe dataset versions could have the same phvAcc.
+                                              # Furhter filter as below if that is the case.
+                                              if (nrow(subDF) > 1) {
+                                                  randPhtAcc <- subDF$dataset_accession[1]
+                                                  # Get avaiable phtAcc
+                                                  availPhtAcc <- getAvailPhtVer(object, randPhtAcc=randPhtAcc, phsAcc=thisPhsAcc)
+
+                                                  subDF <- dplyr::filter(subDF, subDF$dataset_accession == availPhtAcc)
+                                              }
+                                              return(subDF)
+                                          }
+                                      }
+
+                                  })  
+
+                                  # Remove null items
+                                  matchStudyDatasetVarList <- availStudyDatasetVarInfoList[!sapply(availStudyDatasetVarInfoList, is.null)] 
+
+                                  codeValCombo = NA 
+                                  if (length(matchStudyDatasetVarList) > 0) {
+
+                                      # Display Info
+                                      varAcc <- matchStudyDatasetVarList[[1]]$variable_accession
+                                      varType <- matchStudyDatasetVarList[[1]]$calculated_type
+                                      studyAcc <- matchStudyDatasetVarList[[1]]$study_accession
+                                      datasetAcc <- matchStudyDatasetVarList[[1]]$dataset_accession
+                                      datasetName <- matchStudyDatasetVarList[[1]]$dataset_name
+                                      varUnit <- matchStudyDatasetVarList[[1]]$units
+                                      varName <- matchStudyDatasetVarList[[1]]$name
+                                      varDesc <- matchStudyDatasetVarList[[1]]$description
+
+                                      ###############################
+                                      # Build variable CodeValCombo
+                                      ###############################
+                                      codeValCombo <- buildVarCodeValCombo(object, catVarAcc = varAcc, phsAcc = studyAcc)
+
+                                      if (display == TRUE) {
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Object Type", ":", "Variable") 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s ( %s, %s )", "Accession", ":", varAcc, studyAcc, datasetAcc)
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s ( %s )", "Name", ":", varName, varDesc) 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Value Type", ":", varType) 
+                                          cat(info)
+                                          cat("\n")
+                                          if (!is.na(codeValCombo)) {
+                                              info <- sprintf("%-13s %-3s %s", "Code Value", ":", codeValCombo) 
+                                              cat(info)
+                                              cat("\n")
+                                          }
+                                          if (varUnit != "") {
+                                              info <- sprintf("%-13s %-3s %s", "Units", ":", varUnit) 
+                                              cat(info)
+                                              cat("\n")
+                                          }
+                                          info <- sprintf("%-13s %-3s %s ( %s )", "Dataset", ":", datasetAcc, datasetName) 
+                                          cat(info)
+                                          cat("\n")
+                                          info <- sprintf("%-13s %-3s %s", "Study", ":", studyAcc) 
                                           cat(info)
                                           cat("\n")
                                       }
+
+                                      matchStudyDatasetVarDF <- matchStudyDatasetVarList[[1]]
+                                      matchStudyDatasetVarDF['code_value_combo'] <- c(codeValCombo) 
+
+                                      return (invisible(matchStudyDatasetVarDF))
                                   }
-                                  if (display == TRUE) {
-                                      cat("\n")
-                                  }
-
-                                  matchStudyDF <- matchStudyList[[1]]
-
-                                  return (invisible(matchStudyDF))
-
-                              }
-                              else {
-                                  msg <- paste("\n[ERROR] There is no data file available for the input study-version, ", acc, ", under the project directory. Checkout ?searchCopyPhenoFiles to see how to copy downloaded files to project directory.\n", sep = "")
-                                  cat(msg)
-                              }
-
-                          }
-
-                          #################################
-                          # Process dataset accession
-                          #################################
-
-                          if (type == 'pht') {
-
-                              # New! Get extData all_study_info 
-                              allDatasetInfoDF <- getAllDatasetInfo(object)
-                              subDF <- dplyr::filter(allDatasetInfoDF, allDatasetInfoDF$dataset_accession == acc)
-
-                              if (nrow(subDF) > 0) {
-
-                                  studyAcc <- subDF$study_accession
-                                  datasetAcc <- subDF$dataset_accession
-                                  datasetName <- subDF$name
-                                  datasetDesc <- subDF$description
-
-                                  if (display == TRUE) {
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Object Type", ":", "Dataset") 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s ( %s )", "Accession", ":", acc, studyAcc) 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Name", ":", datasetName) 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Description", ":", datasetDesc) 
-                                      cat(info)
-                                      cat("\n")
-                                      cat("\n")
+                                  else {
+                                      errmsg = paste(
+                                          "\n[ERROR] The input dbGaP object accession ", acc, " doesn't have any match with the data of available study under the user project directory.\n", sep=""
+                                      )
+                                      cat(errmsg)
                                   }
 
-
-                                  return (invisible(subDF))
                               }
-                              else {
-                                  errmsg = paste(
-                                                 "\n[ERROR] The input dbGaP object accession ", acc, " doesn't have any match with the data of all available studies under the project directory.\n", sep=""
-                                                 )
-                                  cat(errmsg)
+                          } # end if fileInfoFile not exist 
 
-                              }
 
-                          }
+                      } # !is.null(allStudyInfo)
 
-                          #################################
-                          # Process variable accession
-                          #################################
-
-                          if (type == 'phv') {
-                              # Get the external studyInfo data
-                              #studyDatasetInfo <- read.table(extStudyDatasetInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
-                              availStudyDatasetVarInfoList <- lapply(studyAccList, function(thisPhsAcc, inputPhvAcc = acc) {
-                                                                         
-                                                                         varInfoDF <- getExtData(object, type = 'variable', phsAcc = thisPhsAcc)
-                                                                         subDF <- dplyr::filter(varInfoDF, varInfoDF$variable_accession == inputPhvAcc)
-
-                                                                         # Loop through all available studies.
-                                                                         # Only match study has non-zero retura.n
-                                                                         if (nrow(subDF) > 0) {
-
-                                                                             # Multipe dataset versions could have the same phvAcc.
-                                                                             # Furhter filter as below if that is the case.
-                                                                             if (nrow(subDF) > 1) {
-                                                                                 randPhtAcc <- subDF$dataset_accession[1]
-                                                                                 # Get avaiable phtAcc
-                                                                                 availPhtAcc <- getAvailPhtVer(object, randPhtAcc=randPhtAcc, phsAcc=thisPhsAcc)
-
-                                                                                 subDF <- dplyr::filter(subDF, subDF$dataset_accession == availPhtAcc)
-                                                                             }
-                                                                             return(subDF)
-                                                                         }
-                                                 })  
-
-                              # Remove null items
-                              matchStudyDatasetVarList <- availStudyDatasetVarInfoList[!sapply(availStudyDatasetVarInfoList, is.null)] 
-
-                              codeValCombo = NA 
-                              if (length(matchStudyDatasetVarList) > 0) {
-
-                                  # Display Info
-                                  varAcc <- matchStudyDatasetVarList[[1]]$variable_accession
-                                  varType <- matchStudyDatasetVarList[[1]]$calculated_type
-                                  studyAcc <- matchStudyDatasetVarList[[1]]$study_accession
-                                  datasetAcc <- matchStudyDatasetVarList[[1]]$dataset_accession
-                                  datasetName <- matchStudyDatasetVarList[[1]]$dataset_name
-                                  varUnit <- matchStudyDatasetVarList[[1]]$units
-                                  varName <- matchStudyDatasetVarList[[1]]$name
-                                  varDesc <- matchStudyDatasetVarList[[1]]$description
-
-                                  ###############################
-                                  # Build variable CodeValCombo
-                                  ###############################
-                                  codeValCombo <- buildVarCodeValCombo(object, catVarAcc = varAcc, phsAcc = studyAcc)
-
-                                  if (display == TRUE) {
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Object Type", ":", "Variable") 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s ( %s, %s )", "Accession", ":", varAcc, studyAcc, datasetAcc)
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s ( %s )", "Name", ":", varName, varDesc) 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Value Type", ":", varType) 
-                                      cat(info)
-                                      cat("\n")
-                                      if (!is.na(codeValCombo)) {
-                                          info <- sprintf("%-13s %-3s %s", "Code Value", ":", codeValCombo) 
-                                          cat(info)
-                                          cat("\n")
-                                      }
-                                      if (varUnit != "") {
-                                          info <- sprintf("%-13s %-3s %s", "Units", ":", varUnit) 
-                                          cat(info)
-                                          cat("\n")
-                                      }
-                                      info <- sprintf("%-13s %-3s %s ( %s )", "Dataset", ":", datasetAcc, datasetName) 
-                                      cat(info)
-                                      cat("\n")
-                                      info <- sprintf("%-13s %-3s %s", "Study", ":", studyAcc) 
-                                      cat(info)
-                                      cat("\n")
-                                  }
-
-                                  matchStudyDatasetVarDF <- matchStudyDatasetVarList[[1]]
-                                  matchStudyDatasetVarDF['code_value_combo'] <- c(codeValCombo) 
-
-                                  return (invisible(matchStudyDatasetVarDF))
-                              }
-                              else {
-                                  errmsg = paste(
-                                                 "\n[ERROR] The input dbGaP object accession ", acc, " doesn't have any match with the data of available study under the user project directory.\n", sep=""
-                                                 )
-                                  cat(errmsg)
-                              }
-
-                          }
-                      } # end if fileInfoFile not exist 
 
                   } # end acc != ""
 
@@ -1636,72 +1675,76 @@ setMethod(
               # /c/Users/mars/Documents/.dbgapr/supplemental_data/all_released_study_info.txt.gz
               allStudyInfo <- getExtData(object, type = 'study')
 
-              # Example location of study (no-version) data dictionary
-              # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/general_info
-              allStudyInfoDir = file.path(prjDataDir,'all_study_info') 
-              if (!dir.exists(allStudyInfoDir)) {
-                  dir.create(allStudyInfoDir, showWarnings = TRUE, recursive = T, mode = "0777")
-              }
+              if (!is.null(allStudyInfo)) {
 
-              ###################################################################
-              # Save the data fo json, csv, and text file for further viewing
-              ###################################################################
-              # Make sure fileInfoFile is created
-              if (!file.exists(fileInfoFile)) {
-                  type = 'process'
-                  level = 'error'
-                  show = T
-                  mesg = paste("The phenotype file info file is not found. It needs to be created first. Check ?recordPrjFileInfo for more information.\n   --- ", fileInfoFile, "  ", sep="")
-                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                  # Example location of study (no-version) data dictionary
+                  # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/general_info
+                  allStudyInfoDir = file.path(prjDataDir,'all_study_info') 
+                  if (!dir.exists(allStudyInfoDir)) {
+                      dir.create(allStudyInfoDir, showWarnings = TRUE, recursive = T, mode = "0777")
+                  }
 
-                  return()
-              }
-              else {
-                  fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
-                  studyAccDF <- unique(fileInfoDF[c("fStAcc")])
-                  studyAccList = studyAccDF$fStAcc
+                  ###################################################################
+                  # Save the data fo json, csv, and text file for further viewing
+                  ###################################################################
+                  # Make sure fileInfoFile is created
+                  if (!file.exists(fileInfoFile)) {
+                      type = 'process'
+                      level = 'error'
+                      show = T
+                      mesg = paste("The phenotype file info file is not found. It needs to be created first. Check ?recordPrjFileInfo for more information.\n   --- ", fileInfoFile, "  ", sep="")
+                      writeLog(object,  type = type, level = level, message = mesg, show = show) 
 
-                  availStudyInfoList <- lapply(studyAccList, function(thisStudyAcc) {
-                                                   avalThisStudyInfo <- subset(allStudyInfo, allStudyInfo$this_study_accession == thisStudyAcc)
-                                 })  
-
-                  # Merge all var_report of all phts and save
-                  availStudyInfoDF <- do.call('rbind', availStudyInfoList)
-
-                  # Save to rds 
-                  availStudyInfoFileName = paste('all_study_info.rds', sep='')
-                  availStudyInfo_rdsFile = file.path(allStudyInfoDir, availStudyInfoFileName)
-                  saveRDS(availStudyInfoDF, file=availStudyInfo_rdsFile)
-
-                  # Save to csv
-                  availStudyInfoCsvFileName = paste('all_study_info.csv', sep='')
-                  availStudyInfo_csvFile = file.path(allStudyInfoDir, availStudyInfoCsvFileName)
-                  #write.csv(availStudyInfoDF, file = availStudyInfo_csvFile, row.names=FALSE)
-                  write.table(availStudyInfoDF, file = availStudyInfo_csvFile, sep = "\t", row.names = FALSE)
-
-                  # Save to json 
-                  availStudyInfoJson <- toJSON(availStudyInfoDF, pretty=T)
-                  availStudyInfoJsonFileName = paste('all_study_info.json', sep='')
-                  availStudyInfo_jsonFile = file.path(allStudyInfoDir, availStudyInfoJsonFileName) 
-                  write(availStudyInfoJson, file = availStudyInfo_jsonFile, ncolumns = if(is.character(availStudyInfoJson)) 1 else 5, append = F, sep = "\n")
-
-                  # Save to left-justified text 
-                  availStudyInfoSubDF = subset(availStudyInfoDF, select = c("root_study_accession", "this_study_accession", "disease", "name")) 
-                  availStudyInfoTxtFileName = paste('all_study_info_brief_ljustify.txt', sep='')
-                  availStudyInfo_txtFile = file.path(allStudyInfoDir, availStudyInfoTxtFileName)
-                  gdata::write.fwf(x=availStudyInfoSubDF, file=availStudyInfo_txtFile, quote=F, justify="left", sep="    ")
-
-                  if (showAs != "") {
-
-                      viewAllStudyInfo(object, showAs = showAs, editor = editor)
-
-                      # invisible return
-                      return(invisible(availStudyInfoDF))
+                      return()
                   }
                   else {
-                      return(availStudyInfoDF)
+                      fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
+                      studyAccDF <- unique(fileInfoDF[c("fStAcc")])
+                      studyAccList = studyAccDF$fStAcc
+
+                      availStudyInfoList <- lapply(studyAccList, function(thisStudyAcc) {
+                          avalThisStudyInfo <- subset(allStudyInfo, allStudyInfo$this_study_accession == thisStudyAcc)
+                      })  
+
+                      # Merge all var_report of all phts and save
+                      availStudyInfoDF <- do.call('rbind', availStudyInfoList)
+
+                      # Save to rds 
+                      availStudyInfoFileName = paste('all_study_info.rds', sep='')
+                      availStudyInfo_rdsFile = file.path(allStudyInfoDir, availStudyInfoFileName)
+                      saveRDS(availStudyInfoDF, file=availStudyInfo_rdsFile)
+
+                      # Save to csv
+                      availStudyInfoCsvFileName = paste('all_study_info.csv', sep='')
+                      availStudyInfo_csvFile = file.path(allStudyInfoDir, availStudyInfoCsvFileName)
+                      #write.csv(availStudyInfoDF, file = availStudyInfo_csvFile, row.names=FALSE)
+                      write.table(availStudyInfoDF, file = availStudyInfo_csvFile, sep = "\t", row.names = FALSE)
+
+                      # Save to json 
+                      availStudyInfoJson <- toJSON(availStudyInfoDF, pretty=T)
+                      availStudyInfoJsonFileName = paste('all_study_info.json', sep='')
+                      availStudyInfo_jsonFile = file.path(allStudyInfoDir, availStudyInfoJsonFileName) 
+                      write(availStudyInfoJson, file = availStudyInfo_jsonFile, ncolumns = if(is.character(availStudyInfoJson)) 1 else 5, append = F, sep = "\n")
+
+                      # Save to left-justified text 
+                      availStudyInfoSubDF = subset(availStudyInfoDF, select = c("root_study_accession", "this_study_accession", "disease", "name")) 
+                      availStudyInfoTxtFileName = paste('all_study_info_brief_ljustify.txt', sep='')
+                      availStudyInfo_txtFile = file.path(allStudyInfoDir, availStudyInfoTxtFileName)
+                      gdata::write.fwf(x=availStudyInfoSubDF, file=availStudyInfo_txtFile, quote=F, justify="left", sep="    ")
+
+                      if (showAs != "") {
+
+                          viewAllStudyInfo(object, showAs = showAs, editor = editor)
+
+                          # invisible return
+                          return(invisible(availStudyInfoDF))
+                      }
+                      else {
+                          return(availStudyInfoDF)
+                      }
                   }
               }
+
           })
 
 
@@ -1744,79 +1787,92 @@ setMethod(
               prjDataDir = object@prjDataDir 
               fileInfoFile = object@fileInfoFile
 
-              # Get the list of all available study accessions
-              fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
-              studyAccDF <- unique(fileInfoDF[c("fStAcc")])
-              studyAccList = studyAccDF$fStAcc
 
-              availStudyDatasetInfoList <- lapply(studyAccList, function(thisPhsAcc) {
+              if (file.exists(fileInfoFile)) {
 
-                                                      # Compose file path
-                                                      parseIdsFromPhsAcc =  parseIdsFromStAcc(object, phsAcc = thisPhsAcc)
-                                                      thisPhsAccNoVer = parseIdsFromPhsAcc$phsAccNoVer
-                                                      studyDatasetInfoDF <- getDatasetMetaByStudy(object, phsAcc = thisPhsAcc)
+                  # Get the list of all available study accessions
+                  fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
+                  studyAccDF <- unique(fileInfoDF[c("fStAcc")])
+                  studyAccList = studyAccDF$fStAcc
 
-                                                      return (studyDatasetInfoDF)
-                                 })
+                  availStudyDatasetInfoList <- lapply(studyAccList, function(thisPhsAcc) {
 
-              # Remove null items
-              availStudyDatasetInfoList <- availStudyDatasetInfoList[!sapply(availStudyDatasetInfoList, is.null)] 
+                      # Compose file path
+                      parseIdsFromPhsAcc =  parseIdsFromStAcc(object, phsAcc = thisPhsAcc)
+                      thisPhsAccNoVer = parseIdsFromPhsAcc$phsAccNoVer
+                      studyDatasetInfoDF <- getDatasetMetaByStudy(object, phsAcc = thisPhsAcc)
 
-              if (length(availStudyDatasetInfoList) > 0) {
+                      return (studyDatasetInfoDF)
+                  })
 
-                  # Merge all var_report of all phts a#nd save
-                  availStudyDatasetInfoDF <- do.call('rbind', availStudyDatasetInfoList)
+                  # Remove null items
+                  availStudyDatasetInfoList <- availStudyDatasetInfoList[!sapply(availStudyDatasetInfoList, is.null)] 
 
 
-                  # Example of saved dataset info files
-                  # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/phs000001/phs000001.v3/data_dic/combo_dump
-                  # phs000001.v3_study_dataset_info_combo.rds
-                  # phs000001.v3_study_dataset_info_combo.txt
-                  # phs000001.v3_study_dataset_info_combo.json
+                  if (length(availStudyDatasetInfoList) > 0) {
 
-                  #####################################
-                  # Create all_study_info directory
-                  #####################################
-                  # Example location of study (no-version) data dictionary
-                  # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/all_study_info
-                  allStudyInfoDir = file.path(prjDataDir,'all_study_info') 
-                  if (!dir.exists(allStudyInfoDir)) {
-                      dir.create(allStudyInfoDir, showWarnings = TRUE, recursive = T, mode = "0777")
+                      # Merge all var_report of all phts a#nd save
+                      availStudyDatasetInfoDF <- do.call('rbind', availStudyDatasetInfoList)
+
+
+                      # Example of saved dataset info files
+                      # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/phs000001/phs000001.v3/data_dic/combo_dump
+                      # phs000001.v3_study_dataset_info_combo.rds
+                      # phs000001.v3_study_dataset_info_combo.txt
+                      # phs000001.v3_study_dataset_info_combo.json
+
+                      #####################################
+                      # Create all_study_info directory
+                      #####################################
+                      # Example location of study (no-version) data dictionary
+                      # /netmnt/sandtraces04/dbgap-release04/dbgapr_test/dbgapr_user_project4/gapwork/data/all_study_info
+                      allStudyInfoDir = file.path(prjDataDir,'all_study_info') 
+                      if (!dir.exists(allStudyInfoDir)) {
+                          dir.create(allStudyInfoDir, showWarnings = TRUE, recursive = T, mode = "0777")
+                      }
+
+                      # Save to rds 
+                      availStudyDatasetInfoFileName = paste('all_study_dataset_info.rds', sep='')
+                      availStudyDatasetInfo_rdsFile = file.path(allStudyInfoDir, availStudyDatasetInfoFileName)
+                      saveRDS(availStudyDatasetInfoDF, file=availStudyDatasetInfo_rdsFile)
+
+                      # Save to csv
+                      availStudyDatasetInfoCsvFileName = paste('all_study_dataset_info.csv', sep='')
+                      availStudyDatasetInfo_csvFile = file.path(allStudyInfoDir, availStudyDatasetInfoCsvFileName)
+                      #write.csv(availStudyDatasetInfoDF, file = availStudyDatasetInfo_csvFile, row.names=FALSE)
+                      write.table(availStudyDatasetInfoDF,, file = availStudyDatasetInfo_csvFile, sep = "\t", row.names = F)
+
+                      # Convert to json and save 
+                      availStudyDatasetInfoJson <- toJSON(availStudyDatasetInfoDF, pretty=T)
+                      availStudyDatasetInfoJsonFileName = paste('all_study_dataset_info.json', sep='')
+                      availStudyDatasetInfo_jsonFile = file.path(allStudyInfoDir, availStudyDatasetInfoJsonFileName) 
+                      write(availStudyDatasetInfoJson, file = availStudyDatasetInfo_jsonFile, ncolumns = if(is.character(availStudyDatasetInfoJson)) 1 else 5, append = F, sep = "\n")
+
+                      # Save to left-justified text 
+                      availStudyDatasetInfoSubsetDF = subset(availStudyDatasetInfoDF, select = c("study_accession", "dataset_accession", "name")) 
+                      availStudyDatasetInfoTxtFileName = paste('all_study_dataset_info_brief_ljustify.txt', sep='')
+                      availStudyDatasetInfo_txtFile = file.path(allStudyInfoDir, availStudyDatasetInfoTxtFileName)
+                      gdata::write.fwf(x=availStudyDatasetInfoSubsetDF, file=availStudyDatasetInfo_txtFile, quote=F, justify="left", sep="    ")
+
+                      if (showAs != "") {
+                          viewAllDatasetInfo(object, showAs = showAs, editor = editor)
+
+                          # invisible return
+                          return(invisible(availStudyDatasetInfoDF))
+                      }
+                      else {
+                          # visible return
+                          return (availStudyDatasetInfoDF)
+                      }
                   }
+              }
+              else {
 
-                  # Save to rds 
-                  availStudyDatasetInfoFileName = paste('all_study_dataset_info.rds', sep='')
-                  availStudyDatasetInfo_rdsFile = file.path(allStudyInfoDir, availStudyDatasetInfoFileName)
-                  saveRDS(availStudyDatasetInfoDF, file=availStudyDatasetInfo_rdsFile)
-
-                  # Save to csv
-                  availStudyDatasetInfoCsvFileName = paste('all_study_dataset_info.csv', sep='')
-                  availStudyDatasetInfo_csvFile = file.path(allStudyInfoDir, availStudyDatasetInfoCsvFileName)
-                  #write.csv(availStudyDatasetInfoDF, file = availStudyDatasetInfo_csvFile, row.names=FALSE)
-                  write.table(availStudyDatasetInfoDF,, file = availStudyDatasetInfo_csvFile, sep = "\t", row.names = F)
-
-                  # Convert to json and save 
-                  availStudyDatasetInfoJson <- toJSON(availStudyDatasetInfoDF, pretty=T)
-                  availStudyDatasetInfoJsonFileName = paste('all_study_dataset_info.json', sep='')
-                  availStudyDatasetInfo_jsonFile = file.path(allStudyInfoDir, availStudyDatasetInfoJsonFileName) 
-                  write(availStudyDatasetInfoJson, file = availStudyDatasetInfo_jsonFile, ncolumns = if(is.character(availStudyDatasetInfoJson)) 1 else 5, append = F, sep = "\n")
-
-                  # Save to left-justified text 
-                  availStudyDatasetInfoSubsetDF = subset(availStudyDatasetInfoDF, select = c("study_accession", "dataset_accession", "name")) 
-                  availStudyDatasetInfoTxtFileName = paste('all_study_dataset_info_brief_ljustify.txt', sep='')
-                  availStudyDatasetInfo_txtFile = file.path(allStudyInfoDir, availStudyDatasetInfoTxtFileName)
-                  gdata::write.fwf(x=availStudyDatasetInfoSubsetDF, file=availStudyDatasetInfo_txtFile, quote=F, justify="left", sep="    ")
-
-                  if (showAs != "") {
-                      viewAllDatasetInfo(object, showAs = showAs, editor = editor)
-
-                      # invisible return
-                      return(invisible(availStudyDatasetInfoDF))
-                  }
-                  else {
-                      # visible return
-                      return (availStudyDatasetInfoDF)
-                  }
+                  type = 'setup'
+                  level = 'error'
+                  show = T
+                  mesg = paste("The file-info-file is not found. Checkout ?prjConfig() and ?prepareData() to make sure the prject directory is setup and the data files are copied and processed. ---", fileInfoFile, sep="") 
+                  writeLog(object,  type = type, level = level, message = mesg, show = show)
               }
 
           })

@@ -1,6 +1,6 @@
 Package: dbgapr
 Title: A dbGaP Phenotype Data Organizer
-Version: 0.9.0
+Version: 0.9.0.1
 Author: person("Luning", "Hao", email = "hao@ncbi.nlm.nih.gov", role=c("aut",
     "cre"))
 Maintainer: Who to complain to <dbgap-help@ncbi.nlm.nih.gov>
