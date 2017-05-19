@@ -679,7 +679,7 @@ knitr::include_graphics("figure/boxplot_phv00053764.v2_LPSC.png")
 
 ###  Variable Venndiagram 
 
-The Venndiagram that shows the overlapping subject between a specified list of variables can be viewed by calling `variableVenndiagram()` as below.
+The Venndiagram that shows the overlapping subjects between a specified list of variables can be viewed by calling `variableVenndiagram()` as below.
 
 ```{r, eval=F, echo=T} 
 s <- Study(phsAcc='phs000001.v3.p1')            

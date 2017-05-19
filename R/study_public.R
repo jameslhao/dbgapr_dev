@@ -563,7 +563,7 @@ setGeneric(
 setMethod(
           f = "variableSummary",
           signature = c("Study", "character"),
-          definition = function(object, phvAcc, ..., emptyToNa = F) {
+          definition = function(object, phvAcc, ..., emptyToNa = FALSE) {
 
               phsAcc = object@phsAcc
               phvAcc <- cleanObjAcc(object, acc = phvAcc, type = 'phv')

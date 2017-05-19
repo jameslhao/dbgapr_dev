@@ -1,7 +1,7 @@
 ---
 title: "Introduction to dbgapr"
 author: "Luning Hao, NIH/NCBI/dbGaP"
-date: "2017-05-18"
+date: "2017-05-19"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::knitr}
@@ -710,7 +710,7 @@ df <- variablePiechart(s, catPhvAcc='phv00053764.v2')
 
 ###  Variable Venndiagram 
 
-The Venndiagram that shows the overlapping subject between a specified list of variables can be viewed by calling `variableVenndiagram()` as below.
+The Venndiagram that shows the overlapping subjects between a specified list of variables can be viewed by calling `variableVenndiagram()` as below.
 
 
 ```r
