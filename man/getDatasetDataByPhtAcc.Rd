@@ -26,7 +26,7 @@ getDatasetDataByPhtAcc(object, phtAcc, ...)
 a data frame. Data of the dataset.
 }
 \description{
-The method returns the data of the given dataset. For large dataset, it may take quite a while to retrieve the data.
+The method returns the data of the given dataset. For large dataset, it may take quite a while to retrieve the data. The data of both subject and sample level variables can be returned through this method.
 }
 \section{Methods (by class)}{
 \itemize{

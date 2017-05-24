@@ -28,7 +28,7 @@ getVariableDataByPhvAcc(object, phvAccList, ...)
 a data frame. Merged data of input variables.
 }
 \description{
-The method returns the data frame of merged data of given dbGaP variable accessions. The variables need to belong to the same study.
+The method returns the data frame of merged data of given dbGaP variable accessions. The variables need to belong to the same study. Only the data of subject level variables can be returned by this function.
 }
 \section{Methods (by class)}{
 \itemize{

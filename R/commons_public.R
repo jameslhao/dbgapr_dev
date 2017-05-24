@@ -833,7 +833,6 @@ setMethod(
                                               loadOk <- downloadByStudy(studyDir)
                                           }
                                       }
-
                                   }
                                   else {
 
@@ -1801,6 +1800,7 @@ setMethod(
                       parseIdsFromPhsAcc =  parseIdsFromStAcc(object, phsAcc = thisPhsAcc)
                       thisPhsAccNoVer = parseIdsFromPhsAcc$phsAccNoVer
                       studyDatasetInfoDF <- getDatasetMetaByStudy(object, phsAcc = thisPhsAcc)
+
 
                       return (studyDatasetInfoDF)
                   })

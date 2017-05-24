@@ -9,7 +9,7 @@
 variableSummary(object, phvAcc, ...)
 
 \S4method{variableSummary}{Study,character}(object, phvAcc, ...,
-  emptyToNa = F)
+  emptyToNa = FALSE)
 }
 \arguments{
 \item{object}{Study class object.}

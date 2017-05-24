@@ -15,3 +15,7 @@ vignettes/*.pdf$
 inst/db
 ^docs$
 ^LICENSE\.md$
+.*.swo
+.*.swp
+.*.swn
+core.*

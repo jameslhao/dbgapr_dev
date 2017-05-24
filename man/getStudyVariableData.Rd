@@ -19,7 +19,7 @@ getStudyVariableData(object, ...)
 
 \item{phtAcc}{a character string. (optional) The dbGaP phenotype dataset accession.}
 
-\item{phvAccList}{a character vector. (optional) The dbGaP variable accessions.}
+\item{phvAccList}{a character vector. (optional) The dbGaP variable accessions. The list only accepts subject level variables. The sample level variables are not accepted.}
 
 \item{subjIdsOrFile}{a character vector or a character string. (optional) This argument is either list of dbGaP subject ids (dbGaP_Subject_ID) of the variables or the path to a file that contains a list of the dbGaP subject ids of the variables. The file is a plain text file with one dbGaP subject id per line.}
 

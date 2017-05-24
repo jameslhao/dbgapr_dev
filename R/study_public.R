@@ -432,7 +432,7 @@ setMethod(
 #' @param object Study class object.
 #' @param ... There are optional arguments.
 #' @param phtAcc a character string. (optional) The dbGaP phenotype dataset accession.
-#' @param phvAccList a character vector. (optional) The dbGaP variable accessions.
+#' @param phvAccList a character vector. (optional) The dbGaP variable accessions. The list only accepts subject level variables. The sample level variables are not accepted. 
 #' @param subjIdsOrFile a character vector or a character string. (optional) This argument is either list of dbGaP subject ids (dbGaP_Subject_ID) of the variables or the path to a file that contains a list of the dbGaP subject ids of the variables. The file is a plain text file with one dbGaP subject id per line.
 #' @param emptyToNa a logical value. (optional). If TRUE, converts the empty values to NA; If FALSE (default), not convert.
 #' @param colNameWithAcc a logical value. (optional) If TRUE, the variable column name is concatenated with the respective variable accession (e.g. AGEPHOT_phv00000027.v2); If FALSE (default), keep the original column name unchanged (e.g. AGEPHOT).
