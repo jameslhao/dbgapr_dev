@@ -185,7 +185,7 @@ ftpDownload(c, phsAcc="phs000001.v3.p1")
 
 Note:
 
-> The downloaded supplemental file 'all_released_study_info.txt.gz' is located under the dot directory as shown below. 
+> The downloaded supplemental file 'all_released_study_info.txt.gz' is located under the ~/ncbi/dbgapr_conf directory as shown below. 
 
 ```{r, eval=F, echo=T, tidy=TRUE, tidy.opts=list(width.cutoff=60)}
 dir("~/.dbgapr/supplemental_data")
