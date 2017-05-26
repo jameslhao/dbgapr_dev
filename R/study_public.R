@@ -494,12 +494,17 @@ setMethod(
                   }
               }
               
-
               # Allow not list and vector as input. Convert to vector of it is a list.
               
               if (length(phvAccList) == 0) {
-                  varDF <- getPhtData(inputPhtAcc, phtAcc, colNameWithAcc)
-                  return (varDF)
+
+                  if (phtAcc != "") {
+                      varDF <- getPhtData(inputPhtAcc, phtAcc, colNameWithAcc)
+                      return (varDF)
+                  }
+                  else {
+                      message("The input arugments phtAcc and phvAccList are both empty. One of them needs to be provided. Checout ?getStudyVariableData() for more details.\n")
+                  }
               }
               else {
                   cleanPhvAccList <- checkPhvAccList(object, phvAccList = phvAccList) 
