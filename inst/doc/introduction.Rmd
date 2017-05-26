@@ -1,7 +1,7 @@
 ---
 title: "Introduction to dbgapr"
 author: "Luning Hao, NIH/NCBI/dbGaP"
-date: "2017-05-25"
+date: "2017-05-26"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::knitr}
@@ -309,7 +309,7 @@ dir("~/myprj/gapwork/data/phs000001/phs000001.v3/combined/log")
 
 ## Data file locations 
 
-After gone through above steps, all the meta-data and data files should have been in place. From this point on, you can continue to use the functions available in this package to further view, search and query the data. Alternatively, you can also directly work on the files available under the project directory with any of your favorite tools without depending on this package. The locations of various meta-data and data files are described below.  
+After going through above steps, all the meta-data and data files should have been in place. From this point on, you can continue to use the functions available in this package to further view, search and query the data. Alternatively, you can also directly work on the files available under the project directory with any of your favorite tools without depending on this package. The locations of various meta-data and data files are described below.  
 
 
 ### File info file
@@ -329,7 +329,7 @@ dir('~/ncbi/dbgapr_conf')
 
 ### All study info file
 
-The file named 'all_released_study_info.txt.gz' contains the meta-info of all the dbGaP released studies. The following is its location.
+The file 'all_released_study_info.txt.gz' contains the meta-info of all the dbGaP released studies. The file is in tab delimited csv format. 
 
 
 ```r
@@ -369,7 +369,7 @@ dir("~/myprj/gapwork/data/")
      [10] "phs000651"      "phs000724"
 
 
-Under each study version directory, there are three sub-directories that host original data files, merged dataset files, as well as meta-info files. 
+Under each study version directory, there are three sub-directories that contain the original data files, merged dataset files, as well as meta-info files, respectively. The files are in tab delimited csv format. 
 
 
 ```r
@@ -379,7 +379,7 @@ dir("~/myprj/gapwork/data/phs000001/phs000001.v3")
     -------
         [1] "combined"          "original"          "supplemental_data"
 
-The unprocessed original data files are located under the 'original' sub-directory. 
+The unprocessed original data files are under the 'original' sub-directory. 
 
 
 ```r
@@ -393,7 +393,7 @@ dir("~/myprj/gapwork/data/phs000001/phs000001.v3/original")
      [4] "phs000001.v3.pht000370.v2.p1.c2.adverse.GRU.txt.gz" 
      ...
 
-The merged dataset files of different consents are located under the 'combined' sub-directory. 
+The merged dataset files of different consents are under the 'combined' sub-directory. The files are in tab delimited csv format. 
 
 
 ```r
@@ -408,7 +408,7 @@ dir("~/myprj/gapwork/data/phs000001/phs000001.v3/combined")
      [5] "phs000001.v3_pht000372.v2_union_c1-c2.txt"
      ...
 
-The study, dataset, variable info and release manifest files are located under the 'supplemental_data' sub-directory.
+The study, dataset, variable meta-data and release manifest files are under the 'supplemental_data' sub-directory. The files are in tab delimited csv format.
 
 
 ```r

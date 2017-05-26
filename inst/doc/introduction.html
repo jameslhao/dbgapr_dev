@@ -12,7 +12,7 @@
 
 <meta name="author" content="Luning Hao, NIH/NCBI/dbGaP" />
 
-<meta name="date" content="2017-05-25" />
+<meta name="date" content="2017-05-26" />
 
 <title>Introduction to dbgapr</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introduction to dbgapr</h1>
 <h4 class="author"><em>Luning Hao, NIH/NCBI/dbGaP</em></h4>
-<h4 class="date"><em>2017-05-25</em></h4>
+<h4 class="date"><em>2017-05-26</em></h4>
 
 
 
@@ -259,7 +259,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="data-file-locations" class="section level2">
 <h2>Data file locations</h2>
-<p>After gone through above steps, all the meta-data and data files should have been in place. From this point on, you can continue to use the functions available in this package to further view, search and query the data. Alternatively, you can also directly work on the files available under the project directory with any of your favorite tools without depending on this package. The locations of various meta-data and data files are described below.</p>
+<p>After going through above steps, all the meta-data and data files should have been in place. From this point on, you can continue to use the functions available in this package to further view, search and query the data. Alternatively, you can also directly work on the files available under the project directory with any of your favorite tools without depending on this package. The locations of various meta-data and data files are described below.</p>
 <div id="file-info-file" class="section level3">
 <h3>File info file</h3>
 <p>The meta-info of all processed phenotype data files is saved in the file ‘pht_file_info_indiv.json’ file as shown below.</p>
@@ -272,7 +272,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="all-study-info-file" class="section level3">
 <h3>All study info file</h3>
-<p>The file named ‘all_released_study_info.txt.gz’ contains the meta-info of all the dbGaP released studies. The following is its location.</p>
+<p>The file ‘all_released_study_info.txt.gz’ contains the meta-info of all the dbGaP released studies. The file is in tab delimited csv format.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">'~/ncbi/dbgapr_conf/supplemental_data'</span>)</code></pre></div>
 <pre><code>output:
 -------
@@ -296,12 +296,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
  [4] &quot;phs000307&quot;      &quot;phs000342&quot;      &quot;phs000363&quot;     
  [7] &quot;phs000401&quot;      &quot;phs000429&quot;      &quot;phs000572&quot;     
  [10] &quot;phs000651&quot;      &quot;phs000724&quot;</code></pre>
-<p>Under each study version directory, there are three sub-directories that host original data files, merged dataset files, as well as meta-info files.</p>
+<p>Under each study version directory, there are three sub-directories that contain the original data files, merged dataset files, as well as meta-info files, respectively. The files are in tab delimited csv format.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3&quot;</span>)  </code></pre></div>
 <pre><code>output:
 -------
     [1] &quot;combined&quot;          &quot;original&quot;          &quot;supplemental_data&quot;</code></pre>
-<p>The unprocessed original data files are located under the ‘original’ sub-directory.</p>
+<p>The unprocessed original data files are under the ‘original’ sub-directory.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3/original&quot;</span>) </code></pre></div>
 <pre><code>output:
 -------
@@ -310,7 +310,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
  [3] &quot;phs000001.v3.pht000370.v2.p1.c1.adverse.EDO.txt.gz&quot;                 
  [4] &quot;phs000001.v3.pht000370.v2.p1.c2.adverse.GRU.txt.gz&quot; 
  ...</code></pre>
-<p>The merged dataset files of different consents are located under the ‘combined’ sub-directory.</p>
+<p>The merged dataset files of different consents are under the ‘combined’ sub-directory. The files are in tab delimited csv format.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3/combined&quot;</span>) </code></pre></div>
 <pre><code>output:
 -------
@@ -320,7 +320,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
  [4] &quot;phs000001.v3_pht000371.v2_union_c1-c2.txt&quot;
  [5] &quot;phs000001.v3_pht000372.v2_union_c1-c2.txt&quot;
  ...</code></pre>
-<p>The study, dataset, variable info and release manifest files are located under the ‘supplemental_data’ sub-directory.</p>
+<p>The study, dataset, variable meta-data and release manifest files are under the ‘supplemental_data’ sub-directory. The files are in tab delimited csv format.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3/supplemental_data&quot;</span>) </code></pre></div>
 <pre><code>output:
 -------
