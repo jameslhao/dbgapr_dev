@@ -278,13 +278,122 @@ The combined data file info of the study is stored in a json file under the log 
       
 ```{r, eval=F, echo=T} 
 dir("~/myprj/gapwork/data/phs000001/phs000001.v3/combined/log")
-
 ```
 
     output:
     -------
       [1] "phs000001.v3_study_pht_combo_info.json"
   
+
+## Data file locations 
+
+After gone through above steps, all the meta-data and data files should have been in place. From this point on, you can continue to use the functions available in this package to further view, search and query the data. Alternatively, you can also directly work on the files available under the project directory with any of your favorite tools without depending on this package. The locations of various meta-data and data files are described below.  
+
+
+### File info file
+
+The meta-info of all processed phenotype data files is saved in the file 'pht_file_info_indiv.json' file as shown below.
+
+```{r, eval=F, echo=T} 
+dir('~/ncbi/dbgapr_conf')
+```
+    output:
+    -------
+        [1] "archived_log"             "pht_file_info_indiv.json"
+        [3] "project_config.json"      "project_setup.log"       
+        [5] "supplemental_data" 
+
+
+### All study info file
+
+The file named 'all_released_study_info.txt.gz' contains the meta-info of all the dbGaP released studies. The following is its location.
+
+```{r, eval=F, echo=T} 
+dir('~/ncbi/dbgapr_conf/supplemental_data')
+```
+    output:
+    -------
+        [1] "all_released_study_info.txt.gz"
+
+The meta-info all available studies and their datasets is saved in different file formats under the project data directory as shown below. 
+
+```{r, eval=F, echo=T} 
+dir("~/myprj/gapwork/data/all_study_info")
+```
+    output:
+    -------
+    [1] "all_study_dataset_info.csv"               
+    [2] "all_study_dataset_info.json"              
+    [3] "all_study_dataset_info.rds"               
+    [4] "all_study_dataset_info_brief_ljustify.txt"
+
+
+### Study specific files  
+
+All data files are organized by studies
+
+```{r, eval=F, echo=T} 
+dir("~/myprj/gapwork/data/")
+```
+    output:
+    -------
+     [1] "all_study_info" "phs000001"      "phs000007"     
+     [4] "phs000307"      "phs000342"      "phs000363"     
+     [7] "phs000401"      "phs000429"      "phs000572"     
+     [10] "phs000651"      "phs000724"
+
+
+Under each study version directory, there are three sub-directories that host original data files, merged dataset files, as well as meta-info files. 
+
+```{r, eval=F, echo=T} 
+dir("~/myprj/gapwork/data/phs000001/phs000001.v3")  
+```
+    output:
+    -------
+        [1] "combined"          "original"          "supplemental_data"
+
+The unprocessed original data files are located under the 'original' sub-directory. 
+
+```{r, eval=F, echo=T} 
+dir("~/myprj/gapwork/data/phs000001/phs000001.v3/original") 
+```
+    output:
+    -------
+     [1] "phs000001.v3.pht000001.v2.p1.c1.genspecphenotype.EDO.txt.gz"        
+     [2] "phs000001.v3.pht000001.v2.p1.c2.genspecphenotype.GRU.txt.gz"        
+     [3] "phs000001.v3.pht000370.v2.p1.c1.adverse.EDO.txt.gz"                 
+     [4] "phs000001.v3.pht000370.v2.p1.c2.adverse.GRU.txt.gz" 
+     ...
+
+The merged dataset files of different consents are located under the 'combined' sub-directory. 
+
+```{r, eval=F, echo=T} 
+dir("~/myprj/gapwork/data/phs000001/phs000001.v3/combined") 
+```
+    output:
+    -------
+     [1] "log"                                      
+     [2] "phs000001.v3_pht000001.v2_union_c1-c2.txt"
+     [3] "phs000001.v3_pht000370.v2_union_c1-c2.txt"
+     [4] "phs000001.v3_pht000371.v2_union_c1-c2.txt"
+     [5] "phs000001.v3_pht000372.v2_union_c1-c2.txt"
+     ...
+
+The study, dataset, variable info and release manifest files are located under the 'supplemental_data' sub-directory.
+
+```{r, eval=F, echo=T} 
+dir("~/myprj/gapwork/data/phs000001/phs000001.v3/supplemental_data") 
+```
+    output:
+    -------
+     [1] "phs000001.v3_study_dataset_info.txt.gz"       
+     [2] "phs000001.v3_study_file_manifest.txt.gz"      
+     [3] "phs000001.v3_study_id_variable_name.txt.gz"   
+     [4] "phs000001.v3_study_info.txt.gz"               
+     [5] "phs000001.v3_study_variable_code_value.txt.gz"
+     [6] "phs000001.v3_study_variable_info.txt.gz"
+     ...
+
 
 ## View, Search, and Query  
 
@@ -535,6 +644,19 @@ colnames(df)
      [5] "OBSTIME_phv00053740.v2"  "ADVDESC_phv00053732.v2" 
      ...
     
+###  Get ID mapping 
+
+The mapping table between subject, sample, and pedigree IDs can be obtained by calling `getIdInfo()` as below. 
+
+```{r, eval=F, echo=T} 
+s <- Study(phsAcc = 'phs000001.v3.p1')            
+# get subject id info 
+df <- getIdInfo(s, infoType='subject')
+# or get sample id info 
+df <- getIdInfo(s, infoType='sample')
+# or get pedigree id info 
+df <- getIdInfo(s, infoType='pedigree')
+```
 
 ### Show variable data summary  
 

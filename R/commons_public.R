@@ -619,25 +619,18 @@ setMethod(
               ########################
               baseUrl = 'ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies'
 
-              # New!
-              # Example ftp files
-              #
-              # All studies level
-              # ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/
-              # all_released_study_info.txt.gz
-
-              # This_study_version level
-              # ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/phs000429/phs000429.v1/
-              # phs000429.v1_study_id_variable_name.txt.gz
-              # phs000429.v1_study_info.txt.gz
-              # phs000429.v1_study_dataset_info.txt.gz
-              # phs000429.v1_study_variable_info.txt.gz
-              # phs000429.v1_study_variable_code_value.txt.gz
-              extAllStudyInfoFile <- object@extAllStudyInfoFile
 
 
               ###### S3 func  Download to destDir #####
               downloadFile <- function(url, destFile) {
+
+                  # This_study_version level
+                  # ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/phs000429/phs000429.v1/
+                  # phs000429.v1_study_id_variable_name.txt.gz
+                  # phs000429.v1_study_info.txt.gz
+                  # phs000429.v1_study_dataset_info.txt.gz
+                  # phs000429.v1_study_variable_info.txt.gz
+                  # phs000429.v1_study_variable_code_value.txt.gz
 
                   ##############################
                   # TryCatch internet connect
@@ -705,11 +698,23 @@ setMethod(
               ##### Note: these are plain-text file, use auto for http web-download is fine. Do not use 'curl'. ####
               dload_method = 'auto'
 
-              ## Download AllStudyInfoFile to .dbgapr dir
-              # /c/Users/mars/Documents/.dbgapr/supplemental_data/all_released_study_info.txt.gz 
+              ############################
+              # # All released studies
+              ############################
+              ## Download AllStudyInfoFile to ncbi/dbgapr_conf dir
+
+              # Example ftp files
+              # URL  : ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/all_released_study_info.txt.gz
+              # File : /Users/hao/Documents/ncbi/dbgapr_conf/supplemental_data/all_released_study_info.txt.gz"
+              extAllStudyInfoFile <- object@extAllStudyInfoFile
+
               destFile = extAllStudyInfoFile
               url = paste(baseUrl, "/", basename(destFile), sep = "")
               loadOk_0 <- downloadFile(url, destFile)
+
+              print("DDDDest")
+              print(url)
+              print(destFile)
 
               if (file.exists(extAllStudyInfoFile)) {
 
@@ -754,11 +759,13 @@ setMethod(
                       #####################
                       # Create destDir
                       #####################
+
                       destDir = file.path(studyDir, "supplemental_data")
                       if (!file.exists(destDir)){
                           dir.create(destDir)
                       }
 
+                      #### All avaiable studies and their datasets  ####
                       # study info 
                       file = studyInfoFile
                       url = paste0(studyVerUrl, "/", file)
@@ -1671,7 +1678,6 @@ setMethod(
               fileInfoFile = object@fileInfoFile 
 
               # New!
-              # /c/Users/mars/Documents/.dbgapr/supplemental_data/all_released_study_info.txt.gz
               allStudyInfo <- getExtData(object, type = 'study')
 
               if (!is.null(allStudyInfo)) {

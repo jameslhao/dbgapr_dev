@@ -4391,9 +4391,6 @@ setMethod(
               if (type == 'study') {
 
                   # New!
-                  # all_released_study_info
-                  # ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/all_released_study_info 
-                  # /c/Users/mars/Documents/.dbgapr/supplemental_data/all_released_study_info.txt.gz
                   infoFile = object@extAllStudyInfoFile 
 
 

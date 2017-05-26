@@ -12,7 +12,7 @@
 
 <meta name="author" content="Luning Hao, NIH/NCBI/dbGaP" />
 
-<meta name="date" content="2017-05-24" />
+<meta name="date" content="2017-05-25" />
 
 <title>Introduction to dbgapr</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introduction to dbgapr</h1>
 <h4 class="author"><em>Luning Hao, NIH/NCBI/dbGaP</em></h4>
-<h4 class="date"><em>2017-05-24</em></h4>
+<h4 class="date"><em>2017-05-25</em></h4>
 
 
 
@@ -255,6 +255,82 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <pre><code>output:
 -------
   [1] &quot;phs000001.v3_study_pht_combo_info.json&quot;</code></pre>
+</div>
+</div>
+<div id="data-file-locations" class="section level2">
+<h2>Data file locations</h2>
+<p>After gone through above steps, all the meta-data and data files should have been in place. From this point on, you can continue to use the functions available in this package to further view, search and query the data. Alternatively, you can also directly work on the files available under the project directory with any of your favorite tools without depending on this package. The locations of various meta-data and data files are described below.</p>
+<div id="file-info-file" class="section level3">
+<h3>File info file</h3>
+<p>The meta-info of all processed phenotype data files is saved in the file ‘pht_file_info_indiv.json’ file as shown below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">'~/ncbi/dbgapr_conf'</span>)</code></pre></div>
+<pre><code>output:
+-------
+    [1] &quot;archived_log&quot;             &quot;pht_file_info_indiv.json&quot;
+    [3] &quot;project_config.json&quot;      &quot;project_setup.log&quot;       
+    [5] &quot;supplemental_data&quot; </code></pre>
+</div>
+<div id="all-study-info-file" class="section level3">
+<h3>All study info file</h3>
+<p>The file named ‘all_released_study_info.txt.gz’ contains the meta-info of all the dbGaP released studies. The following is its location.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">'~/ncbi/dbgapr_conf/supplemental_data'</span>)</code></pre></div>
+<pre><code>output:
+-------
+    [1] &quot;all_released_study_info.txt.gz&quot;</code></pre>
+<p>The meta-info all available studies and their datasets is saved in different file formats under the project data directory as shown below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/all_study_info&quot;</span>)</code></pre></div>
+<pre><code>output:
+-------
+[1] &quot;all_study_dataset_info.csv&quot;               
+[2] &quot;all_study_dataset_info.json&quot;              
+[3] &quot;all_study_dataset_info.rds&quot;               
+[4] &quot;all_study_dataset_info_brief_ljustify.txt&quot;</code></pre>
+</div>
+<div id="study-specific-files" class="section level3">
+<h3>Study specific files</h3>
+<p>All data files are organized by studies</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/&quot;</span>)</code></pre></div>
+<pre><code>output:
+-------
+ [1] &quot;all_study_info&quot; &quot;phs000001&quot;      &quot;phs000007&quot;     
+ [4] &quot;phs000307&quot;      &quot;phs000342&quot;      &quot;phs000363&quot;     
+ [7] &quot;phs000401&quot;      &quot;phs000429&quot;      &quot;phs000572&quot;     
+ [10] &quot;phs000651&quot;      &quot;phs000724&quot;</code></pre>
+<p>Under each study version directory, there are three sub-directories that host original data files, merged dataset files, as well as meta-info files.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3&quot;</span>)  </code></pre></div>
+<pre><code>output:
+-------
+    [1] &quot;combined&quot;          &quot;original&quot;          &quot;supplemental_data&quot;</code></pre>
+<p>The unprocessed original data files are located under the ‘original’ sub-directory.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3/original&quot;</span>) </code></pre></div>
+<pre><code>output:
+-------
+ [1] &quot;phs000001.v3.pht000001.v2.p1.c1.genspecphenotype.EDO.txt.gz&quot;        
+ [2] &quot;phs000001.v3.pht000001.v2.p1.c2.genspecphenotype.GRU.txt.gz&quot;        
+ [3] &quot;phs000001.v3.pht000370.v2.p1.c1.adverse.EDO.txt.gz&quot;                 
+ [4] &quot;phs000001.v3.pht000370.v2.p1.c2.adverse.GRU.txt.gz&quot; 
+ ...</code></pre>
+<p>The merged dataset files of different consents are located under the ‘combined’ sub-directory.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3/combined&quot;</span>) </code></pre></div>
+<pre><code>output:
+-------
+ [1] &quot;log&quot;                                      
+ [2] &quot;phs000001.v3_pht000001.v2_union_c1-c2.txt&quot;
+ [3] &quot;phs000001.v3_pht000370.v2_union_c1-c2.txt&quot;
+ [4] &quot;phs000001.v3_pht000371.v2_union_c1-c2.txt&quot;
+ [5] &quot;phs000001.v3_pht000372.v2_union_c1-c2.txt&quot;
+ ...</code></pre>
+<p>The study, dataset, variable info and release manifest files are located under the ‘supplemental_data’ sub-directory.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">dir</span>(<span class="st">&quot;~/myprj/gapwork/data/phs000001/phs000001.v3/supplemental_data&quot;</span>) </code></pre></div>
+<pre><code>output:
+-------
+ [1] &quot;phs000001.v3_study_dataset_info.txt.gz&quot;       
+ [2] &quot;phs000001.v3_study_file_manifest.txt.gz&quot;      
+ [3] &quot;phs000001.v3_study_id_variable_name.txt.gz&quot;   
+ [4] &quot;phs000001.v3_study_info.txt.gz&quot;               
+ [5] &quot;phs000001.v3_study_variable_code_value.txt.gz&quot;
+ [6] &quot;phs000001.v3_study_variable_info.txt.gz&quot;
+ ...</code></pre>
 </div>
 </div>
 <div id="view-search-and-query" class="section level2">
@@ -456,6 +532,17 @@ df &lt;-<span class="st"> </span><span class="kw">getStudyVariableData</span>(s,
  [3] &quot;ID2_phv00053730.v2&quot;      &quot;ADVSTAT_phv00053733.v2&quot; 
  [5] &quot;OBSTIME_phv00053740.v2&quot;  &quot;ADVDESC_phv00053732.v2&quot; 
  ...</code></pre>
+</div>
+<div id="get-id-mapping" class="section level3">
+<h3>Get ID mapping</h3>
+<p>The mapping table between subject, sample, and pedigree IDs can be obtained by calling <code>getIdInfo()</code> as below.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s &lt;-<span class="st"> </span><span class="kw">Study</span>(<span class="dt">phsAcc =</span> <span class="st">'phs000001.v3.p1'</span>)            
+<span class="co"># get subject id info </span>
+df &lt;-<span class="st"> </span><span class="kw">getIdInfo</span>(s, <span class="dt">infoType=</span><span class="st">'subject'</span>)
+<span class="co"># or get sample id info </span>
+df &lt;-<span class="st"> </span><span class="kw">getIdInfo</span>(s, <span class="dt">infoType=</span><span class="st">'sample'</span>)
+<span class="co"># or get pedigree id info </span>
+df &lt;-<span class="st"> </span><span class="kw">getIdInfo</span>(s, <span class="dt">infoType=</span><span class="st">'pedigree'</span>)</code></pre></div>
 </div>
 <div id="show-variable-data-summary" class="section level3">
 <h3>Show variable data summary</h3>

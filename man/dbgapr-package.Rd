@@ -47,6 +47,7 @@ The functions of the package belong to \code{\linkS4class{Commons}} and \code{\l
 \item \code{\link{getStudyVariableInfo}}
 \item \code{\link{getPhvAccListByTerms}}
 \item \code{\link{getStudyVariableData}}
+\item \code{\link{getIdInfo}}
 \item \code{\link{variableSummary}}
 \item \code{\link{variableBoxplot}}
 \item \code{\link{variableScatterplot}}

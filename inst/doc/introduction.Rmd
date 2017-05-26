@@ -1,7 +1,7 @@
 ---
 title: "Introduction to dbgapr"
 author: "Luning Hao, NIH/NCBI/dbGaP"
-date: "2017-05-24"
+date: "2017-05-25"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::knitr}
@@ -307,6 +307,124 @@ dir("~/myprj/gapwork/data/phs000001/phs000001.v3/combined/log")
       [1] "phs000001.v3_study_pht_combo_info.json"
   
 
+## Data file locations 
+
+After gone through above steps, all the meta-data and data files should have been in place. From this point on, you can continue to use the functions available in this package to further view, search and query the data. Alternatively, you can also directly work on the files available under the project directory with any of your favorite tools without depending on this package. The locations of various meta-data and data files are described below.  
+
+
+### File info file
+
+The meta-info of all processed phenotype data files is saved in the file 'pht_file_info_indiv.json' file as shown below.
+
+
+```r
+dir('~/ncbi/dbgapr_conf')
+```
+    output:
+    -------
+        [1] "archived_log"             "pht_file_info_indiv.json"
+        [3] "project_config.json"      "project_setup.log"       
+        [5] "supplemental_data" 
+
+
+### All study info file
+
+The file named 'all_released_study_info.txt.gz' contains the meta-info of all the dbGaP released studies. The following is its location.
+
+
+```r
+dir('~/ncbi/dbgapr_conf/supplemental_data')
+```
+    output:
+    -------
+        [1] "all_released_study_info.txt.gz"
+
+The meta-info all available studies and their datasets is saved in different file formats under the project data directory as shown below. 
+
+
+```r
+dir("~/myprj/gapwork/data/all_study_info")
+```
+    output:
+    -------
+    [1] "all_study_dataset_info.csv"               
+    [2] "all_study_dataset_info.json"              
+    [3] "all_study_dataset_info.rds"               
+    [4] "all_study_dataset_info_brief_ljustify.txt"
+
+
+### Study specific files  
+
+All data files are organized by studies
+
+
+```r
+dir("~/myprj/gapwork/data/")
+```
+    output:
+    -------
+     [1] "all_study_info" "phs000001"      "phs000007"     
+     [4] "phs000307"      "phs000342"      "phs000363"     
+     [7] "phs000401"      "phs000429"      "phs000572"     
+     [10] "phs000651"      "phs000724"
+
+
+Under each study version directory, there are three sub-directories that host original data files, merged dataset files, as well as meta-info files. 
+
+
+```r
+dir("~/myprj/gapwork/data/phs000001/phs000001.v3")  
+```
+    output:
+    -------
+        [1] "combined"          "original"          "supplemental_data"
+
+The unprocessed original data files are located under the 'original' sub-directory. 
+
+
+```r
+dir("~/myprj/gapwork/data/phs000001/phs000001.v3/original") 
+```
+    output:
+    -------
+     [1] "phs000001.v3.pht000001.v2.p1.c1.genspecphenotype.EDO.txt.gz"        
+     [2] "phs000001.v3.pht000001.v2.p1.c2.genspecphenotype.GRU.txt.gz"        
+     [3] "phs000001.v3.pht000370.v2.p1.c1.adverse.EDO.txt.gz"                 
+     [4] "phs000001.v3.pht000370.v2.p1.c2.adverse.GRU.txt.gz" 
+     ...
+
+The merged dataset files of different consents are located under the 'combined' sub-directory. 
+
+
+```r
+dir("~/myprj/gapwork/data/phs000001/phs000001.v3/combined") 
+```
+    output:
+    -------
+     [1] "log"                                      
+     [2] "phs000001.v3_pht000001.v2_union_c1-c2.txt"
+     [3] "phs000001.v3_pht000370.v2_union_c1-c2.txt"
+     [4] "phs000001.v3_pht000371.v2_union_c1-c2.txt"
+     [5] "phs000001.v3_pht000372.v2_union_c1-c2.txt"
+     ...
+
+The study, dataset, variable info and release manifest files are located under the 'supplemental_data' sub-directory.
+
+
+```r
+dir("~/myprj/gapwork/data/phs000001/phs000001.v3/supplemental_data") 
+```
+    output:
+    -------
+     [1] "phs000001.v3_study_dataset_info.txt.gz"       
+     [2] "phs000001.v3_study_file_manifest.txt.gz"      
+     [3] "phs000001.v3_study_id_variable_name.txt.gz"   
+     [4] "phs000001.v3_study_info.txt.gz"               
+     [5] "phs000001.v3_study_variable_code_value.txt.gz"
+     [6] "phs000001.v3_study_variable_info.txt.gz"
+     ...
+
+
 ## View, Search, and Query  
 
 Note:
@@ -569,6 +687,20 @@ colnames(df)
      [5] "OBSTIME_phv00053740.v2"  "ADVDESC_phv00053732.v2" 
      ...
     
+###  Get ID mapping 
+
+The mapping table between subject, sample, and pedigree IDs can be obtained by calling `getIdInfo()` as below. 
+
+
+```r
+s <- Study(phsAcc = 'phs000001.v3.p1')            
+# get subject id info 
+df <- getIdInfo(s, infoType='subject')
+# or get sample id info 
+df <- getIdInfo(s, infoType='sample')
+# or get pedigree id info 
+df <- getIdInfo(s, infoType='pedigree')
+```
 
 ### Show variable data summary  
 
@@ -630,7 +762,7 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variableBoxplot(s, numPhvAcc='phv00000027.v2', catPhvAcc='phv00000032.v2')
 ```
 
-<img src="figure/boxplot_phv00000027.v2_AGEPHOT_phv00000032.v2_MARITAL.png" title="plot of chunk unnamed-chunk-39" alt="plot of chunk unnamed-chunk-39" width="600px" />
+<img src="figure/boxplot_phv00000027.v2_AGEPHOT_phv00000032.v2_MARITAL.png" title="plot of chunk unnamed-chunk-48" alt="plot of chunk unnamed-chunk-48" width="600px" />
 
 For all plotting functions, the information of the respective variables and the location of saved images is console displayed as shown below. 
 
@@ -666,7 +798,7 @@ cat_1 = 'phv00053757.v2'
 df <- variableScatterplot(s, numPhvAcc_1=num_1, numPhvAcc_2=num_2, catPhvAcc=cat_1)
 ```
 
-<img src="figure/scatterplot_phv00000027.v2_AGEPHOT_phv00053747.v2_LNUCSCORE_phv00053757.v2_RNUC.png" title="plot of chunk unnamed-chunk-41" alt="plot of chunk unnamed-chunk-41" width="600px" height="500px" />
+<img src="figure/scatterplot_phv00000027.v2_AGEPHOT_phv00053747.v2_LNUCSCORE_phv00053757.v2_RNUC.png" title="plot of chunk unnamed-chunk-50" alt="plot of chunk unnamed-chunk-50" width="600px" height="500px" />
 
 ###  Variable histogram
 
@@ -682,7 +814,7 @@ df <- variableHistogram(s, phvAcc='phv00053747.v2')
 df <- variableHistogram(s, phvAcc='phv00053747.v2', withDensity=F)    
 ```
 
-<img src="figure/histogram_phv00053747.v2_LNUCSCORE.png" title="plot of chunk unnamed-chunk-43" alt="plot of chunk unnamed-chunk-43" width="600px" />
+<img src="figure/histogram_phv00053747.v2_LNUCSCORE.png" title="plot of chunk unnamed-chunk-52" alt="plot of chunk unnamed-chunk-52" width="600px" />
 
 When calling the function with a categorical variable, a barchart of each of the categories is drawn.
 
@@ -693,7 +825,7 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variableHistogram(s, phvAcc='phv00053733.v2')
 ```
 
-<img src="figure/barchart_phv00053733.v2_ADVSTAT.png" title="plot of chunk unnamed-chunk-45" alt="plot of chunk unnamed-chunk-45" width="600px" />
+<img src="figure/barchart_phv00053733.v2_ADVSTAT.png" title="plot of chunk unnamed-chunk-54" alt="plot of chunk unnamed-chunk-54" width="600px" />
 
 
 ###  Variable piechart
@@ -706,7 +838,7 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variablePiechart(s, catPhvAcc='phv00053764.v2')
 ```
 
-<img src="figure/boxplot_phv00053764.v2_LPSC.png" title="plot of chunk unnamed-chunk-47" alt="plot of chunk unnamed-chunk-47" width="600px" />
+<img src="figure/boxplot_phv00053764.v2_LPSC.png" title="plot of chunk unnamed-chunk-56" alt="plot of chunk unnamed-chunk-56" width="600px" />
 
 ###  Variable Venndiagram 
 
@@ -719,7 +851,7 @@ acc_list = c('phv00054139.v1', 'phv00053796.v2', 'phv00000089.v2')
 df <- variableVenndiagram(s, phvAccList=acc_list)
 ```
 
-<img src="figure/VennDiagram_AGECT_phv00054139.v1_DT_PROA_phv00053796.v2_SYST07_phv00000089.v2.png" title="plot of chunk unnamed-chunk-49" alt="plot of chunk unnamed-chunk-49" width="600px" />
+<img src="figure/VennDiagram_AGECT_phv00054139.v1_DT_PROA_phv00053796.v2_SYST07_phv00000089.v2.png" title="plot of chunk unnamed-chunk-58" alt="plot of chunk unnamed-chunk-58" width="600px" />
 
 ###  Variable correlation heatmap
 
@@ -733,7 +865,7 @@ num_acc_list = c('phv00000007.v2', 'phv00053794.v2', 'phv00053786.v2', 'phv00000
 df <- variableCorrelHeatmap(s, catPhvAcc=cat_acc, numPhvAccList=num_acc_list)
 ```
 
-<img src="figure/correlmatrix_SCHOOL_phv00000035.v2_RCORBASE_phv00000007.v2_DT_LYC_phv00053794.v2_DT_VITE_phv00053786.v2_DIAS12_phv00000106.v2.png" title="plot of chunk unnamed-chunk-51" alt="plot of chunk unnamed-chunk-51" width="600px" />
+<img src="figure/correlmatrix_SCHOOL_phv00000035.v2_RCORBASE_phv00000007.v2_DT_LYC_phv00053794.v2_DT_VITE_phv00053786.v2_DIAS12_phv00000106.v2.png" title="plot of chunk unnamed-chunk-60" alt="plot of chunk unnamed-chunk-60" width="600px" />
 
 
 > Write to dbgap-help@ncbi.nlm.nih.gov for any questions.

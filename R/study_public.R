@@ -524,6 +524,136 @@ setMethod(
               }
           })
 
+
+
+
+
+
+# -----------------------------------
+# Method: getIdInfo
+# -----------------------------------
+
+#' Get subject, sample, or pedigree information. 
+#' 
+#' The method retrieves either subject, sample, or pedigree information of a given study. 
+#'
+#' @param object Study class object.
+#' @param infoType a charcter string. The type of information that is either 'subject', 'sample', or 'pedigree'. 
+#' @param ... There are optional arguments.
+#' @param colNameWithAcc a logical value. (optional) If TRUE, the variable column name is concatenated with the respective variable accession (e.g. AGEPHOT_phv00000027.v2); If FALSE (default), keep the original column name unchanged (e.g. AGEPHOT).
+#' @return  a data frame. The subject, sample, or pedigree info data table. 
+#' @export getIdInfo 
+#' @examples
+#' \dontrun{
+#'
+#' s <- Study(phsAcc = 'phs000001.v3.p1')
+#' getIdInfo(s)
+#'}
+
+
+setGeneric(
+    name = "getIdInfo",
+    def = function(object, ...) {
+        standardGeneric("getIdInfo")
+    })
+
+    #' @describeIn getIdInfo of class Study 
+    setMethod(
+        f = "getIdInfo",
+        signature = c("Study"),
+        definition = function(object, infoType, ..., colNameWithAcc = FALSE) {
+
+            phsAcc = object@phsAcc
+            fileInfoFile = object@fileInfoFile
+
+            if (file.exists(fileInfoFile)) {
+
+                studyInfoDF <- getExtData(object, type = 'study', phsAcc = phsAcc)
+
+                if (nrow(studyInfoDF) > 0) {
+
+                    thisStudyDF <- dplyr::filter(studyInfoDF, studyInfoDF$this_study_accession == phsAcc)
+
+                    if (nrow(thisStudyDF) >0 ) {
+
+                        rootPhsAcc <- thisStudyDF[['root_study_accession']]
+
+
+                        subjMatch <- grepl('subj', infoType, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
+                        sampMatch <- grepl('samp', infoType, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
+                        pedMatch <- grepl('ped', infoType, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
+
+                        thisMultiType = ''
+                        if (subjMatch) {
+                            thisMultiType = 'Subject'
+                        }
+                        else if (sampMatch) {
+                            thisMultiType = 'Sample'
+                        }
+                        else if (pedMatch) {
+                            thisMultiType = 'Pedigree'
+                        }
+                        else {
+                            type = 'process'
+                            level = 'error'
+                            show = T
+                            mesg = paste("The infoType input argument value, ", infoType, ", doesn't match either 'subject', 'sample', or 'pedigree'. \n", sep="")
+                            writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                        }
+
+
+                        if (thisMultiType != '') {
+
+                            fileInfoDF <- fromJSON(fileInfoFile, flatten=TRUE)
+                            thisFileDF <- dplyr::filter(fileInfoDF, fileInfoDF$fStAcc == rootPhsAcc, fileInfoDF$isMulti == TRUE, fileInfoDF$multiType == thisMultiType) 
+
+                            if (nrow(thisFileDF) > 0) {
+
+                                infoFile <- thisFileDF[['pathToFile']]
+
+                                dataDF <- read.table(infoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
+
+
+                                return(dataDF)
+                            }
+                            else {
+
+                                if (thisMultiType == 'Subject' | thisMultiType == 'Sample') {
+
+                                    type = 'process'
+                                    level = 'error'
+                                    show = T
+                                    mesg = paste("", thisMultiType, " info file of this study ", phsAcc, " is not found. Make sure all phenotype files are downloaded and checkout ?prepareData() to see how to copy and process the downloaded files. Write to dbgap-help@ncbi.nlm.gov if you have any questions.\n", sep="")
+                                    writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                }
+                                else if (thisMultiType == 'Pedigree') {
+                                    type = 'process'
+                                    level = 'info'
+                                    show = T
+                                    mesg = paste("", thisMultiType, " file of this study ", phsAcc, " is not found. The study may not have pedigree information available. Write to dbgap-help@ncbi.nlm.gov if you have any questions.\n", sep="")
+                                    writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                }
+                            }
+                        }
+                    }
+                    else {
+
+                        type = 'process'
+                        level = 'error'
+                        show = T
+                        mesg = paste("The study ", phsAcc, " is not found in the study info file. Checkout ?ftpDownload() to get updated supplemental meta-data files from the dbGaP ftp site.\n", , sep="")
+                        writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                    }
+                }
+
+            } # fileInfoFile not exists
+
+        })
+
+
+
+
+
 # ----------------------------- 
 # Method: variableSummary
 # ----------------------------- 
@@ -2464,6 +2594,7 @@ setMethod(
 # getStudyVariableInfo
 # getPhvAccListByTerms
 # getStudyVariableData
+# getIdInfo
 # variableSummary
 # variableBoxplot
 # variableScatterplot
