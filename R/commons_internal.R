@@ -3469,12 +3469,6 @@ setMethod(
               #catVarCodeValCombo <- as.character(catVarInfoDF$code_value_combo)
 
 
-              #######################
-              # Build codeValCombo
-              #######################
-              catVarCodeValCombo <- buildVarCodeValCombo(object, catVarAcc = catVarAcc, varCodeValDF = varCodeValDF)
-
-
               #matchVarCodeValDF <- dplyr::filter(varCodeValDF, varCodeValDF$variable_accession == catVarAcc)
 
               ############################
@@ -3495,124 +3489,138 @@ setMethod(
               #################################
               # Separate out the data columns 
               #################################
-              catVarDataNoIdDF = subset(catVarDataDF, select = c(catVarName))			# separate out catVar column only
 
-              # The string type example: (phv00053757.v2) 
-              # 	  RNUC
-              #   1 NUC-C
-              #   2 NUC-C
-              #   3 NUC-D
-              #   4 NUC-A
+              if(catVarName %in% colnames(catVarDataDF)) {
 
-              # The enumeated integer type example: (phv00053856.v2) 
-              #        SCHOOL
-              # 1      2
-              # 2      4
-              # 3      5
-              # 4      4
+                  #######################
+                  # Build codeValCombo
+                  #######################
+                  catVarCodeValCombo <- buildVarCodeValCombo(object, catVarAcc = catVarAcc, varCodeValDF = varCodeValDF)
 
+                  catVarDataNoIdDF = subset(catVarDataDF, select = c(catVarName))			# separate out catVar column only
 
-              ########################
-              # Categorical type 
-              ########################
-              finalDF = data.frame()
-              if (catVarType == 'enum_integer' | catVarType == 'string' | catVarType == 'enumerated integer') {
+                  # The string type example: (phv00053757.v2) 
+                  # 	  RNUC
+                  #   1 NUC-C
+                  #   2 NUC-C
+                  #   3 NUC-D
+                  #   4 NUC-A
 
-
-                  ##################################
-                  # ATTN! Reality check datatype
-                  ##################################
-                  # Sometime the variable is labelled as enum_integer in the data_dic, but actual type is string 
-                  # For example phv00053764.v2 has an enum_integer type, but its value is a string
-                  # LPSC
-                  # 1 PSC-A
-                  # 2 PSC-B
-                  # 3 PSC-A
-                  # 4 PSC-A
-
-                  realTypeNamedChar <- sapply(catVarDataNoIdDF, class)
-                  realTypeDF <- data.frame(as.list(realTypeNamedChar))				# convert named char to dataframe 
-                  realType <- realTypeDF[,1]
+                  # The enumeated integer type example: (phv00053856.v2) 
+                  #        SCHOOL
+                  # 1      2
+                  # 2      4
+                  # 3      5
+                  # 4      4
 
 
-                  ##### Reset if it is the case ######
-                  if (realType == 'character') {
-                      catVarType = 'string'											# reset cartVarType to the realType
-                  }
+                  ########################
+                  # Categorical type 
+                  ########################
+                  finalDF = data.frame()
+                  if (catVarType == 'enum_integer' | catVarType == 'string' | catVarType == 'enumerated integer') {
 
-                  #######################################
-                  # Deal with enumerated integer type
-                  #######################################
-                  # Replace column value wiht a combo string of original colmn name and the respective enumerated value
-                  if (catVarType == 'enum_integer' |  catVarType == 'enumerated integer') {
 
-                      # Replace column names
-                      # make
-                      # h778 h778 h778 h778 h778 h778 
-                      # to
-                      # h778_ h778_ h778_ h778_ h778_ h778_ 
-                      names(catVarDataNoIdDF) <- sub("(.*)$", "\\1_", names(catVarDataNoIdDF))
+                      ##################################
+                      # ATTN! Reality check datatype
+                      ##################################
+                      # Sometime the variable is labelled as enum_integer in the data_dic, but actual type is string 
+                      # For example phv00053764.v2 has an enum_integer type, but its value is a string
+                      # LPSC
+                      # 1 PSC-A
+                      # 2 PSC-B
+                      # 3 PSC-A
+                      # 4 PSC-A
 
-                      # Then make it to
-                      # h778_1 h778_2 h778_3 h778_4 h778_5 h778_6  
-                      #
-                      # Groupping by unique column value, each group has a column name+group#. 
-                      # As an example, for the numbers of the column SCHOOL, the value is SCHOOL_1, SCHOOL_2 ...
-                      uniqueCatVals <- rapply(catVarDataNoIdDF,function(x) (unique(x)))		# get unique enumerated values (returned as named integer)
+                      realTypeNamedChar <- sapply(catVarDataNoIdDF, class)
+                      realTypeDF <- data.frame(as.list(realTypeNamedChar))				# convert named char to dataframe 
+                      realType <- realTypeDF[,1]
 
-                      uniqueCatValsDF <- data.frame(as.list(uniqueCatVals))				# convert named integer to dataframe 
-                      varNameCodeCombos <- colnames(uniqueCatValsDF) 				    # Example:  [1] "SCHOOL_1" "SCHOOL_2" "SCHOOL_3" "SCHOOL_4" "SCHOOL_5" "SCHOOL_6"
 
-                      #############################
-                      # Create code Value List
-                      #############################
-                      # Example list item:   
-                      # "1:Grade_11_or_less" 
-                      # "2:High_school_graduate"
-                      catVarCodeValList <- unlist(strsplit(catVarCodeValCombo, '|', fixed=TRUE))
-                      cleanCodeVals <- lapply(catVarCodeValList, function(item) {
-                                                  item <- trimws(item)
-                                                  item <- gsub("\\s+", "_", item)
-                                      })
+                      ##### Reset if it is the case ######
+                      if (realType == 'character') {
+                          catVarType = 'string'											# reset cartVarType to the realType
+                      }
 
-                      ################################################################
-                      # Create a new column that has varNameCode as column values
-                      ################################################################
-                      # Resulting datafraame
-                      #  SCHOOL tempCol
-                      #  1      2 SCHOOL2
-                      #  2      4 SCHOOL4
-                      #  3      5 SCHOOL5
-                      #  4      4 SCHOOL4
+                      #######################################
+                      # Deal with enumerated integer type
+                      #######################################
+                      # Replace column value wiht a combo string of original colmn name and the respective enumerated value
+                      if (catVarType == 'enum_integer' |  catVarType == 'enumerated integer') {
 
-                      index <- unlist(list(1:length(varNameCodeCombos)))	# needs to be a vector, example: [1] 1 2 3 4 5 6
-                      values <- varNameCodeCombos
-                      dat <- catVarDataNoIdDF
-                      dat$tempCol <- values[match(dat[,1], index)]		# create new column based on mapping between index, values lists 
+                          # Replace column names
+                          # make
+                          # h778 h778 h778 h778 h778 h778 
+                          # to
+                          # h778_ h778_ h778_ h778_ h778_ h778_ 
+                          names(catVarDataNoIdDF) <- sub("(.*)$", "\\1_", names(catVarDataNoIdDF))
 
-                      # Remove original SCHOOL column
-                      newData <- subset(dat, select = c('tempCol'))
-                      # Rename tempCol to SCHOOL
-                      colnames(newData)[1] <- catVarName 
-                      # SCHOOL
-                      # 1 SCHOOL2
-                      # 2 SCHOOL4
-                      # 3 SCHOOL5
-                      # 4 SCHOOL4
+                          # Then make it to
+                          # h778_1 h778_2 h778_3 h778_4 h778_5 h778_6  
+                          #
+                          # Groupping by unique column value, each group has a column name+group#. 
+                          # As an example, for the numbers of the column SCHOOL, the value is SCHOOL_1, SCHOOL_2 ...
+                          uniqueCatVals <- rapply(catVarDataNoIdDF,function(x) (unique(x)))		# get unique enumerated values (returned as named integer)
 
-                      finalDF <- newData
-                  }
+                          uniqueCatValsDF <- data.frame(as.list(uniqueCatVals))				# convert named integer to dataframe 
+                          varNameCodeCombos <- colnames(uniqueCatValsDF) 				    # Example:  [1] "SCHOOL_1" "SCHOOL_2" "SCHOOL_3" "SCHOOL_4" "SCHOOL_5" "SCHOOL_6"
+
+                          #############################
+                          # Create code Value List
+                          #############################
+                          # Example list item:   
+                          # "1:Grade_11_or_less" 
+                          # "2:High_school_graduate"
+                          catVarCodeValList <- unlist(strsplit(catVarCodeValCombo, '|', fixed=TRUE))
+                          cleanCodeVals <- lapply(catVarCodeValList, function(item) {
+                              item <- trimws(item)
+                              item <- gsub("\\s+", "_", item)
+                          })
+
+                          ################################################################
+                          # Create a new column that has varNameCode as column values
+                          ################################################################
+                          # Resulting datafraame
+                          #  SCHOOL tempCol
+                          #  1      2 SCHOOL2
+                          #  2      4 SCHOOL4
+                          #  3      5 SCHOOL5
+                          #  4      4 SCHOOL4
+
+                          index <- unlist(list(1:length(varNameCodeCombos)))	# needs to be a vector, example: [1] 1 2 3 4 5 6
+                          values <- varNameCodeCombos
+                          dat <- catVarDataNoIdDF
+                          dat$tempCol <- values[match(dat[,1], index)]		# create new column based on mapping between index, values lists 
+
+                          # Remove original SCHOOL column
+                          newData <- subset(dat, select = c('tempCol'))
+                          # Rename tempCol to SCHOOL
+                          colnames(newData)[1] <- catVarName 
+                          # SCHOOL
+                          # 1 SCHOOL2
+                          # 2 SCHOOL4
+                          # 3 SCHOOL5
+                          # 4 SCHOOL4
+
+                          finalDF <- newData
+                      }
+                      else {
+                          #########################
+                          # String type
+                          #########################
+                          finalDF <- catVarDataNoIdDF
+                      }
+                  } 
                   else {
-                      #########################
-                      # String type
-                      #########################
                       finalDF <- catVarDataNoIdDF
                   }
 
 
-                  return (finalDF)
-
+              } # end catPhvVarName %in%
+              else {
+                  finalDF <- catVarDataNoIdDF
               }
+              return (finalDF)
           })
 
 # ----------------------
@@ -4465,7 +4473,7 @@ setMethod(
 
                           if (file.exists(infoFile)) {
 
-                              infoDF <- read.table(infoFile, header=TRUE, fill = TRUE, sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
+                              infoDF <- read.table(infoFile, header=TRUE, fill = TRUE, quote = "", sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
 
                               if (nrow(infoDF) > 0) {
                                   return (infoDF)

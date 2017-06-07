@@ -9,7 +9,8 @@
 getVariableDataByPhvAcc(object, phvAccList, ...)
 
 \S4method{getVariableDataByPhvAcc}{Study,character}(object, phvAccList, ...,
-  emptyToNa = FALSE, colNameWithAcc = FALSE, checkList = T)
+  cleanNumVal = FALSE, emptyToNa = FALSE, colNameWithAcc = FALSE,
+  checkList = T)
 }
 \arguments{
 \item{object}{Study class object.}
@@ -17,6 +18,8 @@ getVariableDataByPhvAcc(object, phvAccList, ...)
 \item{phvAccList}{a character vector. The dbGaP variable accessions.}
 
 \item{...}{There are optional arguments.}
+
+\item{cleanNumVal}{a logical value. (optional). If TRUE, from numeric variables, converts non-numeric values to NA. If FALSE (default), not convert.}
 
 \item{emptyToNa}{a logical value. (optional). If TRUE, converts the empty values to NA; If FALSE (default), not convert.}
 

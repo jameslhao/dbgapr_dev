@@ -509,6 +509,7 @@ setMethod(
               else {
                   cleanPhvAccList <- checkPhvAccList(object, phvAccList = phvAccList) 
 
+
                   if (length(cleanPhvAccList) == 0) {
 
                       varDF <- getPhtData(inputPhtAcc, phtAcc, colNameWithAcc)
@@ -516,6 +517,7 @@ setMethod(
                   }
                   else {
                       if (is.na(subjIdsOrFile)) {
+
                           # Get variable data no furhter filter 
                           varDF <- getVariableDataByPhvAcc(object, phvAccList = cleanPhvAccList, colNameWithAcc = colNameWithAcc, checkList = F) 
                           return (varDF)
@@ -755,6 +757,12 @@ setMethod(
                           # Numerical type
                           if (varType == 'integer' | varType == 'decimal') {
 
+
+                              # Converting factor to numeric
+                              # Make the values such as 90+ to NA
+                              #df <- data.frame(lapply(df, function(x) as.numeric(as.character(x))))
+                              df <- sapply(df, as.numeric)
+
                               ##########################
                               # Compute summary
                               ##########################
@@ -959,53 +967,67 @@ setMethod(
 
                                       catVarDataNoIdDF <- convertEnumVarColName(object, varDataDF = varDataDF, varInfoDF = catVarInfoDF, varCodeValDF = varCodeValDF)
 
-                                      finalDF <- cbind(numVarDataNoIdDF, catVarDataNoIdDF)
+                                      ###########################################
+                                      # Determine the number of distinct values 
+                                      ###########################################
+                                      dataValVect <- catVarDataNoIdDF[, catVarName]
+                                      distinctValVect <- unique(dataValVect)
 
+                                      if (length(distinctValVect) < 21) {
 
-                                      if (inputOk == T) {
+                                          finalDF <- cbind(numVarDataNoIdDF, catVarDataNoIdDF)
 
-                                          #################
-                                          # Labels
-                                          #################
-                                          xLabCombo = paste("\n", catVarName, "\n")
-                                          yLabCombo = ''
-                                          if (nchar(numVarUnits) > 0 & !is.na(numVarUnits)) {
-                                              yLabCombo = paste("\n", numVarName, " (", numVarUnits, ")\n") 
+                                          if (inputOk == T) {
+
+                                              #################
+                                              # Labels
+                                              #################
+                                              xLabCombo = paste("\n", catVarName, "\n")
+                                              yLabCombo = ''
+                                              if (nchar(numVarUnits) > 0 & !is.na(numVarUnits)) {
+                                                  yLabCombo = paste("\n", numVarName, " (", numVarUnits, ")\n") 
+                                              }
+                                              else {
+                                                  yLabCombo = paste("\n", numVarName, "\n") 
+                                              }
+                                              title = paste("\n", numVarName, "(", numPhvAcc, ")\n vs\n", catVarName, "(", catPhvAcc, ")\n")
+
+                                              ##############
+                                              # Draw plot
+                                              ##############
+
+                                              bp <- ggplot(finalDF, aes_string(x=catVarName, y=numVarName, fill=catVarName, group=catVarName)) +
+                                              geom_boxplot(outlier.colour="black", outlier.shape=16, outlier.size=2) +
+                                              stat_summary(fun.y="mean", geom="point", shape=21, size=5, fill="white") +
+                                              labs(y = yLabCombo, x = xLabCombo) +
+                                              ggtitle(title) +
+                                              #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
+                                              theme(plot.title = element_text(hjust = 0.5, size = 10)) +    # center the title
+                                              theme(aspect.ratio=4/4)   # graph height is larger than width if not set this 
+
+                                              ###########################
+                                              # Disply variable info
+                                              ###########################
+                                              getVariableInfoByPhvAcc(object, phvAccList = c(catPhvAcc, numPhvAcc), showBrief=T)
+
+                                              ############################
+                                              # Display and Save plot
+                                              ############################
+                                              plotObj = bp
+                                              plotType = 'boxplot'
+                                              phvAccNameCombo = paste(numPhvAcc, "_", numVarName, "_", catPhvAcc, "_", catVarName, sep="")
+                                              savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
+
+                                              return(invisible(finalDF))
                                           }
-                                          else {
-                                              yLabCombo = paste("\n", numVarName, "\n") 
-                                          }
-                                          title = paste("\n", numVarName, "(", numPhvAcc, ")\n vs\n", catVarName, "(", catPhvAcc, ")\n")
-
-                                          ##############
-                                          # Draw plot
-                                          ##############
-
-                                          bp <- ggplot(finalDF, aes_string(x=catVarName, y=numVarName, fill=catVarName, group=catVarName)) +
-                                          geom_boxplot(outlier.colour="black", outlier.shape=16, outlier.size=2) +
-                                          stat_summary(fun.y="mean", geom="point", shape=21, size=5, fill="white") +
-                                          labs(y = yLabCombo, x = xLabCombo) +
-                                          ggtitle(title) +
-                                          #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
-                                          theme(plot.title = element_text(hjust = 0.5, size = 10)) +    # center the title
-                                          theme(aspect.ratio=4/4)   # graph height is larger than width if not set this 
-
-                                          ###########################
-                                          # Disply variable info
-                                          ###########################
-                                          getVariableInfoByPhvAcc(object, phvAccList = c(catPhvAcc, numPhvAcc), showBrief=T)
-
-                                          ############################
-                                          # Display and Save plot
-                                          ############################
-                                          plotObj = bp
-                                          plotType = 'boxplot'
-                                          phvAccNameCombo = paste(numPhvAcc, "_", numVarName, "_", catPhvAcc, "_", catVarName, sep="")
-                                          savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
-
-                                          return(invisible(finalDF))
                                       }
-
+                                      else {
+                                          type = 'process'
+                                          level = 'info'
+                                          show = T
+                                          mesg = paste("The number of distinct values of the input non-numerical variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                      }
                                   } 
 
 
@@ -1147,6 +1169,9 @@ setMethod(
 
 # variableScatterplot(s, numPhvAcc_1 = 'phv00000027.v2', numPhvAcc_2 = 'phv00053747.v2', catPhvAcc = 'phv00053856.v2')		# phv00053757.v2, SCHOOL: variable type enumerated integer
 
+# s <- Study(phsAcc = 'phs000572.v7')
+# df <- variableScatterplot(s, numPhvAcc_1="phv00195359.v4", numPhvAcc_2="phv00218090.v3", catPhvAcc="phv00192277.v4")      # phv00192277.v4: Sex  (in Pedigree file)
+
 setGeneric(
            name = "variableScatterplot",
            def = function(object, numPhvAcc_1, ...) {
@@ -1179,7 +1204,9 @@ setMethod(
                   if ((numPhvAcc_2) != '') {
 
                       if ((catPhvAcc) != '') {
+
                           catPhvAcc <- cleanObjAcc(object, acc = catPhvAcc, type = 'phv')
+
                           varDataDF <- getVariableDataByPhvAcc(object, phvAccList = c(numPhvAcc_1, numPhvAcc_2, catPhvAcc), emptyToNa = T) 
                           #  dbGaP_Subject_ID Submitted_Subject_ID AGEPHOT LNUCSCORE  RNUC
                           #  1                1                 1379    74.2      2.08 NUC-C
@@ -1188,6 +1215,7 @@ setMethod(
                           #  4                4                 5400    79.1      4.09 NUC-A
                       }
                       else {
+                          print(catPhvAcc)
                           varDataDF <- getVariableDataByPhvAcc(object, phvAccList = c(numPhvAcc_1, numPhvAcc_2), emptyToNa = T) 
                       }
                   }
@@ -1195,10 +1223,10 @@ setMethod(
                       varDataDF <- getVariableDataByPhvAcc(object, phvAccList = c(numPhvAcc_1), emptyToNa = T) 
                   }
 
-
                   if (!is.null(varDataDF)) {
 
                       if (nrow(varDataDF) > 0) {
+
                           ################
                           # Get datatype
                           ################
@@ -1219,6 +1247,7 @@ setMethod(
                           #  3    73.4
                           #  4    79.1
                           #print(head(numVarDataNoIdDF_1, 4))
+
 
 
                           if (nchar(numPhvAcc_2) == 0) {
@@ -1379,79 +1408,89 @@ setMethod(
 
                                       catVarDataNoIdDF <- convertEnumVarColName(object, varDataDF = varDataDF, varInfoDF = catVarInfoDF, varCodeValDF = varCodeValDF)
 
-                                      finalDF <- cbind(numVarDataNoIdDF_1, numVarDataNoIdDF_2, catVarDataNoIdDF)
-                                      # 	AGEPHOT LNUCSCORE  SCHOOL
-                                      #	1    74.2      2.08 SCHOOL2
-                                      #	2    69.6      3.39 SCHOOL4
-                                      #	3    73.4      2.95 SCHOOL5
-                                      #	4    79.1      4.09 SCHOOL4
-                                      #	5    72.9      2.42 SCHOOL5
-                                      # 	6    75.5      2.64 SCHOOL1
+                                      ###########################################
+                                      # Determine the number of distinct values 
+                                      ###########################################
+                                      dataValVect <- catVarDataNoIdDF[, catVarName]
+                                      distinctValVect <- unique(dataValVect)
 
-                                      #################
-                                      # Labels
-                                      #################
-                                      xlab = numVarName_1 
-                                      ylab = numVarName_2
-                                      clab = catVarName 
+                                      if (length(distinctValVect) < 21) {
 
-                                      xLabCombo = ''
-                                      if (nchar(numVarUnits_1) > 0 & !is.na(numVarUnits_1)) {
-                                          xLabCombo = paste("\n", numVarName_1, " (", numVarUnits_1, ")\n") 
+                                          finalDF <- cbind(numVarDataNoIdDF_1, numVarDataNoIdDF_2, catVarDataNoIdDF)
+                                          # 	AGEPHOT LNUCSCORE  SCHOOL
+                                          #	1    74.2      2.08 SCHOOL2
+                                          #	2    69.6      3.39 SCHOOL4
+                                          #	3    73.4      2.95 SCHOOL5
+                                          #	4    79.1      4.09 SCHOOL4
+                                          #	5    72.9      2.42 SCHOOL5
+                                          # 	6    75.5      2.64 SCHOOL1
+
+                                          #################
+                                          # Labels
+                                          #################
+                                          xlab = numVarName_1 
+                                          ylab = numVarName_2
+                                          clab = catVarName 
+
+                                          xLabCombo = ''
+                                          if (nchar(numVarUnits_1) > 0 & !is.na(numVarUnits_1)) {
+                                              xLabCombo = paste("\n", numVarName_1, " (", numVarUnits_1, ")\n") 
+                                          }
+                                          else {
+                                              xLabCombo = paste("\n", numVarName_1, "\n") 
+                                          }
+
+                                          yLabCombo = ''
+                                          if (nchar(numVarUnits_2) > 0 & !is.na(numVarUnits_2)) {
+                                              yLabCombo = paste("\n", numVarName_2, " (", numVarUnits_2, ")\n") 
+                                          }
+                                          else {
+                                              yLabCombo = paste("\n", numVarName_2, "\n") 
+                                          }
+                                          title = paste("\n", numVarName_1, " (", numPhvAcc_1, ") vs\n", numVarName_2, " (", numPhvAcc_2, ") vs\n", catVarName, " (", catPhvAcc, ")\n")
+
+                                          ###########################
+                                          # Disply variable info
+                                          ###########################
+                                          getVariableInfoByPhvAcc(object, phvAccList = c(numPhvAcc_1, numPhvAcc_2, catPhvAcc), showBrief=T)
+
+                                          #################
+                                          # Plot 
+                                          #################
+                                          dat <- finalDF
+                                          sp <- ggplot(dat) +
+                                          geom_point(aes_string(x = xlab, y = ylab, color = catVarName)) +
+                                          labs(y = yLabCombo, x = xLabCombo) +
+                                          ggtitle(title) + 
+                                          #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
+                                          theme(plot.title = element_text(hjust = 0.5, size = 10))  +   # center the title
+                                          theme(aspect.ratio=4/4) +  # graph height is larger than width if not set this 
+                                          theme(plot.margin = unit(c(0,0,0,0), "cm"))
+
+                                          ############################
+                                          # Display and Save plot
+                                          ############################
+                                          plotObj = sp
+                                          plotType = 'scatterplot'
+                                          phvAccNameCombo = paste(numPhvAcc_1, "_", numVarName_1, "_", numPhvAcc_2, "_", numVarName_2, "_", catPhvAcc, "_", catVarName, sep="")
+                                          savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
+
+                                          return(invisible(dat))
                                       }
                                       else {
-                                          xLabCombo = paste("\n", numVarName_1, "\n") 
+                                          type = 'process'
+                                          level = 'info'
+                                          show = T
+                                          mesg = paste("The number of distinct values of the input non-numerical variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                       }
-
-                                      yLabCombo = ''
-                                      if (nchar(numVarUnits_2) > 0 & !is.na(numVarUnits_2)) {
-                                          yLabCombo = paste("\n", numVarName_2, " (", numVarUnits_2, ")\n") 
-                                      }
-                                      else {
-                                          yLabCombo = paste("\n", numVarName_2, "\n") 
-                                      }
-                                      title = paste("\n", numVarName_1, " (", numPhvAcc_1, ") vs\n", numVarName_2, " (", numPhvAcc_2, ") vs\n", catVarName, " (", catPhvAcc, ")\n")
-
-                                      ###########################
-                                      # Disply variable info
-                                      ###########################
-                                      getVariableInfoByPhvAcc(object, phvAccList = c(numPhvAcc_1, numPhvAcc_2, catPhvAcc), showBrief=T)
-
-                                      #################
-                                      # Plot 
-                                      #################
-                                      dat <- finalDF
-                                      sp <- ggplot(dat) +
-                                      geom_point(aes_string(x = xlab, y = ylab, color = catVarName)) +
-                                      labs(y = yLabCombo, x = xLabCombo) +
-                                      ggtitle(title) + 
-                                      #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
-                                      theme(plot.title = element_text(hjust = 0.5, size = 10))  +   # center the title
-                                      theme(aspect.ratio=4/4) +  # graph height is larger than width if not set this 
-                                      theme(plot.margin = unit(c(0,0,0,0), "cm"))
-
-                                      ############################
-                                      # Display and Save plot
-                                      ############################
-                                      plotObj = sp
-                                      plotType = 'scatterplot'
-                                      phvAccNameCombo = paste(numPhvAcc_1, "_", numVarName_1, "_", numPhvAcc_2, "_", numVarName_2, "_", catPhvAcc, "_", catVarName, sep="")
-                                      savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
-
-                                      return(invisible(dat))
                                   }
                               }
-
                           }
-
                       } # end nrow(varDataDF) > 0
-
                   } # end !is.null(varDataDF)
-
               } # end of numPhvAcc_1 != ''
-
           }) 
-
 
 
 # --------------------------- 
@@ -1495,6 +1534,7 @@ setMethod(
           signature = c("Study", "character"),
           definition = function(object, phvAcc, ..., withDensity = TRUE, saveToDir = '', showPlot = TRUE) {
 
+
               phsAcc = object@phsAcc
               prjTempDir = object@prjTempDir
               phvAcc <- cleanObjAcc(object, acc = phvAcc, type = 'phv')
@@ -1522,6 +1562,7 @@ setMethod(
                       colName = as.character(colnames(varDataNoIdDF)[1])
                       varDataNoIdList <- as.list(varDataNoIdDF)[[1]]
                       dat = varDataNoIdDF 
+
 
 
 
@@ -1646,65 +1687,81 @@ setMethod(
                       ######################
                       else if (varType == 'enumerated integer' | varType == 'enum_integer' | varType == 'string') {
 
-                          print("CCCCat")
-
                           catVarInfoDF = varInfoDF
 
                           index  <-seq.int(nrow(dat))
 
-                          ###########################
-                          # Disply variable info
-                          ###########################
-                          getVariableInfoByPhvAcc(object, phvAccList = c(phvAcc), showBrief=T)
 
-                          #### Process categorical variable data  ####
-                          #catVarDataNoIdDF <- convertEnumVarColName(object, varDataDF = varDataDF, varInfoDF = catVarInfoDF)
+                          ###########################################
+                          # Determine the number of distinct values 
+                          ###########################################
+                          dataValVect <- varDataNoIdDF[, varName]
+                          distinctValVect <- unique(dataValVect)
 
-                          varCodeValDF <- getExtData(object, type = 'code', phsAcc = phsAcc)
+                          if (length(distinctValVect) < 21) {
 
-                          if (!is.null(varCodeValDF)) {
+                              ###########################
+                              # Disply variable info
+                              ###########################
+                              getVariableInfoByPhvAcc(object, phvAccList = c(phvAcc), showBrief=T)
 
-                              catVarDataNoIdDF <- convertEnumVarColName(object, varDataDF = varDataDF, varInfoDF = catVarInfoDF, varCodeValDF = varCodeValDF)
+                              #### Process categorical variable data  ####
+                              #catVarDataNoIdDF <- convertEnumVarColName(object, varDataDF = varDataDF, varInfoDF = catVarInfoDF)
 
-                              finalDF <- cbind(index, catVarDataNoIdDF)
-                              # index  SCHOOL
-                              #  1     1 SCHOOL2
-                              #  2     2 SCHOOL4
-                              #  3     3 SCHOOL5
-                              #  4     4 SCHOOL4
-
-                              countDF <- count(finalDF, xlab)
-                              #print(head(countDF,4))
-
-                              # SCHOOL freq
-                              #  1 SCHOOL1  313
-                              #   2 SCHOOL2  956
-                              #   3 SCHOOL3 1139
-                              #   4 SCHOOL4  601
-
-                              yLabCombo = paste("\n", "Subject Count", "\n") 
-
-                              freq <- ''  # mute CMD check
-
-                              barp <- ggplot(countDF, aes_string(x=xlab, y = 'freq', fill=xlab)) +
-                              geom_bar(stat = "identity") +
-                              geom_text(aes(label=freq), position=position_dodge(width=0.9), vjust=-0.25) +
-                              labs(x = xLabCombo, y = yLabCombo) +
-                              ggtitle(paste("\n", xlab, "(", phvAcc, ")")) + 
-                              #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
-                              theme(plot.title = element_text(hjust = 0.5, size = 10))  +   # center the title
-                              theme(aspect.ratio=4/4)   # graph height is larger than width if not set this 
+                              varCodeValDF <- getExtData(object, type = 'code', phsAcc = phsAcc)
 
 
-                              ############################
-                              # Display and Save plot
-                              ############################
-                              plotObj = barp
-                              plotType = 'barchart'
-                              phvAccNameCombo = paste(phvAcc, "_", varName, sep="")
-                              savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
+                              if (!is.null(varCodeValDF)) {
 
-                              return(invisible(countDF))
+                                  catVarDataNoIdDF <- convertEnumVarColName(object, varDataDF = varDataDF, varInfoDF = catVarInfoDF, varCodeValDF = varCodeValDF)
+
+                                  finalDF <- cbind(index, catVarDataNoIdDF)
+                                  # index  SCHOOL
+                                  #  1     1 SCHOOL2
+                                  #  2     2 SCHOOL4
+                                  #  3     3 SCHOOL5
+                                  #  4     4 SCHOOL4
+
+                                  countDF <- count(finalDF, xlab)
+                                  #print(head(countDF,4))
+
+                                  # SCHOOL freq
+                                  #  1 SCHOOL1  313
+                                  #   2 SCHOOL2  956
+                                  #   3 SCHOOL3 1139
+                                  #   4 SCHOOL4  601
+
+                                  yLabCombo = paste("\n", "Subject Count", "\n") 
+
+                                  freq <- ''  # mute CMD check
+
+                                  barp <- ggplot(countDF, aes_string(x=xlab, y = 'freq', fill=xlab)) +
+                                  geom_bar(stat = "identity") +
+                                  geom_text(aes(label=freq), position=position_dodge(width=0.9), vjust=-0.25) +
+                                  labs(x = xLabCombo, y = yLabCombo) +
+                                  ggtitle(paste("\n", xlab, "(", phvAcc, ")")) + 
+                                  #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
+                                  theme(plot.title = element_text(hjust = 0.5, size = 10))  +   # center the title
+                                  theme(aspect.ratio=4/4)   # graph height is larger than width if not set this 
+
+
+                                  ############################
+                                  # Display and Save plot
+                                  ############################
+                                  plotObj = barp
+                                  plotType = 'barchart'
+                                  phvAccNameCombo = paste(phvAcc, "_", varName, sep="")
+                                  savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
+
+                                  return(invisible(countDF))
+                              }
+                          }
+                          else {
+                              type = 'process'
+                              level = 'info'
+                              show = T
+                              mesg = paste("The number of distinct values of the input non-numerical variable '", varName, "' ( ", phvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
                           }
 
                       }
@@ -1713,7 +1770,7 @@ setMethod(
                           type = 'process'
                           level = 'info'
                           show = T
-                          mesg = paste("The data type ", type, ", of input variable, ", varName, " ( ", phvAcc, " ), is neither numerical nor categorical. The statistical summary thus is not generated.\n", sep="")
+                          mesg = paste("The data type ", type, ", of input variable '", varName, "' ( ", phvAcc, " ) is neither numerical nor categorical. The statistical summary thus is not generated.\n", sep="")
                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
                       }
                   } # end !is.null(varDataDF)
@@ -1831,118 +1888,135 @@ setMethod(
                                   catVarDataNoIdDF <- convertEnumVarColName(object, varDataDF = varDataDF, varInfoDF = catVarInfoDF, varCodeValDF = varCodeValDF)
 
                                   dat = catVarDataNoIdDF 
-                                  dat$index <-seq.int(nrow(dat))	# add an index column for Subject index (instead of original Subject ID)
 
-                                  #print(head(dat, 4))
-                                  #   LPSC index
-                                  #   1 PSC-A     1
-                                  #   2 PSC-B     2
-                                  #   3 PSC-A     3
-                                  #   4 PSC-A     4
+                                  ###########################################
+                                  # Determine the number of distinct values 
+                                  ###########################################
+                                  dataValVect <- catVarDataNoIdDF[, catVarName]
+                                  distinctValVect <- unique(dataValVect)
 
-                                  xlab = catVarName
-                                  ylab = 'perc'
+                                  if (length(distinctValVect) < 21) {
 
-                                  # mute CMD check  note
-                                  freq <- '' 
-                                  perc <- '' 
-                                  label_pos <- ''
-                                  perc_text <- ''
-                                  n <- ''
+                                      dat$index <-seq.int(nrow(dat))	# add an index column for Subject index (instead of original Subject ID)
 
-                                  statDF <- dat %>% dplyr::group_by_(xlab) %>% dplyr::summarize(freq = n()) %>%
-                                  mutate(perc = freq / sum(freq)) %>%
-                                  arrange(desc(perc)) %>%
-                                  #mutate(label_pos = cumsum(perc) - perc / 2, perc_text = paste(freq, " (", round(perc * 100), "%)", sep=""))
-                                  mutate(
-                                      # Note: Need manually adjusted postion (xPosVec) as shown later 
-                                      label_pos = perc / 2 + c(0, cumsum(perc)[-length(perc)]), 
-                                      #label_pos = cumsum(perc) - perc / 2,
-                                      #label_pos = perc / 2,
-                                      perc_text = paste(freq, " (", round(perc * 100), "%)", sep="")
-                                  )
-                                  #	y = percentage / 2 + c(0, cumsum(percentage)[-length(percentage)]),
+                                      #print(head(dat, 4))
+                                      #   LPSC index
+                                      #   1 PSC-A     1
+                                      #   2 PSC-B     2
+                                      #   3 PSC-A     3
+                                      #   4 PSC-A     4
 
-                                  #print(head(statDF,4))
-                                  #	# A tibble: 4 <U+00D7> 5
-                                  #	 A   LPSC  freq       perc label_pos  perc_text
-                                  #	 A     <chr> <int>      <dbl>     <dbl>      <chr>
-                                  #	 A	 1 PSC-A  3244 0.68194240 0.3409712 3244 (68%)
-                                  #	 A	 2 PSC-C  1061 0.22303973 0.7934623 1061 (22%)
-                                  #	 A	 3 PSC-B   317 0.06663864 0.9383015   317 (7%)
-                                  #	 A	 4 PSC-D   135 0.02837923 0.9858104   135 (3%)
+                                      xlab = catVarName
+                                      ylab = 'perc'
 
+                                      # mute CMD check  note
+                                      freq <- '' 
+                                      perc <- '' 
+                                      label_pos <- ''
+                                      perc_text <- ''
+                                      n <- ''
 
-                                  ##### Adjustment for small slice ####
-                                  # make 2nd slice y pos lower, to make the 2nd and 3rd lable such as below less crowded
+                                      statDF <- dat %>% dplyr::group_by_(xlab) %>% dplyr::summarize(freq = n()) %>%
+                                      mutate(perc = freq / sum(freq)) %>%
+                                      arrange(desc(perc)) %>%
+                                      #mutate(label_pos = cumsum(perc) - perc / 2, perc_text = paste(freq, " (", round(perc * 100), "%)", sep=""))
+                                      mutate(
+                                          # Note: Need manually adjusted postion (xPosVec) as shown later 
+                                          label_pos = perc / 2 + c(0, cumsum(perc)[-length(perc)]), 
+                                          #label_pos = cumsum(perc) - perc / 2,
+                                          #label_pos = perc / 2,
+                                          perc_text = paste(freq, " (", round(perc * 100), "%)", sep="")
+                                      )
+                                      #	y = percentage / 2 + c(0, cumsum(percentage)[-length(percentage)]),
 
-                                  #print(head(statDF,4))
-                                  #  DIABTRT01  freq       perc label_pos  perc_text
-                                  #  DI    <chr> <int>      <dbl>     <dbl>      <chr>
-                                  #  DI	1      <NA>  3544 0.94205210 0.4710260 3544 (94%)
-                                  #  DI	2         P   118 0.03136629 0.9577352   118 (3%)
-                                  #  DI	3         D    58 0.01541733 0.9811271    58 (2%)
-                                  #  DI	4         I    42 0.01116427 0.9944179    42 (1%)
-
-                                  pos2 <- statDF[2, 'label_pos']
-                                  newPos2 <- pos2 - 0.03
-                                  statDF[2, 'label_pos'] <- newPos2
+                                      #print(head(statDF,4))
+                                      #	# A tibble: 4 <U+00D7> 5
+                                      #	 A   LPSC  freq       perc label_pos  perc_text
+                                      #	 A     <chr> <int>      <dbl>     <dbl>      <chr>
+                                      #	 A	 1 PSC-A  3244 0.68194240 0.3409712 3244 (68%)
+                                      #	 A	 2 PSC-C  1061 0.22303973 0.7934623 1061 (22%)
+                                      #	 A	 3 PSC-B   317 0.06663864 0.9383015   317 (7%)
+                                      #	 A	 4 PSC-D   135 0.02837923 0.9858104   135 (3%)
 
 
-                                  # Algorithm to position text based on row number
-                                  rowNum = nrow(statDF)
+                                      ##### Adjustment for small slice ####
+                                      # make 2nd slice y pos lower, to make the 2nd and 3rd lable such as below less crowded
 
-                                  # Variable name label on each slice 
-                                  y.breaks <- cumsum(statDF$perc) - statDF$perc / 2
-                                  labels <-unlist(statDF[,1])
+                                      #print(head(statDF,4))
+                                      #  DIABTRT01  freq       perc label_pos  perc_text
+                                      #  DI    <chr> <int>      <dbl>     <dbl>      <chr>
+                                      #  DI	1      <NA>  3544 0.94205210 0.4710260 3544 (94%)
+                                      #  DI	2         P   118 0.03136629 0.9577352   118 (3%)
+                                      #  DI	3         D    58 0.01541733 0.9811271    58 (2%)
+                                      #  DI	4         I    42 0.01116427 0.9944179    42 (1%)
 
-                                  # x, y-axis label
-                                  xLabCombo = paste("\n", "Subject Count\n")
-                                  yLabCombo = ''
-                                  title = paste("\n", catVarName, "(", catPhvAcc, ")\n")
-
-                                  if (rowNum < 9) {
-
-                                      pie <- ggplot(data=statDF, aes_string(x=1, y=ylab, fill=xlab)) +
-                                      geom_bar(width=1, stat="identity") +
-                                      coord_polar(theta="y") +
-                                      theme_void() +
-                                      scale_y_continuous( breaks=y.breaks, labels=labels) +
-                                      ggtitle(title) +
-                                      labs(x = yLabCombo, y = xLabCombo) +		# Note: filipped  x, y
-                                      #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
-                                      theme(plot.title = element_text(hjust = 0.5, size = 10)) +    # center the title
-                                      theme(aspect.ratio=4/4) +  # graph height is larger than width if not set this 
-                                      theme(plot.margin = unit(c(0,0,0,0), "cm"))
+                                      pos2 <- statDF[2, 'label_pos']
+                                      newPos2 <- pos2 - 0.03
+                                      statDF[2, 'label_pos'] <- newPos2
 
 
-                                      ###########################
-                                      # Disply variable info
-                                      ###########################
-                                      getVariableInfoByPhvAcc(object, phvAccList = c(catPhvAcc), showBrief=T)
+                                      # Algorithm to position text based on row number
+                                      rowNum = nrow(statDF)
 
-                                      # Show piechart slice label 
-                                      info <- sprintf("%-5s %-1s %s", catVarName, ":", 'subject (%)') 
-                                      cat(info, "\n")
-                                      ddply(statDF, c(catVarName), function(x) { 
-                                          catVal <- x[c(catVarName)][[1]]
-                                          perc_text <- x$perc_text
-                                          # Display pie chart info
-                                          info <- sprintf("%-5s %-1s %s", catVal, ":", perc_text) 
+                                      # Variable name label on each slice 
+                                      y.breaks <- cumsum(statDF$perc) - statDF$perc / 2
+                                      labels <-unlist(statDF[,1])
+
+                                      # x, y-axis label
+                                      xLabCombo = paste("\n", "Subject Count\n")
+                                      yLabCombo = ''
+                                      title = paste("\n", catVarName, "(", catPhvAcc, ")\n")
+
+                                      if (rowNum < 9) {
+
+                                          pie <- ggplot(data=statDF, aes_string(x=1, y=ylab, fill=xlab)) +
+                                          geom_bar(width=1, stat="identity") +
+                                          coord_polar(theta="y") +
+                                          theme_void() +
+                                          scale_y_continuous( breaks=y.breaks, labels=labels) +
+                                          ggtitle(title) +
+                                          labs(x = yLabCombo, y = xLabCombo) +		# Note: filipped  x, y
+                                          #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
+                                          theme(plot.title = element_text(hjust = 0.5, size = 10)) +    # center the title
+                                          theme(aspect.ratio=4/4) +  # graph height is larger than width if not set this 
+                                          theme(plot.margin = unit(c(0,0,0,0), "cm"))
+
+
+                                          ###########################
+                                          # Disply variable info
+                                          ###########################
+                                          getVariableInfoByPhvAcc(object, phvAccList = c(catPhvAcc), showBrief=T)
+
+                                          # Show piechart slice label 
+                                          info <- sprintf("%-5s %-1s %s", catVarName, ":", 'subject (%)') 
                                           cat(info, "\n")
-                                      })
+                                          ddply(statDF, c(catVarName), function(x) { 
+                                              catVal <- x[c(catVarName)][[1]]
+                                              perc_text <- x$perc_text
+                                              # Display pie chart info
+                                              info <- sprintf("%-5s %-1s %s", catVal, ":", perc_text) 
+                                              cat(info, "\n")
+                                          })
 
-                                      cat("\n")
+                                          cat("\n")
 
-                                      ############################
-                                      # Display and Save plot
-                                      ############################
-                                      plotObj = pie
-                                      plotType = 'boxplot'
-                                      phvAccNameCombo = paste(catPhvAcc, "_", catVarName, sep="")
-                                      savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
+                                          ############################
+                                          # Display and Save plot
+                                          ############################
+                                          plotObj = pie
+                                          plotType = 'boxplot'
+                                          phvAccNameCombo = paste(catPhvAcc, "_", catVarName, sep="")
+                                          savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
 
-                                      return(invisible(statDF))
+                                          return(invisible(statDF))
+                                      }
+                                  }
+                                  else {
+                                      type = 'process'
+                                      level = 'info'
+                                      show = T
+                                      mesg = paste("The number of distinct values of the input non-numerical variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                                      writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                   }
                               }
                           }
@@ -2292,11 +2366,16 @@ setMethod(
                   ###########################
                   cleanNumPhvAccList <- checkPhvAccList(object, phvAccList = numPhvAccList) 
 
+                  sapply(cleanNumPhvAccList, function(numPhvAcc) {
+                          numVarInfoDF <- subset(studyDataDicDF,  studyDataDicDF$variable_accession==numPhvAcc) 
+                          numVarType <- as.character(numVarInfoDF$calculated_type)
+                  })
 
                   ################################
                   # Process Categorical variable 
                   ################################
                   catPhvAcc <- cleanObjAcc(object, acc = catPhvAcc, type = 'phv')
+
 
                   if (length(cleanNumPhvAccList) > 0 & nchar(catPhvAcc) > 0) {
 
@@ -2359,11 +2438,13 @@ setMethod(
                       }
                       else {
 
+
                           ####################################
                           # Combine catPhvAcc and numPhvAcc
                           ####################################
-                          carAndNumPhvAccList = c(catPhvAcc, cleanNumPhvAccList)
+                          catAndNumPhvAccList = c(catPhvAcc, cleanNumPhvAccList)
                           # Get varNameList: a named list of phvACC-Name pairs
+
                           varNameList <- getVarNameByPhvAcc(object, phvAccList =  cleanNumPhvAccList, studyDataDicDF = studyDataDicDF)  
 
                           ####### Get mergedVarDF #######
@@ -2372,200 +2453,260 @@ setMethod(
                           # ATTN!!! Empty --> NA
                           ########################
                           # Convert empty values to na so complete case can be applied.
-                          mergedVarDF =  getVariableDataByPhvAcc(object, carAndNumPhvAccList, emptyToNa = T)
+                          mergedVarDF =  getVariableDataByPhvAcc(object, catAndNumPhvAccList, cleanNumVal = T, emptyToNa = T)
+
+                          
+                          # Remove submitedID, only keep dbGaPId  
+                          subDF_1 <- mergedVarDF[,1, drop=FALSE]
+                          subDF_2 <- mergedVarDF[, catVarName, drop=FALSE]
+                          subDF_3 <- mergedVarDF[, varNameList]
+                          subDF <- cbind(subDF_1, subDF_2, subDF_3)
+                          
+
+                          ###########################################
+                          # Determine the number of distinct values 
+                          ###########################################
+                          varDataNoIdDF = subset(mergedVarDF, select = c(catVarName))
+                          dataValVect <- varDataNoIdDF[, catVarName]
+                          distinctValVect <- unique(dataValVect)
 
 
-                          #########################################
-                          # Complete case of all input variables 
-                          #########################################
-                          completeVarDF = mergedVarDF[complete.cases(mergedVarDF),]
-                          #print(head(completeVarDF,4))
-                          #  dbGaP_Subject_ID Submitted_Subject_ID  LPSC AGEPHOT LNUCSCORE LNUCSCORE.1		LNUCSCORE.2
-                          #  1                1                 1379 PSC-A    74.2      2.08        2.08	       2.08
-                          #  2                2                 4861 PSC-B    69.6      3.39        3.39         3.39
-                          #  3                3                 3642 PSC-A    73.4      2.95        2.95         2.95 
-                          #  4                4                 5400 PSC-A    79.1      4.09        4.09	       4.09
+                          if (length(distinctValVect) < 21) {
+
+                              #########################################
+                              # Complete case of all input variables 
+                              #########################################
+                              completeVarDF = subDF[complete.cases(subDF),]
+
+                              #print(head(completeVarDF,4))
+                              #  dbGaP_Subject_ID Submitted_Subject_ID  LPSC AGEPHOT LNUCSCORE LNUCSCORE.1		LNUCSCORE.2
+                              #  1                1                 1379 PSC-A    74.2      2.08        2.08	       2.08
+                              #  2                2                 4861 PSC-B    69.6      3.39        3.39         3.39
+                              #  3                3                 3642 PSC-A    73.4      2.95        2.95         2.95 
+                              #  4                4                 5400 PSC-A    79.1      4.09        4.09	       4.09
 
 
-                          # variableCorrelHeatmap(s, catPhvAcc = 'phv00000035.v2', numPhvAccList = c('phv00000007.v2', 'phv00053794.v2', 'phv00053786.v2', 'phv00000106.v2'))    # 1 ~ 0.66
-                          #
-                          #			   dbGaP_Subject_ID Submitted_Subject_ID SCHOOL RCORBASE  DT_LYC DT_VITE DIAS12
-                          #			   61               16                 3554      4      1.1 2536.37    2.84     56
-                          #			   62               16                 3554      4      1.1 1025.88    2.84     56
-                          #			   63               16                 3554      4      1.1 2536.37    2.89     56
-                          #			   64               16                 3554      4      1.1 1025.88    2.89     56
-                          #
+                              # variableCorrelHeatmap(s, catPhvAcc = 'phv00000035.v2', numPhvAccList = c('phv00000007.v2', 'phv00053794.v2', 'phv00053786.v2', 'phv00000106.v2'))    # 1 ~ 0.66
+                              #
+                              #			   dbGaP_Subject_ID Submitted_Subject_ID SCHOOL RCORBASE  DT_LYC DT_VITE DIAS12
+                              #			   61               16                 3554      4      1.1 2536.37    2.84     56
+                              #			   62               16                 3554      4      1.1 1025.88    2.84     56
+                              #			   63               16                 3554      4      1.1 2536.37    2.89     56
+                              #			   64               16                 3554      4      1.1 1025.88    2.89     56
+                              #
 
-                          ##### Make sure it is not an empty dataframe ####
+                              ##### Make sure it is not an empty dataframe ####
 
-                          #############################################################
-                          # Check to make sure the categorical variable value
-                          # has more than one unique value 
-                          #############################################################
-                          catUniqueVal <- unique(completeVarDF[catVarName])
-                          catUniqueValList <- catUniqueVal[,1]
+                              #############################################################
+                              # Check to make sure the categorical variable value
+                              # has more than one unique value 
+                              #############################################################
+                              catUniqueValList <- unique(completeVarDF[[catVarName]])
+
+                              if (nrow(completeVarDF) > 0 ) {
+
+                                  #### Make sure cat variable has more than one value ####
+                                  if (length(catUniqueValList) > 1) {
+
+                                      # At least two numberical columns, in addition to 2 id cols, and 1 categorical variable columns
+                                      if (ncol(completeVarDF) > 3) {
+
+                                          dat <- completeVarDF
+
+                                          ########################################################
+                                          # Get mean of each num-variable gropu_by cat-variable
+                                          ########################################################
+                                          # Note: somehow the dplyr way doesn't work due to the error: summarise_each_ ...  could not find function "funs"  (possible reason: dplyr version not up-to-date)
+
+                                          #######################
+                                          # Trim data
+                                          #######################
+                                          # Trim leading and trailing space of all elements
+                                          dat <- data.frame(lapply(dat, trimws))
+
+                                          #############################################
+                                          # Important! Convert facter to numeric 
+                                          #############################################
+                                          # At this stage, due to some special character in the numeric column values 
+                                          # If run dtype <- sapply(dat, class), the column data types are all 'factor'.
+                                          # 
+                                          # dbGaP_Subject_ID              Sex              Age            Age.1 
+                                          #       "factor"         "factor"         "factor"         "factor" 
+                                          # 
+                                          # This will cause error in for colSum() such as below: 
+                                          #  Error in colSums(dat[unlist(varNameList)]) : 'x' must be numeric
+                                        
+                                          # Convert 'factor' column to 'numeric'
+                                          # It will become this:
+                                          #
+                                          # dbGaP_Subject_ID              Sex              Age            Age.1 
+                                          #       "numeric"        "numeric"        "numeric"        "numeric"
+
+                                          # Converting factor to numeric
+                                          dat <- data.frame(lapply(dat, function(x) as.numeric(as.character(x))))
 
 
-                          if (nrow(completeVarDF) > 0 ) {
+                                          # Compute colSum
+                                          meanDF <- ddply(dat, catVarName, function(df) colSums(df[varNameList]))
 
-                              #### Make sure cat variable has more than one value ####
-                              if (length(catUniqueValList) > 1) {
+                                          #print(head(meanDF,4))
 
-                                  # At least two numberical columns except 2 id and 1 categorical variable columns
-                                  if (ncol(completeVarDF) > 5) {
+                                          #					  SCHOOL RCORBASE   DT_LYC DT_VITE DIAS12
+                                          #					  1      1     56.8 142067.8  305.68   2400
+                                          #					  2      2    841.5 670035.2 1441.05  11512
+                                          #					  3      3    492.4 738097.0 2007.72  12488
+                                          #					  4      4    498.8 474929.3 1064.85   7254
+                                          #
 
-                                      dat <- completeVarDF
+                                          # Compute correlation
+                                          corrDF <- cor(meanDF[,2:ncol(meanDF)]) 
+                                          #print(head(corrDF,4))
 
-                                      ########################################################
-                                      # Get mean of each num-variable gropu_by cat-variable
-                                      ########################################################
-                                      # Note: somehow the dplyr way doesn't work due to the error: summarise_each_ ...  could not find function "funs"  (possible reason: dplyr version not up-to-date)
-                                      meanDF <- ddply(dat, catVarName, function(x) colSums(x[varNameList]))
-                                      #print(head(meanDF,4))
+                                          #					          RCORBASE    DT_LYC   DT_VITE    DIAS12
+                                          #							  RCORBASE 1.0000000 0.7753344 0.6640918 0.8125297
+                                          #							  DT_LYC   0.7753344 1.0000000 0.9859944 0.9936985
+                                          #							  DT_VITE  0.6640918 0.9859944 1.0000000 0.9720241
+                                          #							  DIAS12   0.8125297 0.9936985 0.9720241 1.0000000
+                                          #
 
-                                      #					  SCHOOL RCORBASE   DT_LYC DT_VITE DIAS12
-                                      #					  1      1     56.8 142067.8  305.68   2400
-                                      #					  2      2    841.5 670035.2 1441.05  11512
-                                      #					  3      3    492.4 738097.0 2007.72  12488
-                                      #					  4      4    498.8 474929.3 1064.85   7254
-                                      #
+                                          # Round 
+                                          corrDF <- round(as.matrix(corrDF),2) 
+                                          #print(head(corrDF,4))
 
-                                      # Compute correlation
-                                      corrDF <- cor(meanDF[,2:ncol(meanDF)]) 
-                                      #print(head(corrDF,4))
+                                          #					         RCORBASE DT_LYC DT_VITE DIAS12
+                                          #							 RCORBASE     1.00   0.78    0.66   0.81
+                                          #							 DT_LYC       0.78   1.00    0.99   0.99
+                                          #							 DT_VITE      0.66   0.99    1.00   0.97
+                                          #							 DIAS12       0.81   0.99    0.97   1.00
 
-                                      #					          RCORBASE    DT_LYC   DT_VITE    DIAS12
-                                      #							  RCORBASE 1.0000000 0.7753344 0.6640918 0.8125297
-                                      #							  DT_LYC   0.7753344 1.0000000 0.9859944 0.9936985
-                                      #							  DT_VITE  0.6640918 0.9859944 1.0000000 0.9720241
-                                      #							  DIAS12   0.8125297 0.9936985 0.9720241 1.0000000
-                                      #
+                                          # Make upper half NA
+                                          corrDF[upper.tri(corrDF ,diag=F)]<-NA #We only want to plot 1/2 the matrix 
+                                          # print(head(corrDF,4))
 
-                                      # Round 
-                                      corrDF <- round(as.matrix(corrDF),2) 
-                                      #print(head(corrDF,4))
+                                          #					        RCORBASE DT_LYC DT_VITE DIAS12
+                                          #							RCORBASE     1.00     NA      NA     NA
+                                          #							DT_LYC       0.78   1.00      NA     NA
+                                          #							DT_VITE      0.66   0.99    1.00     NA
+                                          #							DIAS12       0.81   0.99    0.97      1
+                                          #
 
-                                      #					         RCORBASE DT_LYC DT_VITE DIAS12
-                                      #							 RCORBASE     1.00   0.78    0.66   0.81
-                                      #							 DT_LYC       0.78   1.00    0.99   0.99
-                                      #							 DT_VITE      0.66   0.99    1.00   0.97
-                                      #							 DIAS12       0.81   0.99    0.97   1.00
+                                          # Convert to ggplot dataframe
 
-                                      # Make upper half NA
-                                      corrDF[upper.tri(corrDF ,diag=F)]<-NA #We only want to plot 1/2 the matrix 
-                                      # print(head(corrDF,4))
+                                          pd <- reshape2::melt(t(corrDF),value.name='Correlation') #convert it to data.frame readiable by ggplot, transposing it 't()' helps it properly oriented 
+                                          #print(pd)
 
-                                      #					        RCORBASE DT_LYC DT_VITE DIAS12
-                                      #							RCORBASE     1.00     NA      NA     NA
-                                      #							DT_LYC       0.78   1.00      NA     NA
-                                      #							DT_VITE      0.66   0.99    1.00     NA
-                                      #							DIAS12       0.81   0.99    0.97      1
-                                      #
+                                          #					       Var1     Var2 Correlation
+                                          #						   1  RCORBASE RCORBASE        1.00
+                                          #						   2    DT_LYC RCORBASE          NA
+                                          #						   3   DT_VITE RCORBASE          NA
+                                          #						   4    DIAS12 RCORBASE          NA
+                                          #						   5  RCORBASE   DT_LYC        0.78
+                                          #						   6    DT_LYC   DT_LYC        1.00
+                                          #						   7   DT_VITE   DT_LYC          NA
+                                          #						   8    DIAS12   DT_LYC          NA
+                                          #						   9  RCORBASE  DT_VITE        0.66
+                                          #						   10   DT_LYC  DT_VITE        0.99
+                                          #						   11  DT_VITE  DT_VITE        1.00
+                                          #						   12   DIAS12  DT_VITE          NA
+                                          #						   13 RCORBASE   DIAS12        0.81
+                                          #						   14   DT_LYC   DIAS12        0.99
+                                          #						   15  DT_VITE   DIAS12        0.97
+                                          #						   16   DIAS12   DIAS12        1.00
 
-                                      # Convert to ggplot dataframe
+                                          #########################
+                                          # Plot
+                                          #########################
 
-                                      pd <- reshape2::melt(t(corrDF),value.name='Correlation') #convert it to data.frame readiable by ggplot, transposing it 't()' helps it properly oriented 
-                                      #print(pd)
+                                          # Get varNameAcc combo
+                                          numVarNameAccParenthList = getVarNameByPhvAcc(object, phvAccList = cleanNumPhvAccList, studyDataDicDF = studyDataDicDF, colNameWithAcc = T, underscore = F) 
+                                          catVarNameAccParenthList = getVarNameByPhvAcc(object, phvAccList = c(catPhvAcc), studyDataDicDF = studyDataDicDF, colNameWithAcc = T, underscore = F) 
+                                          varNameAccParenthCombo = paste(numVarNameAccParenthList, collapse="\n") 
 
-                                      #					       Var1     Var2 Correlation
-                                      #						   1  RCORBASE RCORBASE        1.00
-                                      #						   2    DT_LYC RCORBASE          NA
-                                      #						   3   DT_VITE RCORBASE          NA
-                                      #						   4    DIAS12 RCORBASE          NA
-                                      #						   5  RCORBASE   DT_LYC        0.78
-                                      #						   6    DT_LYC   DT_LYC        1.00
-                                      #						   7   DT_VITE   DT_LYC          NA
-                                      #						   8    DIAS12   DT_LYC          NA
-                                      #						   9  RCORBASE  DT_VITE        0.66
-                                      #						   10   DT_LYC  DT_VITE        0.99
-                                      #						   11  DT_VITE  DT_VITE        1.00
-                                      #						   12   DIAS12  DT_VITE          NA
-                                      #						   13 RCORBASE   DIAS12        0.81
-                                      #						   14   DT_LYC   DIAS12        0.99
-                                      #						   15  DT_VITE   DIAS12        0.97
-                                      #						   16   DIAS12   DIAS12        1.00
+                                          # For naming image files
+                                          numVarNameAccUscoreList = getVarNameByPhvAcc(object, phvAccList = cleanNumPhvAccList, studyDataDicDF = studyDataDicDF, colNameWithAcc = T, underscore = T) 
+                                          catVarNameAccUscoreList = getVarNameByPhvAcc(object, phvAccList = c(catPhvAcc), studyDataDicDF = studyDataDicDF, colNameWithAcc = T, underscore = T) 
+                                          UscoreComboList = c(catVarNameAccUscoreList, numVarNameAccUscoreList)
+                                          varNameAccUscoreCombo = paste(UscoreComboList, collapse="_") 
 
-                                      #########################
-                                      # Plot
-                                      #########################
 
-                                      # Get varNameAcc combo
-                                      numVarNameAccParenthList = getVarNameByPhvAcc(object, phvAccList = cleanNumPhvAccList, studyDataDicDF = studyDataDicDF, colNameWithAcc = T, underscore = F) 
-                                      catVarNameAccParenthList = getVarNameByPhvAcc(object, phvAccList = c(catPhvAcc), studyDataDicDF = studyDataDicDF, colNameWithAcc = T, underscore = F) 
-                                      varNameAccParenthCombo = paste(numVarNameAccParenthList, collapse="\n") 
 
-                                      # For naming image files
-                                      numVarNameAccUscoreList = getVarNameByPhvAcc(object, phvAccList = cleanNumPhvAccList, studyDataDicDF = studyDataDicDF, colNameWithAcc = T, underscore = T) 
-                                      catVarNameAccUscoreList = getVarNameByPhvAcc(object, phvAccList = c(catPhvAcc), studyDataDicDF = studyDataDicDF, colNameWithAcc = T, underscore = T) 
-                                      UscoreComboList = c(catVarNameAccUscoreList, numVarNameAccUscoreList)
-                                      varNameAccUscoreCombo = paste(UscoreComboList, collapse="_") 
+                                          xLabCombo = ''
+                                          yLabCombo = ''
+                                          title = paste(catVarNameAccParenthList[1], "\nvs\n", varNameAccParenthCombo, "\n", sep="")
 
-                                      xLabCombo = ''
-                                      yLabCombo = ''
-                                      title = paste(catVarNameAccParenthList[1], "\nvs\n", varNameAccParenthCombo, "\n", sep="")
+                                          #############################################
+                                          # Flip value orderr of Var2 at y-axis
+                                          #############################################
+                                          # Plot with current pd, the values in both x- and y-axis are large to small. 
+                                          # To make it look better, flip it to small to large
+                                          levs <- rev(sort(unique(pd$Var2)))
 
-                                      #############################################
-                                      # Flip value orderr of Var2 at y-axis
-                                      #############################################
-                                      # Plot with current pd, the values in both x- and y-axis are large to small. 
-                                      # To make it look better, flip it to small to large
-                                      levs <- rev(sort(unique(pd$Var2)))
+                                          # corr <-ggplot(data=pd,aes(x=Var1,y=Var2,fill=Correlation,label=Correlation))+geom_raster() +			# not flip 
+                                          corr <-ggplot(data=pd,aes(pd$Var1, ordered(pd$Var2, levels= levs), fill=pd$Correlation, label=pd$Correlation)) +	# filp y value order  
+                                          geom_raster() +
+                                          geom_text() +
+                                          theme_bw() +
+                                          labs(title='The Raw Plot') +
+                                          scale_fill_gradient2(name='Correlation', na.value='white') + # create a diverging color gradient 
+                                          ggtitle(title) +
+                                          labs(x = yLabCombo, y = xLabCombo) +		# Note: filipped  x, y
+                                          #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
+                                          theme(plot.title = element_text(hjust = 0.5, size = 10)) +     # center the title
+                                          theme(aspect.ratio=4/4)
 
-                                      # corr <-ggplot(data=pd,aes(x=Var1,y=Var2,fill=Correlation,label=Correlation))+geom_raster() +			# not flip 
-                                      corr <-ggplot(data=pd,aes(pd$Var1, ordered(pd$Var2, levels= levs), fill=pd$Correlation, label=pd$Correlation)) +	# filp y value order  
-                                      geom_raster() +
-                                      geom_text() +
-                                      theme_bw() +
-                                      labs(title='The Raw Plot') +
-                                      scale_fill_gradient2(name='Correlation', na.value='white') + # create a diverging color gradient 
-                                      ggtitle(title) +
-                                      labs(x = yLabCombo, y = xLabCombo) +		# Note: filipped  x, y
-                                      #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
-                                      theme(plot.title = element_text(hjust = 0.5, size = 10)) +     # center the title
-                                      theme(aspect.ratio=4/4)
+                                          ###########################
+                                          # Disply variable info
+                                          ###########################
+                                          getVariableInfoByPhvAcc(object, phvAccList = c(catPhvAcc, cleanNumPhvAccList), showBrief=T)
 
-                                      ###########################
-                                      # Disply variable info
-                                      ###########################
-                                      getVariableInfoByPhvAcc(object, phvAccList = c(catPhvAcc, cleanNumPhvAccList), showBrief=T)
+                                          ############################
+                                          # Display and Save plot
+                                          ############################
+                                          plotObj = corr
+                                          plotType = 'correlmatrix'
+                                          phvAccNameCombo = varNameAccUscoreCombo 
+                                          savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
 
-                                      ############################
-                                      # Display and Save plot
-                                      ############################
-                                      plotObj = corr
-                                      plotType = 'correlmatrix'
-                                      phvAccNameCombo = varNameAccUscoreCombo 
-                                      savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
+                                          return(invisible(dat))
 
-                                      return(invisible(dat))
+                                      }
+                                      else {
+                                          type = 'process'
+                                          level = 'info'
+                                          show = T
+                                          mesg = paste("Less than 2 input numerical variables have data. The correlation plot is not drawn.\n", sep="")
+                                          writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                      }
 
                                   }
                                   else {
                                       type = 'process'
                                       level = 'info'
                                       show = T
-                                      mesg = paste("Less than 2 input numerical variables have data. The correlation plot is not drawn.\n", sep="")
+                                      mesg = paste("The input categorical variable, ", catPhvAcc, " (", catVarName, "), has only one unique vaule, '", catUniqueValList[1], "'. The correlation plot is not drawn.\n", sep="")
                                       writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                   }
+
 
                               }
                               else {
                                   type = 'process'
                                   level = 'info'
                                   show = T
-                                  mesg = paste("The input categorical variable, ", catPhvAcc, " (", catVarName, "), has only one unique vaule, '", catUniqueValList[1], "'. The correlation plot is not drawn.\n", sep="")
+                                  mesg = paste("The data table of combined input numerical variable data has zero row. The correlation plot is not drawn.\n", sep="")
                                   writeLog(object,  type = type, level = level, message = mesg, show = show) 
                               }
-
 
                           }
                           else {
                               type = 'process'
                               level = 'info'
                               show = T
-                              mesg = paste("The data table of combined input numerical variable data has zero row. The correlation plot is not drawn.\n", sep="")
+                              mesg = paste("The number of distinct values of the input non-numerical variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
                               writeLog(object,  type = type, level = level, message = mesg, show = show) 
                           }
+
+
 
 
                       }
