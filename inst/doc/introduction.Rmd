@@ -1,7 +1,7 @@
 ---
 title: "Introduction to dbgapr"
 author: "Luning Hao, NIH/NCBI/dbGaP"
-date: "2017-06-07"
+date: "2017-06-08"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteEngine{knitr::knitr}
@@ -22,8 +22,16 @@ Due to the large number and complicated structures of the dbGaP data files, it o
 
 This document is a step-by-step introduction of how to setup and use the package. **The examples are based on the data of study phs000001.v3.p1 (AREDS). The input accessions should be changed accordingly based on your specific need and the studies to which your data belong.**
 
-## Project Setup
+## Installation
 
+It is recommended to run dbgapr through [RStudio](https://www.rstudio.com/). The [table-viewer](https://support.rstudio.com/hc/en-us/articles/205175388-Using-the-Data-Viewer) available in recent versions of RStudio displays dataframe in a human friendly table view, which is perfect for browsing and filtering the dbGaP dataset and variable meta-info resulting from the dbgapr functions. The RStudio desktop version can be downloaded from [here](https://www.rstudio.com/products/rstudio/download). 
+
+
+```r
+# The dbgapr development version can be installed from GitHub:
+install.packages("devtools")
+devtools::install_github("jameslhao/dbgapr_dev")
+```
 ### Import the package
 
 After the dbgapr package is installed, import it to the R console.
@@ -41,6 +49,9 @@ All public functions belong to either class `Commons()` or class `Study()`. Run 
 ```r
 ?dbgapr
 ```
+
+## Project Setup
+
 
 ### Create user project 
 
@@ -762,7 +773,7 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variableBoxplot(s, numPhvAcc='phv00000027.v2', catPhvAcc='phv00000032.v2')
 ```
 
-<img src="figure/boxplot_phv00000027.v2_AGEPHOT_phv00000032.v2_MARITAL.png" title="plot of chunk unnamed-chunk-48" alt="plot of chunk unnamed-chunk-48" width="600px" />
+<img src="figure/boxplot_phv00000027.v2_AGEPHOT_phv00000032.v2_MARITAL.png" title="plot of chunk unnamed-chunk-49" alt="plot of chunk unnamed-chunk-49" width="600px" />
 
 For all plotting functions, the information of the respective variables and the location of saved images is console displayed as shown below. 
 
@@ -798,7 +809,7 @@ cat_1 = 'phv00053757.v2'
 df <- variableScatterplot(s, numPhvAcc_1=num_1, numPhvAcc_2=num_2, catPhvAcc=cat_1)
 ```
 
-<img src="figure/scatterplot_phv00000027.v2_AGEPHOT_phv00053747.v2_LNUCSCORE_phv00053757.v2_RNUC.png" title="plot of chunk unnamed-chunk-50" alt="plot of chunk unnamed-chunk-50" width="600px" height="500px" />
+<img src="figure/scatterplot_phv00000027.v2_AGEPHOT_phv00053747.v2_LNUCSCORE_phv00053757.v2_RNUC.png" title="plot of chunk unnamed-chunk-51" alt="plot of chunk unnamed-chunk-51" width="600px" height="500px" />
 
 ###  Variable histogram
 
@@ -814,7 +825,7 @@ df <- variableHistogram(s, phvAcc='phv00053747.v2')
 df <- variableHistogram(s, phvAcc='phv00053747.v2', withDensity=F)    
 ```
 
-<img src="figure/histogram_phv00053747.v2_LNUCSCORE.png" title="plot of chunk unnamed-chunk-52" alt="plot of chunk unnamed-chunk-52" width="600px" />
+<img src="figure/histogram_phv00053747.v2_LNUCSCORE.png" title="plot of chunk unnamed-chunk-53" alt="plot of chunk unnamed-chunk-53" width="600px" />
 
 When calling the function with a categorical variable, a barchart of each of the categories is drawn.
 
@@ -825,7 +836,7 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variableHistogram(s, phvAcc='phv00053733.v2')
 ```
 
-<img src="figure/barchart_phv00053733.v2_ADVSTAT.png" title="plot of chunk unnamed-chunk-54" alt="plot of chunk unnamed-chunk-54" width="600px" />
+<img src="figure/barchart_phv00053733.v2_ADVSTAT.png" title="plot of chunk unnamed-chunk-55" alt="plot of chunk unnamed-chunk-55" width="600px" />
 
 
 ###  Variable piechart
@@ -838,7 +849,7 @@ s <- Study(phsAcc='phs000001.v3.p1')
 df <- variablePiechart(s, catPhvAcc='phv00053764.v2')
 ```
 
-<img src="figure/boxplot_phv00053764.v2_LPSC.png" title="plot of chunk unnamed-chunk-56" alt="plot of chunk unnamed-chunk-56" width="600px" />
+<img src="figure/boxplot_phv00053764.v2_LPSC.png" title="plot of chunk unnamed-chunk-57" alt="plot of chunk unnamed-chunk-57" width="600px" />
 
 ###  Variable Venndiagram 
 
@@ -851,7 +862,7 @@ acc_list = c('phv00054139.v1', 'phv00053796.v2', 'phv00000089.v2')
 df <- variableVenndiagram(s, phvAccList=acc_list)
 ```
 
-<img src="figure/VennDiagram_AGECT_phv00054139.v1_DT_PROA_phv00053796.v2_SYST07_phv00000089.v2.png" title="plot of chunk unnamed-chunk-58" alt="plot of chunk unnamed-chunk-58" width="600px" />
+<img src="figure/VennDiagram_AGECT_phv00054139.v1_DT_PROA_phv00053796.v2_SYST07_phv00000089.v2.png" title="plot of chunk unnamed-chunk-59" alt="plot of chunk unnamed-chunk-59" width="600px" />
 
 ###  Variable correlation heatmap
 
@@ -865,7 +876,7 @@ num_acc_list = c('phv00000007.v2', 'phv00053794.v2', 'phv00053786.v2', 'phv00000
 df <- variableCorrelHeatmap(s, catPhvAcc=cat_acc, numPhvAccList=num_acc_list)
 ```
 
-<img src="figure/correlmatrix_SCHOOL_phv00000035.v2_RCORBASE_phv00000007.v2_DT_LYC_phv00053794.v2_DT_VITE_phv00053786.v2_DIAS12_phv00000106.v2.png" title="plot of chunk unnamed-chunk-60" alt="plot of chunk unnamed-chunk-60" width="600px" />
+<img src="figure/correlmatrix_SCHOOL_phv00000035.v2_RCORBASE_phv00000007.v2_DT_LYC_phv00053794.v2_DT_VITE_phv00053786.v2_DIAS12_phv00000106.v2.png" title="plot of chunk unnamed-chunk-61" alt="plot of chunk unnamed-chunk-61" width="600px" />
 
 
 > Write to dbgap-help@ncbi.nlm.nih.gov for any questions.

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Luning Hao, NIH/NCBI/dbGaP" />
 
-<meta name="date" content="2017-06-07" />
+<meta name="date" content="2017-06-08" />
 
 <title>Introduction to dbgapr</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introduction to dbgapr</h1>
 <h4 class="author"><em>Luning Hao, NIH/NCBI/dbGaP</em></h4>
-<h4 class="date"><em>2017-06-07</em></h4>
+<h4 class="date"><em>2017-06-08</em></h4>
 
 
 
@@ -86,8 +86,12 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </ul>
 <p>This document is a step-by-step introduction of how to setup and use the package. <strong>The examples are based on the data of study phs000001.v3.p1 (AREDS). The input accessions should be changed accordingly based on your specific need and the studies to which your data belong.</strong></p>
 </div>
-<div id="project-setup" class="section level2">
-<h2>Project Setup</h2>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>It is recommended to run dbgapr through <a href="https://www.rstudio.com/">RStudio</a>. The <a href="https://support.rstudio.com/hc/en-us/articles/205175388-Using-the-Data-Viewer">table-viewer</a> available in recent versions of RStudio displays dataframe in a human friendly table view, which is perfect for browsing and filtering the dbGaP dataset and variable meta-info resulting from the dbgapr functions. The RStudio desktop version can be downloaded from <a href="https://www.rstudio.com/products/rstudio/download">here</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># The dbgapr development version can be installed from GitHub:</span>
+<span class="kw">install.packages</span>(<span class="st">&quot;devtools&quot;</span>)
+devtools::<span class="kw">install_github</span>(<span class="st">&quot;jameslhao/dbgapr_dev&quot;</span>)</code></pre></div>
 <div id="import-the-package" class="section level3">
 <h3>Import the package</h3>
 <p>After the dbgapr package is installed, import it to the R console.</p>
@@ -98,6 +102,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>All public functions belong to either class <code>Commons()</code> or class <code>Study()</code>. Run the following to view the list of these functions.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">?dbgapr</code></pre></div>
 </div>
+</div>
+<div id="project-setup" class="section level2">
+<h2>Project Setup</h2>
 <div id="create-user-project" class="section level3">
 <h3>Create user project</h3>
 <p>Before anything else, the very first step is to create an user project directory using <code>prjConfig()</code>. The user project directory can be any directory in the file system.</p>

@@ -22,8 +22,16 @@ Due to the large number and complicated structures of the dbGaP data files, it o
 
 This document is a step-by-step introduction of how to setup and use the package. **The examples are based on the data of study phs000001.v3.p1 (AREDS). The input accessions should be changed accordingly based on your specific need and the studies to which your data belong.**
 
-## Project Setup
+## Installation
 
+It is recommended to run dbgapr through [RStudio](https://www.rstudio.com/). The [table-viewer](https://support.rstudio.com/hc/en-us/articles/205175388-Using-the-Data-Viewer) available in recent versions of RStudio displays dataframe in a human friendly table view, which is perfect for browsing and filtering the dbGaP dataset and variable meta-info resulting from the dbgapr functions. The RStudio desktop version can be downloaded from [here](https://www.rstudio.com/products/rstudio/download). 
+
+```{r, eval = FALSE}
+
+# The dbgapr development version can be installed from GitHub:
+install.packages("devtools")
+devtools::install_github("jameslhao/dbgapr_dev")
+```
 ### Import the package
 
 After the dbgapr package is installed, import it to the R console.
@@ -39,6 +47,9 @@ All public functions belong to either class `Commons()` or class `Study()`. Run 
 ```{r, eval=F, echo=T} 
 ?dbgapr
 ```
+
+## Project Setup
+
 
 ### Create user project 
 
