@@ -30,7 +30,7 @@ It is recommended to run dbgapr through [RStudio](https://www.rstudio.com/). The
 devtools::install_github("jameslhao/dbgapr_dev")
 ```
 
-Please write to dbgap-help@ncbi.nlm.nih.gov for any problems or any questions. 
+Please do not hesitate to write to dbgap-help@ncbi.nlm.nih.gov if you have any problems or questions. 
 
 ## Usage
 
