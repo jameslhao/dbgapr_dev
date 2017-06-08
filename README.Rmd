@@ -34,6 +34,6 @@ Please do not hesitate to write to dbgap-help@ncbi.nlm.nih.gov if you have any p
 
 ## Usage
 
-More information of how to use dbgapr can be found from this [instruction](https://github.com/jameslhao/dbgapr_dev/blob/master/vignettes/introduction.md) on GitHub.
+See this [instruction](https://github.com/jameslhao/dbgapr_dev/blob/master/vignettes/introduction.md) on GitHub for more.
 
 

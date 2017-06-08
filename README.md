@@ -29,6 +29,6 @@ have any problems or questions.
 Usage
 -----
 
-More information of how to use dbgapr can be found from this
+See this
 [instruction](https://github.com/jameslhao/dbgapr_dev/blob/master/vignettes/introduction.md)
-on GitHub.
+on GitHub for more.
