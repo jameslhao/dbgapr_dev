@@ -21,7 +21,7 @@ convertEnumVarColName(object, varDataDF, varInfoDF, varCodeValDF)
 \item{varCodeValDF}{a data frames. The code and value table of the categorical vairables.}
 }
 \description{
-The enumerated integer type variable values need to be converted to the respective string type values before plotting. The plotting program treats it as numerical values otherwise. This method takes the data frames of the data and meta-data of an enumerated integer type variable, and converts the variable values to the respective string type values based on the code meanings.
+The enumerated integer type variable values need to be converted to the respective string type values before plotting. The plotting program treats it as numeric values otherwise. This method takes the data frames of the data and meta-data of an enumerated integer type variable, and converts the variable values to the respective string type values based on the code meanings.
 }
 \section{Methods (by class)}{
 \itemize{

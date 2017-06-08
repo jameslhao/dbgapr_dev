@@ -312,13 +312,13 @@ setMethod(
 # Method: getStudyVariableInfoByDataType 
 # ----------------------------------------- 
 
-#' (internal) Get meta-info of study numerical or categorical variables  
+#' (internal) Get meta-info of study numeric or categorical variables  
 #' 
-#' The method returns the variable meta-info of either numerical or categorical variables of the study. 
+#' The method returns the variable meta-info of either numeric or categorical variables of the study. 
 #'
 #' @name getStudyVariableInfoByDataType
 #' @param object Study class object.
-#' @param dataType a character string. The variable datatype. The possible value is either 'num' (for numerical variable) or 'cat' (for categorical variable).
+#' @param dataType a character string. The variable datatype. The possible value is either 'num' (for numeric variable) or 'cat' (for categorical variable).
 #' @param ... There are optional arguments.
 #' @param dataDicDF a data frame. (optional) Dataset data dictionary data.
 #' @return  a data frame. The variable meta-info. 

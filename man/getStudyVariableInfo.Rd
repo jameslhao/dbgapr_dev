@@ -20,7 +20,7 @@ getStudyVariableInfo(object, ...)
 
 \item{phvAccList}{a character vector. The dbGaP phenotype variable accessions.}
 
-\item{dataType}{a character string. Specifies the data type of returned variables. The possible value is either 'num' (for numerical variable) or 'cat' (for categorical variable).}
+\item{dataType}{a character string. Specifies the data type of returned variables. The possible value is either 'num' (for numeric variable) or 'cat' (for categorical variable).}
 
 \item{showAs}{a character string. (optional) When the value is 'table', displays the data as a table through a platform specific table viewer; When it is 'json', displays the json text through a plain text editor; When it is 'text', displays in a brief left-justified text format.}
 

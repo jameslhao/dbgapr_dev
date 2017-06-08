@@ -3427,7 +3427,7 @@ setMethod(
 
 #' (internal) Convert enumerated integer type variable value
 #'
-#' The enumerated integer type variable values need to be converted to the respective string type values before plotting. The plotting program treats it as numerical values otherwise. This method takes the data frames of the data and meta-data of an enumerated integer type variable, and converts the variable values to the respective string type values based on the code meanings.
+#' The enumerated integer type variable values need to be converted to the respective string type values before plotting. The plotting program treats it as numeric values otherwise. This method takes the data frames of the data and meta-data of an enumerated integer type variable, and converts the variable values to the respective string type values based on the code meanings.
 #'
 #' @name convertEnumVarColName 
 #' @param object Commons class object
@@ -4210,7 +4210,7 @@ setMethod(
 # c <- Commons() 
 # 
 # detectVariableDataType(c, phsAcc = "phs000007.v29", phtAcc = "pht000027.v3", phvAcc = "phv00006623.v1", varName="FR397", codeValCombo="2:MULTIFOC|0:NO|5:R ON T|1:SIMPLE|.:UNKNOWN|3:PAIRS|4:RUN")      # combo 
-# detectVariableDataType(c, phsAcc = "phs000007.v29", phtAcc = "pht000009.v2", phvAcc = "phv00000504.v1", varName="MF30", codeValCombo=NA)  # numerical, code_combo NA
+# detectVariableDataType(c, phsAcc = "phs000007.v29", phtAcc = "pht000009.v2", phvAcc = "phv00000504.v1", varName="MF30", codeValCombo=NA)  # numeric, code_combo NA
 
 # detectVariableDataType(s, phvAcc = "phv00065292.v2")      # NA
 # detectVariableDataType(s, phvAcc = "phv00056514.v4")      # NA

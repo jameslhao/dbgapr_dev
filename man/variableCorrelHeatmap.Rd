@@ -18,7 +18,7 @@ variableCorrelHeatmap(object, catPhvAcc, ...)
 
 \item{...}{There are optional arguments.}
 
-\item{numPhvAccList}{a character vector. A list of the dbGaP accessions of numerical variables.}
+\item{numPhvAccList}{a character vector. A list of the dbGaP accessions of numeric variables.}
 
 \item{saveToDir}{a character string. (optional) The path to the directory where the plot PDF file is saved. If not provided, the file is saved in the 'temp' directory under the user project directory.}
 

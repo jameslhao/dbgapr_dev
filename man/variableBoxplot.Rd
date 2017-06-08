@@ -14,7 +14,7 @@ variableBoxplot(object, numPhvAcc, ...)
 \arguments{
 \item{object}{Study class object.}
 
-\item{numPhvAcc}{a character string. The dbGaP accession of a numerical variable.}
+\item{numPhvAcc}{a character string. The dbGaP accession of a numeric variable.}
 
 \item{...}{There are optional arguments.}
 
@@ -28,7 +28,7 @@ variableBoxplot(object, numPhvAcc, ...)
 a data frame. The data used for plotting.
 }
 \description{
-The method draws the box-and-whisker plot given the accession of either a numerical variable alone or a numerical plus a categorical variable. The boxplot is drawn with the numerical variable as the function of each category of the categorical variable, respectively. When categorical variable accession is not provided, the boxplot is drawn with the numerical variable as the function of the respective subject indices. The resulting graph is saved as PDF and PNG files.
+The method draws the box-and-whisker plot given the accession of either a numeric variable alone or a numeric plus a categorical variable. The boxplot is drawn with the numeric variable as the function of each category of the categorical variable, respectively. When categorical variable accession is not provided, the boxplot is drawn with the numeric variable as the function of the respective subject indices. The resulting graph is saved as PDF and PNG files.
 }
 \section{Methods (by class)}{
 \itemize{

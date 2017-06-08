@@ -514,7 +514,7 @@ df <- getStudyVariableInfo(s, showAs='table')
 # all dataset variables
 df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1')        
 # or
-# all dataset variables of numerical type  
+# all dataset variables of numeric type  
 df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1', dataType = 'num')
 # or     
 # a list of variables
@@ -664,7 +664,7 @@ The metadata and statistical summary of a given variable can be viewed by callin
 
 ```{r, eval=F, echo=T} 
 s <- Study(phsAcc='phs000001.v3.p1')            
-df <- variableSummary(s, phvAcc='phv00054119.v1.p1.c2')   # numerical
+df <- variableSummary(s, phvAcc='phv00054119.v1.p1.c2')   # numeric
 ```
 
     output:
@@ -708,7 +708,7 @@ df <- variableSummary(s, phvAcc='phv00000035.v2')         # categorical
 
 ###  Variable box-and-whisker plot
 
-The box-and-whisker plot of a numerical variable vs each category of a categorical variable can be viewed by calling `variableBoxplot()` as below.
+The box-and-whisker plot of a numeric variable vs each category of a categorical variable can be viewed by calling `variableBoxplot()` as below.
 
 ```{r, eval=F, echo=T} 
 s <- Study(phsAcc='phs000001.v3.p1')            
@@ -742,7 +742,7 @@ For all plotting functions, the information of the respective variables and the 
 
 ###  Variable scatter plot
 
-The scatter-plot of a numerical variable vs each category of a categorical variable can be viewed by calling `variableScatterplot()` as below.
+The scatter-plot of a numeric variable vs each category of a categorical variable can be viewed by calling `variableScatterplot()` as below.
 
 ```{r, eval=F, echo=T} 
 s <- Study(phsAcc='phs000001.v3.p1')            
@@ -758,7 +758,7 @@ knitr::include_graphics("figure/scatterplot_phv00000027.v2_AGEPHOT_phv00053747.v
 
 ###  Variable histogram
 
-The histogram of a numerical variable can be drawn by calling `variableHistogram()` as below.
+The histogram of a numeric variable can be drawn by calling `variableHistogram()` as below.
 
 ```{r, eval=F, echo=T} 
 s <- Study(phsAcc='phs000001.v3.p1')            

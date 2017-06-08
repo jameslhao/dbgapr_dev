@@ -4,7 +4,7 @@
 \name{getStudyVariableInfoByDataType}
 \alias{getStudyVariableInfoByDataType}
 \alias{getStudyVariableInfoByDataType,Study,character-method}
-\title{(internal) Get meta-info of study numerical or categorical variables}
+\title{(internal) Get meta-info of study numeric or categorical variables}
 \usage{
 getStudyVariableInfoByDataType(object, dataType, ...)
 
@@ -14,7 +14,7 @@ getStudyVariableInfoByDataType(object, dataType, ...)
 \arguments{
 \item{object}{Study class object.}
 
-\item{dataType}{a character string. The variable datatype. The possible value is either 'num' (for numerical variable) or 'cat' (for categorical variable).}
+\item{dataType}{a character string. The variable datatype. The possible value is either 'num' (for numeric variable) or 'cat' (for categorical variable).}
 
 \item{...}{There are optional arguments.}
 
@@ -24,7 +24,7 @@ getStudyVariableInfoByDataType(object, dataType, ...)
 a data frame. The variable meta-info.
 }
 \description{
-The method returns the variable meta-info of either numerical or categorical variables of the study.
+The method returns the variable meta-info of either numeric or categorical variables of the study.
 }
 \section{Methods (by class)}{
 \itemize{

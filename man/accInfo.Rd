@@ -38,7 +38,7 @@ df <- accInfo(c, acc = 'phs000001.v3.p1')
 # or
 df <- accInfo(c, acc = 'pht000824.v5')
 # or
-df <- accInfo(c, acc = 'phv00000090.v2')     # numerical with units
+df <- accInfo(c, acc = 'phv00000090.v2')     # numeric with units
 # or
 df <- accInfo(c, acc = 'phv00000122.v2')     # categorical with code-value 
 }

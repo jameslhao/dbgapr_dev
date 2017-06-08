@@ -18,7 +18,7 @@
 #' @param ... There are optional arguments.
 #' @param phtAcc a character string. The dbGaP dataset accession.
 #' @param phvAccList a character vector. The dbGaP phenotype variable accessions.
-#' @param dataType a character string. Specifies the data type of returned variables. The possible value is either 'num' (for numerical variable) or 'cat' (for categorical variable).
+#' @param dataType a character string. Specifies the data type of returned variables. The possible value is either 'num' (for numeric variable) or 'cat' (for categorical variable).
 #' @param showAs a character string. (optional) When the value is 'table', displays the data as a table through a platform specific table viewer; When it is 'json', displays the json text through a plain text editor; When it is 'text', displays in a brief left-justified text format.
 #' @param editor a character string. (optional) The name of your favorite plain text editor. It should be executable from a command-line prompt of the respective platform. For example, notepad (Windows), vim, emacs (Unix), gedit (Ubuntu), nedit (CentOS), etc.
 #' @return a data frame. The meta-info of input variables. 
@@ -685,8 +685,8 @@ setGeneric(
 
 # s <- Study(phsAcc = 'phs000001.v3.p1')
 # variableSummary(s, phvAcc = 'phv00054119.v1.p1.c2')
-# variableSummary(s, phvAcc = 'phv00000087.v2')		# numerical
-# variableSummary(s, phvAcc = 'phv00053747.v2')     # numerical
+# variableSummary(s, phvAcc = 'phv00000087.v2')		# numeric
+# variableSummary(s, phvAcc = 'phv00053747.v2')     # numeric
 # variableSummary(s, phvAcc = 'phv00000035.v2')		# categorical
 # variableSummary(s, phvAcc = 'phv00053757.v2')     # categorical
 
@@ -836,10 +836,10 @@ setMethod(
 
 #' Variable boxplot 
 #'
-#' The method draws the box-and-whisker plot given the accession of either a numerical variable alone or a numerical plus a categorical variable. The boxplot is drawn with the numerical variable as the function of each category of the categorical variable, respectively. When categorical variable accession is not provided, the boxplot is drawn with the numerical variable as the function of the respective subject indices. The resulting graph is saved as PDF and PNG files. 
+#' The method draws the box-and-whisker plot given the accession of either a numeric variable alone or a numeric plus a categorical variable. The boxplot is drawn with the numeric variable as the function of each category of the categorical variable, respectively. When categorical variable accession is not provided, the boxplot is drawn with the numeric variable as the function of the respective subject indices. The resulting graph is saved as PDF and PNG files. 
 #'
 #' @param object Study class object.
-#' @param numPhvAcc a character string. The dbGaP accession of a numerical variable. 
+#' @param numPhvAcc a character string. The dbGaP accession of a numeric variable. 
 #' @param ... There are optional arguments. 
 #' @param catPhvAcc a character string. (optional) The dbGaP accession of a categorical variable.
 #' @param saveToDir a character string. (optional) The path to the directory where the plot PDF file is saved. If not provided, the file is saved in the 'temp' directory under the user project directory.
@@ -929,7 +929,7 @@ setMethod(
                               type = 'process'
                               level = 'info'
                               show = T
-                              mesg = paste("The data type ", type, ", of input variable, ", numVarName, " ( ", numPhvAcc, " ), is not numerical . The boxplot is not drawn.\n", sep="")
+                              mesg = paste("The data type ", type, ", of input variable, ", numVarName, " ( ", numPhvAcc, " ), is not numeric . The boxplot is not drawn.\n", sep="")
                               writeLog(object,  type = type, level = level, message = mesg, show = show) 
                           }
 
@@ -1025,7 +1025,7 @@ setMethod(
                                           type = 'process'
                                           level = 'info'
                                           show = T
-                                          mesg = paste("The number of distinct values of the input non-numerical variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                                          mesg = paste("The number of distinct values of the input non-numeric variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
                                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                       }
                                   } 
@@ -1047,7 +1047,7 @@ setMethod(
                           else {
 
                               #########################################################################
-                              # Boxplot of numerical variable only (without categorical variable)
+                              # Boxplot of numeric variable only (without categorical variable)
                               #########################################################################
 
                               # Get numVarColumn
@@ -1141,12 +1141,12 @@ setMethod(
 
 #' Variable scatter-plot
 #' 
-#' The method draws the scatterplot of two numerical variables for each category of a categorical variable. If only one numerical variable accession (numPhvAcc_1) is provided, it draws the numerical variable values as the function of the respective subject indices. If both numerical variables (numPhvAcc_1 and numPhvAcc_2) are provided, it draws the values of the first variable as the function of the second. All variables should belong to the same study and have overlapping subjects. The created graph is saved as PDF and PNG files.
+#' The method draws the scatterplot of two numeric variables for each category of a categorical variable. If only one numeric variable accession (numPhvAcc_1) is provided, it draws the numeric variable values as the function of the respective subject indices. If both numeric variables (numPhvAcc_1 and numPhvAcc_2) are provided, it draws the values of the first variable as the function of the second. All variables should belong to the same study and have overlapping subjects. The created graph is saved as PDF and PNG files.
 #'
 #' @param object Study class object.
-#' @param numPhvAcc_1 a character string. A dbGaP variable accession of the numerical variable type. 
+#' @param numPhvAcc_1 a character string. A dbGaP variable accession of the numeric variable type. 
 #' @param ... There are optional argument.
-#' @param numPhvAcc_2 a character string. (optional) A dbGaP variable accession of the numerical variable type. 
+#' @param numPhvAcc_2 a character string. (optional) A dbGaP variable accession of the numeric variable type. 
 #' @param catPhvAcc a character string. (optional) A dbGaP variable accession of the categorical variable type. This value is used only if the arguments of numPhvAcc_1 and numPhvAcc_2 are both provided.
 #' @param saveToDir a character string. (optional) The path to the directory where the plot PDF file is saved. If not provided, the file is saved in the 'temp' directory under the user project directory.
 #' @param showPlot a logical value. (optional) If TRUE (default), shows the created graph; Not show if FALSE. 
@@ -1329,7 +1329,7 @@ setMethod(
 
                               if (nchar(catPhvAcc) == 0) {
                                   #############################################
-                                  # None categorical (numerical ) variable 
+                                  # None categorical (numeric ) variable 
                                   #############################################
 
                                   finalDF <- cbind(numVarDataNoIdDF_1, numVarDataNoIdDF_2)
@@ -1481,7 +1481,7 @@ setMethod(
                                           type = 'process'
                                           level = 'info'
                                           show = T
-                                          mesg = paste("The number of distinct values of the input non-numerical variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                                          mesg = paste("The number of distinct values of the input non-numeric variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
                                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                       }
                                   }
@@ -1512,14 +1512,14 @@ setMethod(
 #' @export variableHistogram 
 # @examples
 # s <- Study(phsAcc = 'phs000001.v3.p1')
-# variableHistogram(s, phvAcc = 'phv00053747.v2')		# numerical 
-# variableHistogram(s, phvAcc = 'phv00000087.v2')		# numerical
-# variableHistogram(s, phvAcc = 'phv00054119.v1.p1.c2') # numerical 
+# variableHistogram(s, phvAcc = 'phv00053747.v2')		# numeric 
+# variableHistogram(s, phvAcc = 'phv00000087.v2')		# numeric
+# variableHistogram(s, phvAcc = 'phv00054119.v1.p1.c2') # numeric 
 # variableHistogram(s, phvAcc = 'phv00053747.v2', withDensity=F)    # withDensity 
 # variableHistogram(s, phvAcc = 'phv00053747.v2', withDensity=F, showPlot=F)   # not show image 
 # variableHistogram(s, phvAcc = 'phv00000035.v2', withDensity=F, showPlot=T)   # categorical variable SCHOOL 
 #
-# variableHistogram(s, phvAcc = 'phv00251409.v1', withDensity=T, showPlot=T)   # numerical: phs000007.v29
+# variableHistogram(s, phvAcc = 'phv00251409.v1', withDensity=T, showPlot=T)   # numeric: phs000007.v29
 # variableHistogram(s, phvAcc = 'phv00251798.v1', withDensity=T, showPlot=T)   # categorical phs00007.v29
 
 setGeneric(
@@ -1760,7 +1760,7 @@ setMethod(
                               type = 'process'
                               level = 'info'
                               show = T
-                              mesg = paste("The number of distinct values of the input non-numerical variable '", varName, "' ( ", phvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                              mesg = paste("The number of distinct values of the input non-numeric variable '", varName, "' ( ", phvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
                               writeLog(object,  type = type, level = level, message = mesg, show = show) 
                           }
 
@@ -1770,7 +1770,7 @@ setMethod(
                           type = 'process'
                           level = 'info'
                           show = T
-                          mesg = paste("The data type ", type, ", of input variable '", varName, "' ( ", phvAcc, " ) is neither numerical nor categorical. The statistical summary thus is not generated.\n", sep="")
+                          mesg = paste("The data type ", type, ", of input variable '", varName, "' ( ", phvAcc, " ) is neither numeric nor categorical. The statistical summary thus is not generated.\n", sep="")
                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
                       }
                   } # end !is.null(varDataDF)
@@ -2015,7 +2015,7 @@ setMethod(
                                       type = 'process'
                                       level = 'info'
                                       show = T
-                                      mesg = paste("The number of distinct values of the input non-numerical variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                                      mesg = paste("The number of distinct values of the input non-numeric variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
                                       writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                   }
                               }
@@ -2299,7 +2299,7 @@ setMethod(
 #' @param object Study class object.
 #' @param catPhvAcc a character string. The dbGaP accession of a categorical variable. 
 #' @param ... There are optional arguments.
-#' @param numPhvAccList a character vector. A list of the dbGaP accessions of numerical variables.
+#' @param numPhvAccList a character vector. A list of the dbGaP accessions of numeric variables.
 #' @param saveToDir a character string. (optional) The path to the directory where the plot PDF file is saved. If not provided, the file is saved in the 'temp' directory under the user project directory.
 #' @param showPlot a logical value. (optional) If TRUE (default), shows the created graph; Not show if FALSE.
 #' @return a data frame. The data used for plotting. 
@@ -2433,7 +2433,7 @@ setMethod(
                           type = 'process'
                           level = 'info'
                           show = T
-                          mesg = paste("There following accession(s) in the input numPhvAccList is not numerical type. It needs to be fixed. The corrlation plot is not drawn.\n", sep="")
+                          mesg = paste("There following accession(s) in the input numPhvAccList is not numeric type. It needs to be fixed. The corrlation plot is not drawn.\n", sep="")
                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
                       }
                       else {
@@ -2525,7 +2525,7 @@ setMethod(
                                           dat <- data.frame(lapply(dat, trimws))
 
                                           #############################################
-                                          # Important! Convert facter to numeric 
+                                          # Important! Convert factor to numeric 
                                           #############################################
                                           # At this stage, due to some special character in the numeric column values 
                                           # If run dtype <- sapply(dat, class), the column data types are all 'factor'.
@@ -2674,7 +2674,7 @@ setMethod(
                                           type = 'process'
                                           level = 'info'
                                           show = T
-                                          mesg = paste("Less than 2 input numerical variables have data. The correlation plot is not drawn.\n", sep="")
+                                          mesg = paste("Less than 2 input numeric variables have data. The correlation plot is not drawn.\n", sep="")
                                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                       }
 
@@ -2693,7 +2693,7 @@ setMethod(
                                   type = 'process'
                                   level = 'info'
                                   show = T
-                                  mesg = paste("The data table of combined input numerical variable data has zero row. The correlation plot is not drawn.\n", sep="")
+                                  mesg = paste("The data table of combined input numeric variable data has zero row. The correlation plot is not drawn.\n", sep="")
                                   writeLog(object,  type = type, level = level, message = mesg, show = show) 
                               }
 
@@ -2702,7 +2702,7 @@ setMethod(
                               type = 'process'
                               level = 'info'
                               show = T
-                              mesg = paste("The number of distinct values of the input non-numerical variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
+                              mesg = paste("The number of distinct values of the input non-numeric variable '", catVarName, "' ( ", catPhvAcc, " ) is more than 20. It may not be a categorical variable. The plot is not drawn.\n", sep="")
                               writeLog(object,  type = type, level = level, message = mesg, show = show) 
                           }
 
@@ -2719,7 +2719,7 @@ setMethod(
                       show = T
 
                       if (length(cleanNumPhvAccList) == 0) {
-                          mesg = paste("There is no valid numerical variable accession in the input list.\n", sep="")
+                          mesg = paste("There is no valid numeric variable accession in the input list.\n", sep="")
                       }
                       else {
                           mesg = paste("The input categorical variable accession is not valid.\n", sep="")

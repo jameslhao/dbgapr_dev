@@ -14,11 +14,11 @@ variableScatterplot(object, numPhvAcc_1, ...)
 \arguments{
 \item{object}{Study class object.}
 
-\item{numPhvAcc_1}{a character string. A dbGaP variable accession of the numerical variable type.}
+\item{numPhvAcc_1}{a character string. A dbGaP variable accession of the numeric variable type.}
 
 \item{...}{There are optional argument.}
 
-\item{numPhvAcc_2}{a character string. (optional) A dbGaP variable accession of the numerical variable type.}
+\item{numPhvAcc_2}{a character string. (optional) A dbGaP variable accession of the numeric variable type.}
 
 \item{catPhvAcc}{a character string. (optional) A dbGaP variable accession of the categorical variable type. This value is used only if the arguments of numPhvAcc_1 and numPhvAcc_2 are both provided.}
 
@@ -30,7 +30,7 @@ variableScatterplot(object, numPhvAcc_1, ...)
 a data frame. The data used for plotting.
 }
 \description{
-The method draws the scatterplot of two numerical variables for each category of a categorical variable. If only one numerical variable accession (numPhvAcc_1) is provided, it draws the numerical variable values as the function of the respective subject indices. If both numerical variables (numPhvAcc_1 and numPhvAcc_2) are provided, it draws the values of the first variable as the function of the second. All variables should belong to the same study and have overlapping subjects. The created graph is saved as PDF and PNG files.
+The method draws the scatterplot of two numeric variables for each category of a categorical variable. If only one numeric variable accession (numPhvAcc_1) is provided, it draws the numeric variable values as the function of the respective subject indices. If both numeric variables (numPhvAcc_1 and numPhvAcc_2) are provided, it draws the values of the first variable as the function of the second. All variables should belong to the same study and have overlapping subjects. The created graph is saved as PDF and PNG files.
 }
 \section{Methods (by class)}{
 \itemize{
