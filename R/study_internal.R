@@ -253,9 +253,10 @@ setMethod(
                                           str <- paste(varName, " (", varAcc, ") [", varType, "]  : ",  sep="")
                                           display <- sprintf("%2s", c(str, varDesc)) # left justified
                                           cat(display)
+                                          cat("\n")
 
                                           # display attribute 
-                                          str <- paste("Attribute of  : ", varAttrType, "\n", sep="")
+                                          str <- paste("Attribute of : ", varAttrType, "\n", sep="")
                                           display <- sprintf("%2s", c(str)) # left justified
                                           cat(display)
                                       }
@@ -266,7 +267,7 @@ setMethod(
                                           cat("\n")
 
                                           # display attribute 
-                                          str <- paste("Attribute of  :  ", varAttrType, "\n", sep="")
+                                          str <- paste("Attribute of :  ", varAttrType, "\n", sep="")
                                           display <- sprintf("%2s", c(str)) # left justified
                                           cat(display)
 

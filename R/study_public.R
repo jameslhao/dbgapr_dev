@@ -630,14 +630,14 @@ setGeneric(
                                     type = 'process'
                                     level = 'error'
                                     show = T
-                                    mesg = paste("", thisMultiType, " info file of this study ", phsAcc, " is not found. Make sure all phenotype files are downloaded and checkout ?prepareData() to see how to copy and process the downloaded files. Write to dbgap-help@ncbi.nlm.gov if you have any questions.\n", sep="")
+                                    mesg = paste("", thisMultiType, " info file of this study ", phsAcc, " is not found. Make sure all phenotype files are downloaded and checkout ?prepareData() to see how to copy and process the downloaded files. Write to dbgap-help@ncbi.nlm.nih.gov if you have any questions.\n", sep="")
                                     writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                 }
                                 else if (thisMultiType == 'Pedigree') {
                                     type = 'process'
                                     level = 'info'
                                     show = T
-                                    mesg = paste("", thisMultiType, " file of this study ", phsAcc, " is not found. The study may not have pedigree information available. Write to dbgap-help@ncbi.nlm.gov if you have any questions.\n", sep="")
+                                    mesg = paste("", thisMultiType, " file of this study ", phsAcc, " is not found. The study may not have pedigree information available. Write to dbgap-help@ncbi.nlm.nih.gov if you have any questions.\n", sep="")
                                     writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                 }
                             }
@@ -945,6 +945,7 @@ setMethod(
                               catVarUnits <- as.character(catVarInfoDF$units)
                               catVarCodeValCombo <- as.character(catVarInfoDF$code_value_combo)
 
+
                               #################################
                               # Separate out the data columns 
                               #################################
@@ -966,6 +967,7 @@ setMethod(
                                   if (!is.null(varCodeValDF)) {
 
                                       catVarDataNoIdDF <- convertEnumVarColName(object, varDataDF = varDataDF, varInfoDF = catVarInfoDF, varCodeValDF = varCodeValDF)
+
 
                                       ###########################################
                                       # Determine the number of distinct values 
@@ -992,6 +994,7 @@ setMethod(
                                               }
                                               title = paste("\n", numVarName, "(", numPhvAcc, ")\n vs\n", catVarName, "(", catPhvAcc, ")\n")
 
+
                                               ##############
                                               # Draw plot
                                               ##############
@@ -1003,12 +1006,23 @@ setMethod(
                                               ggtitle(title) +
                                               #theme(plot.title = element_text(lineheight=.8, face="plain", size=11))
                                               theme(plot.title = element_text(hjust = 0.5, size = 10)) +    # center the title
+
+                                              # Remove grid
+                                              theme_bw() +
+                                              theme(axis.line = element_line(colour = "black"),
+                                              panel.grid.major = element_blank(),
+                                              panel.grid.minor = element_blank(),
+                                              panel.border = element_blank(),
+                                              panel.background = element_blank()) + 
+
                                               theme(aspect.ratio=4/4)   # graph height is larger than width if not set this 
+
 
                                               ###########################
                                               # Disply variable info
                                               ###########################
                                               getVariableInfoByPhvAcc(object, phvAccList = c(catPhvAcc, numPhvAcc), showBrief=T)
+
 
                                               ############################
                                               # Display and Save plot
@@ -1017,6 +1031,7 @@ setMethod(
                                               plotType = 'boxplot'
                                               phvAccNameCombo = paste(numPhvAcc, "_", numVarName, "_", catPhvAcc, "_", catVarName, sep="")
                                               savedPlotFiles <- saveGapPlot(object, plotObj = plotObj, plotType = plotType, phvAccNameCombo = phvAccNameCombo, saveToDir = saveToDir, showPlot = showPlot)
+
 
                                               return(invisible(finalDF))
                                           }
@@ -1029,9 +1044,6 @@ setMethod(
                                           writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                       }
                                   } 
-
-
-
                               }
                               else {
                                   type = 'process'

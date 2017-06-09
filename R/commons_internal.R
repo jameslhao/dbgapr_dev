@@ -3553,56 +3553,39 @@ setMethod(
                           # h778 h778 h778 h778 h778 h778 
                           # to
                           # h778_ h778_ h778_ h778_ h778_ h778_ 
-                          names(catVarDataNoIdDF) <- sub("(.*)$", "\\1_", names(catVarDataNoIdDF))
 
-                          # Then make it to
-                          # h778_1 h778_2 h778_3 h778_4 h778_5 h778_6  
-                          #
-                          # Groupping by unique column value, each group has a column name+group#. 
-                          # As an example, for the numbers of the column SCHOOL, the value is SCHOOL_1, SCHOOL_2 ...
-                          uniqueCatVals <- rapply(catVarDataNoIdDF,function(x) (unique(x)))		# get unique enumerated values (returned as named integer)
+                          #############################################
+                          # pre-pend catVarName to each column value 
+                          #############################################
+                          # such as MARITAL ---> MARITAL_2
+                          newList <- lapply(catVarDataNoIdDF[[catVarName]], function(x)  paste0(catVarName, "_", x))
 
-                          uniqueCatValsDF <- data.frame(as.list(uniqueCatVals))				# convert named integer to dataframe 
-                          varNameCodeCombos <- colnames(uniqueCatValsDF) 				    # Example:  [1] "SCHOOL_1" "SCHOOL_2" "SCHOOL_3" "SCHOOL_4" "SCHOOL_5" "SCHOOL_6"
+                          # Replace entire column value with the pre-pend values 
+                          catVarDataNoIdDF[[catVarName]] <- unlist(newList) 
 
-                          #############################
-                          # Create code Value List
-                          #############################
-                          # Example list item:   
-                          # "1:Grade_11_or_less" 
-                          # "2:High_school_graduate"
-                          catVarCodeValList <- unlist(strsplit(catVarCodeValCombo, '|', fixed=TRUE))
-                          cleanCodeVals <- lapply(catVarCodeValList, function(item) {
-                              item <- trimws(item)
-                              item <- gsub("\\s+", "_", item)
-                          })
-
-                          ################################################################
-                          # Create a new column that has varNameCode as column values
-                          ################################################################
-                          # Resulting datafraame
-                          #  SCHOOL tempCol
-                          #  1      2 SCHOOL2
-                          #  2      4 SCHOOL4
-                          #  3      5 SCHOOL5
-                          #  4      4 SCHOOL4
-
-                          index <- unlist(list(1:length(varNameCodeCombos)))	# needs to be a vector, example: [1] 1 2 3 4 5 6
-                          values <- varNameCodeCombos
-                          dat <- catVarDataNoIdDF
-                          dat$tempCol <- values[match(dat[,1], index)]		# create new column based on mapping between index, values lists 
 
                           # Remove original SCHOOL column
-                          newData <- subset(dat, select = c('tempCol'))
+                          #newData <- subset(dat, select = c('tempCol'))
                           # Rename tempCol to SCHOOL
-                          colnames(newData)[1] <- catVarName 
+                          #colnames(newData)[1] <- catVarName 
                           # SCHOOL
                           # 1 SCHOOL2
                           # 2 SCHOOL4
                           # 3 SCHOOL5
                           # 4 SCHOOL4
 
-                          finalDF <- newData
+                          #finalDF <- newData
+
+                          # Example: 
+                          #    MARITAL
+                          #    1 MARITAL_2
+                          #    2 MARITAL_1
+                          #    3 MARITAL_1
+                          #    4 MARITAL_1
+                          #    5 MARITAL_1
+                          #    6 MARITAL_1
+
+                          finalDF <- catVarDataNoIdDF
                       }
                       else {
                           #########################
