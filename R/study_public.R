@@ -1638,6 +1638,11 @@ setMethod(
                       ######################
                       if (varType == 'integer' | varType == 'decimal') {
 
+                            
+                          # Important! Convert column value to numeric to avoid the error below:
+                          # Error: StatBin requires a continuous x variable the x variable is discrete. Perhaps you want stat="count"?
+                          dat <- data.frame(lapply(dat, function(x) as.numeric(as.character(x))))
+
                           ###########################
                           # Disply variable info
                           ###########################
