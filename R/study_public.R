@@ -977,7 +977,14 @@ setMethod(
 
                                       if (length(distinctValVect) < 21) {
 
+                                          # Important! Convert column value to numeric to avoid the error below:
+                                          numVarDataNoIdDF <- data.frame(lapply(numVarDataNoIdDF, function(x) as.numeric(as.character(x))))
+
                                           finalDF <- cbind(numVarDataNoIdDF, catVarDataNoIdDF)
+
+                                          print("AAA")
+                                          print(head(finalDF))
+
 
                                           if (inputOk == T) {
 
