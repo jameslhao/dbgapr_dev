@@ -1353,6 +1353,7 @@ setMethod(
 
                                   finalDF <- cbind(numVarDataNoIdDF_1, numVarDataNoIdDF_2)
 
+
                                   #################
                                   # Labels
                                   #################
@@ -1385,6 +1386,11 @@ setMethod(
                                   # Plot 
                                   #################
                                   dat <- finalDF
+
+                                  # Important! Convert column value to numeric to avoid the error below:
+                                  dat <- data.frame(lapply(dat, function(x) as.numeric(as.character(x))))
+
+
                                   sp <- ggplot(dat) +
                                   geom_point(aes_string(x = xlab, y = ylab), color=rgb(0,0,1,0.2)) +
                                   labs(y = yLabCombo, x = xLabCombo) +
@@ -1434,6 +1440,11 @@ setMethod(
                                       distinctValVect <- unique(dataValVect)
 
                                       if (length(distinctValVect) < 21) {
+
+                                          # Important! Convert column value to numeric to avoid the error below:
+                                          numVarDataNoIdDF_1 <- data.frame(lapply(numVarDataNoIdDF_1, function(x) as.numeric(as.character(x))))
+                                          numVarDataNoIdDF_2 <- data.frame(lapply(numVarDataNoIdDF_2, function(x) as.numeric(as.character(x))))
+
 
                                           finalDF <- cbind(numVarDataNoIdDF_1, numVarDataNoIdDF_2, catVarDataNoIdDF)
                                           # 	AGEPHOT LNUCSCORE  SCHOOL
