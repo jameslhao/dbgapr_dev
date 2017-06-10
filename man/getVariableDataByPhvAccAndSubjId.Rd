@@ -9,7 +9,7 @@
 getVariableDataByPhvAccAndSubjId(object, phvAccList, ...)
 
 \S4method{getVariableDataByPhvAccAndSubjId}{Study,character}(object, phvAccList,
-  ..., subjIdsOrFile = NULL)
+  ..., dbgapIdsOrFile = NULL)
 }
 \arguments{
 \item{object}{Study class object}
@@ -18,7 +18,7 @@ getVariableDataByPhvAccAndSubjId(object, phvAccList, ...)
 
 \item{...}{There are optional arguments.}
 
-\item{subjIdsOrFile}{a character vector or a character string. (optional) This argument can be a list of subject ids shared among the input variables. It can also be the path to a file that contains a list of of the subject ids shared among the input variables.}
+\item{dbgapIdsOrFile}{a character vector or a character string. (optional) This argument can be either a vector of ID list or a path to a file that contains a list of IDs. The IDs can be dbGaP_Subject_ID or dbGaP_Sample_ID denpending on type of the data. When the list of IDs is provided by a file, it should be  a plain text file with one ID per line.}
 }
 \value{
 a data frame. The variable data of given variables subset by the given subjects.
@@ -37,9 +37,9 @@ The method returns the data of a given list of variables subset by a list of sub
 s <- Study(phsAcc = 'phs000001.v3.p1')
 ids <- c("219", "220", "221") 
 accList <- c('phv00054119.v1.p1.c2', 'phv00053735.v2')
-getVariableDataByPhvAccAndSubjId(s, phvAccList = accList, subjIdsOrFile = ids)
+getVariableDataByPhvAccAndSubjId(s, phvAccList = accList, dbgapIdsOrFile = ids)
 idFile = '/home/user/temp/subj_ids.txt'
-getVariableDataByPhvAccAndSubjId(s, phvAccList = accList, subjIdsOrFile = idFile)
+getVariableDataByPhvAccAndSubjId(s, phvAccList = accList, dbgapIdsOrFile = idFile)
 }
 }
 \keyword{internal}

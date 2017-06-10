@@ -9,7 +9,7 @@
 getStudyVariableData(object, ...)
 
 \S4method{getStudyVariableData}{Study}(object, ..., phtAcc = "",
-  phvAccList = vector(), subjIdsOrFile = NA, emptyToNa = FALSE,
+  phvAccList = vector(), dbgapIdsOrFile = NULL, emptyToNa = FALSE,
   colNameWithAcc = FALSE)
 }
 \arguments{
@@ -21,7 +21,7 @@ getStudyVariableData(object, ...)
 
 \item{phvAccList}{a character vector. (optional) The dbGaP variable accessions. The list only accepts subject level variables. The sample level variables are not accepted.}
 
-\item{subjIdsOrFile}{a character vector or a character string. (optional) This argument is either list of dbGaP subject ids (dbGaP_Subject_ID) of the variables or the path to a file that contains a list of the dbGaP subject ids of the variables. The file is a plain text file with one dbGaP subject id per line.}
+\item{dbgapIdsOrFile}{a character vector or a character string. (optional) This argument can be either a vector of ID list or a path to a file that contains a list of IDs. The IDs can be dbGaP_Subject_ID or dbGaP_Sample_ID denpending on type of the data. When the list of IDs is provided by a file, it should be  a plain text file with one ID per line.}
 
 \item{emptyToNa}{a logical value. (optional). If TRUE, converts the empty values to NA; If FALSE (default), not convert.}
 

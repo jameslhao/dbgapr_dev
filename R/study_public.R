@@ -433,7 +433,7 @@ setMethod(
 #' @param ... There are optional arguments.
 #' @param phtAcc a character string. (optional) The dbGaP phenotype dataset accession.
 #' @param phvAccList a character vector. (optional) The dbGaP variable accessions. The list only accepts subject level variables. The sample level variables are not accepted. 
-#' @param subjIdsOrFile a character vector or a character string. (optional) This argument is either list of dbGaP subject ids (dbGaP_Subject_ID) of the variables or the path to a file that contains a list of the dbGaP subject ids of the variables. The file is a plain text file with one dbGaP subject id per line.
+#' @param dbgapIdsOrFile a character vector or a character string. (optional) This argument can be either a vector of ID list or a path to a file that contains a list of IDs. The IDs can be dbGaP_Subject_ID or dbGaP_Sample_ID denpending on type of the data. When the list of IDs is provided by a file, it should be  a plain text file with one ID per line. 
 #' @param emptyToNa a logical value. (optional). If TRUE, converts the empty values to NA; If FALSE (default), not convert.
 #' @param colNameWithAcc a logical value. (optional) If TRUE, the variable column name is concatenated with the respective variable accession (e.g. AGEPHOT_phv00000027.v2); If FALSE (default), keep the original column name unchanged (e.g. AGEPHOT).
 #' @return  a data frame. Merged data of the input variables.
@@ -473,7 +473,7 @@ setGeneric(
 setMethod(
           f = "getStudyVariableData",
           signature = c("Study"),
-          definition = function(object, ..., phtAcc = "", phvAccList = vector(), subjIdsOrFile = NA, emptyToNa = FALSE, colNameWithAcc = FALSE) {
+          definition = function(object, ..., phtAcc = "", phvAccList = vector(), dbgapIdsOrFile = NULL, emptyToNa = FALSE, colNameWithAcc = FALSE) {
 
               inputPhtAcc = phtAcc
 
@@ -488,7 +488,7 @@ setMethod(
 
                           cat("Retrieving the data of", phtAcc, "...\n")
 
-                          varDF <- getDatasetDataByPhtAcc(object, phtAcc = phtAcc, subjIdsOrFile = subjIdsOrFile, colNameWithAcc = colNameWithAcc)
+                          varDF <- getDatasetDataByPhtAcc(object, phtAcc = phtAcc, dbgapIdsOrFile = dbgapIdsOrFile, colNameWithAcc = colNameWithAcc)
                           return (varDF)
                       }
                   }
@@ -516,15 +516,16 @@ setMethod(
                       return (varDF)
                   }
                   else {
-                      if (is.na(subjIdsOrFile)) {
+
+                      if (is.null(dbgapIdsOrFile)) {
 
                           # Get variable data no furhter filter 
                           varDF <- getVariableDataByPhvAcc(object, phvAccList = cleanPhvAccList, colNameWithAcc = colNameWithAcc, checkList = F) 
                           return (varDF)
                       }
                       else {
-                          # Get variable data by subjIdsOrFile
-                          varDF <- getVariableDataByPhvAccAndSubjId(object, phvAccList = cleanPhvAccList, subjIdsOrFile = subjIdsOrFile)
+                          # Get variable data by dbgapIdsOrFile
+                          varDF <- getVariableDataByPhvAccAndSubjId(object, phvAccList = cleanPhvAccList, dbgapIdsOrFile = dbgapIdsOrFile)
                           return (varDF)
                       }
                   }

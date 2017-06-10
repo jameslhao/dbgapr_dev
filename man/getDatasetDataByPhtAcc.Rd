@@ -9,7 +9,7 @@
 getDatasetDataByPhtAcc(object, phtAcc, ...)
 
 \S4method{getDatasetDataByPhtAcc}{Study,character}(object, phtAcc, ...,
-  subjIdsOrFile = NULL, colNameWithAcc = FALSE)
+  dbgapIdsOrFile = NULL, colNameWithAcc = FALSE)
 }
 \arguments{
 \item{object}{Study class object.}
@@ -18,7 +18,7 @@ getDatasetDataByPhtAcc(object, phtAcc, ...)
 
 \item{...}{There are optional arguments.}
 
-\item{subjIdsOrFile}{a character vector or a character string. (optional) This argument is either list of subject ids (dbGaP_Subject_ID) shared among the input variables or the path to a file that contains a list of the subject ids shared among the input variables. The file is a plain text file with one dbGaP_Subject_ID per line.}
+\item{dbgapIdsOrFile}{a character vector or a character string. (optional) This argument can be either a vector of ID list or a path to a file that contains a list of IDs. The IDs can be dbGaP_Subject_ID or dbGaP_Sample_ID denpending on type of the data. When the list of IDs is provided by a file, it should be  a plain text file with one ID per line.}
 
 \item{colNameWithAcc}{logical value. (optional). If TRUE, includes the variable accessions in the column names (e.g. AGEPHOT_phv00000027.v2); If FALSE, not include (e.g. AGEPHOT).}
 }

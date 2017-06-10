@@ -619,20 +619,21 @@ following.
     s <- Study(phsAcc = 'phs000001.v3.p1')            
     # variable data of a set of specified subjects in a dataset 
     subj_ids = c(219, 220, 221)
-    df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', subjIdsOrFile=subj_ids)
+    df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', dbgapIdsOrFile=subj_ids)
     # or
     # variable data of a set of specified subjects in a dataset 
     # The subject id file is a plain text file with one dbGaP_Subject_ID per line.
     subj_file = "~/temp/subj_ids.txt"
-    df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', subjIdsOrFile=subj_file)
+    df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', dbgapIdsOrFile=subj_file)
 
 Note:
 
-> In the returned data frame of variable data, the first column
-> "dbGaP\_Subject\_ID" is added by dbGaP. **Each of the dbGaP subject id
-> value is unique within the study**. The second column
-> "Submitted\_Subject\_ID" is also added by dbGaP but **it is a
-> duplicate of submitter provided subject id column**.
+> In the returned variable data, the first column "dbGaP\_Subject\_ID"
+> or dbGaP\_Sample\_ID is added by dbGaP. **Each of the dbGaP ID value
+> is unique within the study**. The second column
+> "Submitted\_Subject\_ID" or "Submitted\_Sample\_ID" is also added by
+> dbGaP but **it is a duplicate of the submitter provided subject id
+> column also present in the data table**.
 
 The reason to have two columns with duplicated values is that the name
 of submitter provided id column often varies from study to study. In the

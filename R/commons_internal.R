@@ -4019,7 +4019,7 @@ setMethod(
 #' @param object Commons class object.
 #' @param varDF a data frame. The dataset data.
 #' @param ... There are optional arguments.
-#' @param subjIdsOrFile a character vector or a character string. (optional) This argument is either list of subject ids (dbGaP_Subject_ID) shared among the input variables or the path to a file that contains a list of of the subject ids shared among the input variables. The file is a plain text file with one dbGaP_Subject_ID per line.
+#' @param dbgapIdsOrFile a character vector or a character string. (optional) This argument can be either a vector of ID list or a path to a file that contains a list of IDs. The IDs can be dbGaP_Subject_ID or dbGaP_Sample_ID denpending on type of the data. When the list of IDs is provided by a file, it should be  a plain text file with one ID per line. 
 #' @return a data frame. Filtered dataset data. 
 #' @export filterBySubjIds 
 #' @keywords internal
@@ -4027,7 +4027,7 @@ setMethod(
 #' \dontrun{
 #'
 #' c <- Commons()
-#' filterBySubjIds(c, varDF = varDF, subjIdsOrFile = c("219", "220", "223"))
+#' filterBySubjIds(c, varDF = varDF, dbgapIdsOrFile = c("219", "220", "223"))
 #'}
 
 setGeneric(name = "filterBySubjIds",
@@ -4040,14 +4040,14 @@ setGeneric(name = "filterBySubjIds",
 setMethod(
           f = "filterBySubjIds",
           signature = c("Commons", "data.frame"),
-          definition = function(object, varDF, ..., subjIdsOrFile) {
+          definition = function(object, varDF, ..., dbgapIdsOrFile = NULL) {
 
 
               ############################
               # Further process subjIds
               ############################
 
-              if (!is.null(subjIdsOrFile)) {
+              if (!is.null(dbgapIdsOrFile)) {
                   ######## Get subjIdDF  #########
 
                   # Test it is a string and length is 1
@@ -4057,19 +4057,19 @@ setMethod(
 
                   isFile = FALSE 
                   inputOk = T
-                  if (is.character(subjIdsOrFile) & length(subjIdsOrFile) == 1) {
+                  if (is.character(dbgapIdsOrFile) & length(dbgapIdsOrFile) == 1) {
 
                       ###########################
                       # Check file existence
                       ###########################
-                      inputFile <- checkInputPath(object, unlist(subjIdsOrFile))
+                      inputFile <- checkInputPath(object, unlist(dbgapIdsOrFile))
                       if (file.exists(inputFile)) {
                           isFile = TRUE
                       }
                       else {
                           isFile = F 
 
-                          checkDF = varDF[varDF$dbGaP_Subject_ID %in% subjIdsOrFile, ]  
+                          checkDF = varDF[varDF$dbGaP_Subject_ID %in% dbgapIdsOrFile, ]  
 
                           #############################################
                           # The input is not an existing file.
@@ -4084,7 +4084,7 @@ setMethod(
                               type = 'process'
                               level = 'error'
                               show = T
-                              mesg = paste("The input suject id file is not found. --- ", subjIdsOrFile, "\n", sep="")
+                              mesg = paste("The input suject id file is not found. --- ", dbgapIdsOrFile, "\n", sep="")
                               writeLog(object,  type = type, level = level, message = mesg, show = show) 
                           }
 
@@ -4099,7 +4099,7 @@ setMethod(
                           subjIdList <- unlist(as.list(subjIdDF), use.names=FALSE) 
                       }
                       else {
-                          subjIdList = subjIdsOrFile 
+                          subjIdList = dbgapIdsOrFile 
                       }
 
                       if (is.vector(subjIdList) & length(subjIdList) > 0) {
@@ -4108,7 +4108,27 @@ setMethod(
                           # Report unmatched input subjIds
                           #################################
                           # Subj id list from the merged data DF 
-                          dataSubjIdList <- as.list(subset(varDF, select = c('dbGaP_Subject_ID')))
+
+                          if (any(colnames(varDF) == 'dbGaP_Subject_ID')) {
+                              dataSubjIdList <- as.list(subset(varDF, select = c('dbGaP_Subject_ID')))
+                          }
+                          else if (any(colnames(varDF) == 'dbGaP_Sample_ID')) {
+                              dataSubjIdList <- as.list(subset(varDF, select = c('dbGaP_Sample_ID')))
+                          }
+                          else if (any(colnames(varDF) == 'Submitted_Subject_ID')) {
+                              dataSubjIdList <- as.list(subset(varDF, select = c('Submitted_Subject_ID')))
+                          }
+                          else if (any(colnames(varDF) == 'Submitted_Sample_ID')) {
+                              dataSubjIdList <- as.list(subset(varDF, select = c('Submitted_Sample_ID')))
+                          }
+                          else {
+                              type = 'process'
+                              level = 'error'
+                              show = T
+                              mesg = paste("The dataset does not have any dbGaP or Submitted subject or sample ID column. It appears to be an data error. Please report it to dbgap-help@ncbi.nlm.nih.gov.\n   --- ", falseIdCombo, "\n", sep="")
+                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                          }
+
 
                           # Get indices of the input subjIdList items that have no match with any subjIds in mergedVarDf 
                           dt <- expand.grid(subjIdList, dataSubjIdList)
@@ -4128,7 +4148,7 @@ setMethod(
                               type = 'process'
                               level = 'warn'
                               show = T
-                              mesg = paste("The following subject ids from the input id list don't have match with the any subject ids in the variable data.\n   --- ", falseIdCombo, "\n", sep="")
+                              mesg = paste("These input IDs don't have any match wth the dbGaP IDs, or the Submitted IDs when the dbGaP ID column is absent, of the data table.\n   --- ", falseIdCombo, "\n", sep="")
                               writeLog(object,  type = type, level = level, message = mesg, show = show) 
                           }
 
@@ -4144,7 +4164,7 @@ setMethod(
                                   type = 'process'
                                   level = 'info'
                                   show = T
-                                  mesg = paste("There is no id found in the data of any the input variables matches any of the subject ids provided in the id list.\n", sep="")
+                                  mesg = paste("There is no data that match the input IDs.\n", sep="") 
                                   writeLog(object,  type = type, level = level, message = mesg, show = show) 
                               }
                               return (finalVarDF)

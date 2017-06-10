@@ -679,7 +679,7 @@ setMethod(
 #' @param object Study class object.
 #' @param phtAcc a character string. The dbGaP phenotype dataset accession.
 #' @param ... There are optional arguments.
-#' @param subjIdsOrFile a character vector or a character string. (optional) This argument is either list of subject ids (dbGaP_Subject_ID) shared among the input variables or the path to a file that contains a list of the subject ids shared among the input variables. The file is a plain text file with one dbGaP_Subject_ID per line.
+#' @param dbgapIdsOrFile a character vector or a character string. (optional) This argument can be either a vector of ID list or a path to a file that contains a list of IDs. The IDs can be dbGaP_Subject_ID or dbGaP_Sample_ID denpending on type of the data. When the list of IDs is provided by a file, it should be  a plain text file with one ID per line. 
 #' @param colNameWithAcc logical value. (optional). If TRUE, includes the variable accessions in the column names (e.g. AGEPHOT_phv00000027.v2); If FALSE, not include (e.g. AGEPHOT).
 #' @return a data frame. Data of the dataset. 
 #' @export getDatasetDataByPhtAcc 
@@ -696,7 +696,7 @@ setMethod(
 # s <- Study(phsAcc = 'phs000001.v3.p1')
 # getDatasetDataByPhtAcc(s, phtAcc = 'pht000370.v2.p1')
 # getDatasetDataByPhtAcc(s, phtAcc = 'pht000371.v2')    # belongs phs000001.v3.p1
-# getDatasetDataByPhtAcc(s, phtAcc = 'pht000371.v2', subjIdsOrFile = c("219", "220", "221"))
+# getDatasetDataByPhtAcc(s, phtAcc = 'pht000371.v2', dbgapIdsOrFile = c("219", "220", "221"))
 
 #
 # s <- Study(phsAcc = 'phs000651.v7')
@@ -728,7 +728,7 @@ setGeneric(
 setMethod(
           f = "getDatasetDataByPhtAcc",
           signature = c("Study", "character"),
-          definition = function(object, phtAcc, ..., subjIdsOrFile = NULL, colNameWithAcc = FALSE) {
+          definition = function(object, phtAcc, ..., dbgapIdsOrFile = NULL, colNameWithAcc = FALSE) {
 
               phsAcc = object@phsAcc
               prjDataDir = object@prjDataDir
@@ -749,7 +749,6 @@ setMethod(
                       if (!is.null(inputObjPhsAcc)) {
 
                           if (phsAcc == inputObjPhsAcc) {
-
 
                               phsAcc = object@phsAcc
                               prjDir = object@prjDir
@@ -1104,6 +1103,12 @@ setMethod(
                                               ############################################################
                                               # Calling the S3 function
                                               finalVarDF <- processPhtData(phtComboDataDF, specialVarName, specialVarId, sampleOrSubj, colStartWithGap)
+
+                                              ############################
+                                              # Further filter by subjIds
+                                              ############################
+                                              finalVarDF <- filterBySubjIds(object, varDF = finalVarDF, dbgapIdsOrFile = dbgapIdsOrFile)
+
                                               return (finalVarDF)
 
                                           }
@@ -1137,6 +1142,12 @@ setMethod(
                                                   show = T
                                                   mesg = paste("This datase (", phtAcc, ") contains '", multiType, "' info data.\n", sep="")
                                                   writeLog(object,  type = type, level = level, message = mesg, show = show) 
+
+
+                                                  ############################
+                                                  # Further filter by subjIds
+                                                  ############################
+                                                  finalVarDF <- filterBySubjIds(object, varDF = finalVarDF, dbgapIdsOrFile = dbgapIdsOrFile)
 
                                                   return (finalVarDF)
                                               }
@@ -2170,7 +2181,7 @@ setMethod(
 #' @param object Study class object
 #' @param phvAccList a character vector. A list of dbGaP variable accessions.
 #' @param ... There are optional arguments.
-#' @param subjIdsOrFile a character vector or a character string. (optional) This argument can be a list of subject ids shared among the input variables. It can also be the path to a file that contains a list of of the subject ids shared among the input variables.
+#' @param dbgapIdsOrFile a character vector or a character string. (optional) This argument can be either a vector of ID list or a path to a file that contains a list of IDs. The IDs can be dbGaP_Subject_ID or dbGaP_Sample_ID denpending on type of the data. When the list of IDs is provided by a file, it should be  a plain text file with one ID per line. 
 #' @return a data frame. The variable data of given variables subset by the given subjects.
 #' @export getVariableDataByPhvAccAndSubjId
 #' @keywords internal
@@ -2180,16 +2191,16 @@ setMethod(
 #' s <- Study(phsAcc = 'phs000001.v3.p1')
 #' ids <- c("219", "220", "221") 
 #' accList <- c('phv00054119.v1.p1.c2', 'phv00053735.v2')
-#' getVariableDataByPhvAccAndSubjId(s, phvAccList = accList, subjIdsOrFile = ids)
+#' getVariableDataByPhvAccAndSubjId(s, phvAccList = accList, dbgapIdsOrFile = ids)
 #' idFile = '/home/user/temp/subj_ids.txt'
-#' getVariableDataByPhvAccAndSubjId(s, phvAccList = accList, subjIdsOrFile = idFile)
+#' getVariableDataByPhvAccAndSubjId(s, phvAccList = accList, dbgapIdsOrFile = idFile)
 #'}
 
 # s <- Study(phsAcc = 'phs000001.v3.p1')
-# getVariableDataByPhvAccAndSubjId(s, phvAccList = c('phv00054119.v1.p1.c2', 'phv00053735.v2'), subjIdsOrFile = '/netmnt/sandtraces04/dbgap-release04/dbgapr_test/test_user_data/other_files/selected_subj_ids_phs000001.v3.txt')
+# getVariableDataByPhvAccAndSubjId(s, phvAccList = c('phv00054119.v1.p1.c2', 'phv00053735.v2'), dbgapIdsOrFile = '/netmnt/sandtraces04/dbgap-release04/dbgapr_test/test_user_data/other_files/selected_subj_ids_phs000001.v3.txt')
 #
 # s <- Study(phsAcc = 'phs00065`.v7')
-# getVariableDataByPhvAccAndSubjId(s, phvAccList = c('phv00054119.v1.p1.c2', 'phv00053735.v2'), subjIdsOrFile = '/netmnt/sandtraces04/dbgap-release04/dbgapr_test/test_user_data/other_files/selected_subj_ids_phs000657.v7.txt')
+# getVariableDataByPhvAccAndSubjId(s, phvAccList = c('phv00054119.v1.p1.c2', 'phv00053735.v2'), dbgapIdsOrFile = '/netmnt/sandtraces04/dbgap-release04/dbgapr_test/test_user_data/other_files/selected_subj_ids_phs000657.v7.txt')
 
 setGeneric(
            name = "getVariableDataByPhvAccAndSubjId",
@@ -2201,7 +2212,7 @@ setGeneric(
 setMethod(
           f = "getVariableDataByPhvAccAndSubjId",
           signature = c("Study", "character"),
-          definition = function(object, phvAccList, ...,  subjIdsOrFile = NULL) {
+          definition = function(object, phvAccList, ...,  dbgapIdsOrFile = NULL) {
 
               phsAcc = object@phsAcc
               prjDotDir = object@prjDotDir
@@ -2228,7 +2239,7 @@ setMethod(
                       ############################
                       # Further filter by subjIds
                       ############################
-                      finalVarDF <- filterBySubjIds(object, varDF = mergedVarDF, subjIdsOrFile = subjIdsOrFile)
+                      finalVarDF <- filterBySubjIds(object, varDF = mergedVarDF, dbgapIdsOrFile = dbgapIdsOrFile)
 
                       return (finalVarDF)
 

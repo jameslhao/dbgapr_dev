@@ -9,7 +9,7 @@
 filterBySubjIds(object, varDF, ...)
 
 \S4method{filterBySubjIds}{Commons,data.frame}(object, varDF, ...,
-  subjIdsOrFile)
+  dbgapIdsOrFile = NULL)
 }
 \arguments{
 \item{object}{Commons class object.}
@@ -18,7 +18,7 @@ filterBySubjIds(object, varDF, ...)
 
 \item{...}{There are optional arguments.}
 
-\item{subjIdsOrFile}{a character vector or a character string. (optional) This argument is either list of subject ids (dbGaP_Subject_ID) shared among the input variables or the path to a file that contains a list of of the subject ids shared among the input variables. The file is a plain text file with one dbGaP_Subject_ID per line.}
+\item{dbgapIdsOrFile}{a character vector or a character string. (optional) This argument can be either a vector of ID list or a path to a file that contains a list of IDs. The IDs can be dbGaP_Subject_ID or dbGaP_Sample_ID denpending on type of the data. When the list of IDs is provided by a file, it should be  a plain text file with one ID per line.}
 }
 \value{
 a data frame. Filtered dataset data.
@@ -35,7 +35,7 @@ The method filters out the rows of a dataset by a given list of subject ids. The
 \dontrun{
 
 c <- Commons()
-filterBySubjIds(c, varDF = varDF, subjIdsOrFile = c("219", "220", "223"))
+filterBySubjIds(c, varDF = varDF, dbgapIdsOrFile = c("219", "220", "223"))
 }
 }
 \keyword{internal}

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Luning Hao, NIH/NCBI/dbGaP" />
 
-<meta name="date" content="2017-06-08" />
+<meta name="date" content="2017-06-10" />
 
 <title>Introduction to dbgapr</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introduction to dbgapr</h1>
 <h4 class="author"><em>Luning Hao, NIH/NCBI/dbGaP</em></h4>
-<h4 class="date"><em>2017-06-08</em></h4>
+<h4 class="date"><em>2017-06-10</em></h4>
 
 
 
@@ -494,15 +494,15 @@ df &lt;-<span class="st"> </span><span class="kw">getStudyVariableData</span>(s,
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s &lt;-<span class="st"> </span><span class="kw">Study</span>(<span class="dt">phsAcc =</span> <span class="st">'phs000001.v3.p1'</span>)            
 <span class="co"># variable data of a set of specified subjects in a dataset </span>
 subj_ids =<span class="st"> </span><span class="kw">c</span>(<span class="dv">219</span>, <span class="dv">220</span>, <span class="dv">221</span>)
-df &lt;-<span class="st"> </span><span class="kw">getDatasetDataByPhtAcc</span>(s, <span class="dt">phtAcc=</span><span class="st">'pht000371.v2'</span>, <span class="dt">subjIdsOrFile=</span>subj_ids)
+df &lt;-<span class="st"> </span><span class="kw">getDatasetDataByPhtAcc</span>(s, <span class="dt">phtAcc=</span><span class="st">'pht000371.v2'</span>, <span class="dt">dbgapIdsOrFile=</span>subj_ids)
 <span class="co"># or</span>
 <span class="co"># variable data of a set of specified subjects in a dataset </span>
 <span class="co"># The subject id file is a plain text file with one dbGaP_Subject_ID per line.</span>
 subj_file =<span class="st"> &quot;~/temp/subj_ids.txt&quot;</span>
-df &lt;-<span class="st"> </span><span class="kw">getDatasetDataByPhtAcc</span>(s, <span class="dt">phtAcc=</span><span class="st">'pht000371.v2'</span>, <span class="dt">subjIdsOrFile=</span>subj_file)</code></pre></div>
+df &lt;-<span class="st"> </span><span class="kw">getDatasetDataByPhtAcc</span>(s, <span class="dt">phtAcc=</span><span class="st">'pht000371.v2'</span>, <span class="dt">dbgapIdsOrFile=</span>subj_file)</code></pre></div>
 <p>Note:</p>
 <blockquote>
-<p>In the returned data frame of variable data, the first column “dbGaP_Subject_ID” is added by dbGaP. <strong>Each of the dbGaP subject id value is unique within the study</strong>. The second column “Submitted_Subject_ID” is also added by dbGaP but <strong>it is a duplicate of submitter provided subject id column</strong>.</p>
+<p>In the returned variable data, the first column “dbGaP_Subject_ID” or dbGaP_Sample_ID is added by dbGaP. <strong>Each of the dbGaP ID value is unique within the study</strong>. The second column “Submitted_Subject_ID” or “Submitted_Sample_ID” is also added by dbGaP but <strong>it is a duplicate of the submitter provided subject id column also present in the data table</strong>.</p>
 </blockquote>
 <p>The reason to have two columns with duplicated values is that the name of submitter provided id column often varies from study to study. In the following example, the submitter provided id column name is “ID2”. The added “Submitted_Subject_ID” is a duplicate of “ID2” with a normalized name.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">s &lt;-<span class="st"> </span><span class="kw">Study</span>(<span class="dt">phsAcc =</span> <span class="st">'phs000001.v3.p1'</span>)            
