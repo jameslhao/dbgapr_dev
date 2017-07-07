@@ -31,6 +31,7 @@
     \item \code{\link{convertEnumVarColName}}
     \item \code{\link{saveGapPlot}}
     \item \code{\link{isStudyAcc}}
+    \item \code{\link{composeObjAcc}}
     \item \code{\link{parseIdsFromPhtAcc}}
     \item \code{\link{parseIdsFromStAcc}}
     \item \code{\link{cleanObjAcc}}
@@ -40,4 +41,5 @@
     \item \code{\link{getExtData}}
     \item \code{\link{parseDataDic}}
     \item \code{\link{buildVarCodeValCombo}}
+    \item \code{\link{getMetaByObjAcc}}
 }}

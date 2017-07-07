@@ -7,6 +7,133 @@
 
 
 # ---------------------------------- 
+# Method: getStudyDatasetInfo 
+# ---------------------------------- 
+
+#' Get meta-info of study datasets 
+#'
+#' The method returns the dataset info of the study. When dataset accession is not providedd, it returns the meta-info of all datasets of the class study. Only the spcified dataset info is returned when the dataset accession is provided.
+#'
+#' @param object Study class object.
+#' @param ... There are optional arguments.
+#' @param phtAcc a character string. The dbGaP dataset accession.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
+#' @param showAs a character string. (optional) When the value is 'table', displays the data as a table through a platform specific table viewer; When it is 'json', displays the json text through a plain text editor; When it is 'text', displays in a brief left-justified text format.
+#' @param editor a character string. (optional) The name of your favorite plain text editor. It should be executable from a command-line prompt of the respective platform. For example, notepad (Windows), vim, emacs (Unix), gedit (Ubuntu), nedit (CentOS), etc.
+#' @return a data frame. The meta-info of input variables. 
+#' @export getStudyDatasetInfo
+#' @examples
+#' \dontrun{
+#'
+#' s <- Study(phsAcc = 'phs000001.v3.p1')
+#' # all study datasets
+#' getStudyDatasetInfo(s)
+#' # or a specific dataset
+#' getStudyDatasetInfo(s, phtAcc = 'pht000370.v2.p1')
+#' # or a dataset of a study that has no data file under project directory
+#' s2 <- Study(phsAcc = 'phs001255.v1')
+#' getStudyDatasetInfo(s2, phtAcc = 'pht005990.v1', dataStudyOnly=F)
+#'}
+
+# getStudyDatasetInfo(s, phvAccList = c('phv00054119.v1.p1.c2', 'phv00054118.v1.p1', 'phv00053733.v2'))
+#
+# df <- getStudyDatasetInfo(s, phtAcc='pht004815.v1')  # phs000007.v29
+# df <- getStudyDatasetInfo(s, phtAcc='pht004815.v1')  # phs000007.v29
+#
+# s2 <- Study(phsAcc = 'phs001255.v1.p1')  # The no-data study
+# df <- getStudyDatasetInfo(s2, phtAcc = c('pht005990.v1'), dataStudyOnly=F)
+
+
+setGeneric(
+    name = "getStudyDatasetInfo",
+    def = function(object, ...) {
+        standardGeneric("getStudyDatasetInfo")
+    })
+
+    #' @describeIn getStudyDatasetInfo of class Study 
+    setMethod(
+        f = "getStudyDatasetInfo",
+        signature = c("Study"),
+        definition = function(object, ..., phtAcc = "", dataStudyOnly = TRUE, showAs = "", editor = "") {
+
+            phsAcc = object@phsAcc
+            extDataDir = object@extDataDir 
+            prjTempDir = object@prjTempDir
+            extAllIdInfoFile <- object@extAllIdInfoFile 
+
+            ##### clean phtAcc ####
+            inputPhtAcc = phtAcc
+
+            if (inputPhtAcc != "") {
+                phtAcc <- cleanObjAcc(object, acc = phtAcc, type = 'pht') 
+            }
+
+            validPht = FALSE
+            if (inputPhtAcc != "") {
+                if (phtAcc != "") {
+                    validPht = TRUE
+                }
+            }
+
+            hasPhtInfo = FALSE
+            phtInfoDF <- getExtData(object, type = 'dataset', phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
+
+
+            if (!is.null(phtInfoDF)) {
+
+                if (nrow(phtInfoDF) > 0) {
+                    hasPhtInfo = TRUE 
+                }
+            }
+
+
+            if (hasPhtInfo) {
+
+                finalDF = data.frame()
+                if (validPht) {
+                    thisPhtInfoDF <- dplyr::filter(phtInfoDF, phtInfoDF$dataset_accession == phtAcc)
+                    finalDF <- thisPhtInfoDF
+                }
+                else {
+                    finalDF <- phtInfoDF
+                }
+
+                if (showAs != "") {
+                    finalJson <- toJSON(finalDF, pretty=T)
+
+                    # Write json to a temp file 
+                    tempJsonFile <- file.path(prjTempDir, 'temp_phtVarInfoJson.json')
+                    write(finalJson, file = tempJsonFile, ncolumns = if(is.character(finalJson)) 1 else 5, append = F, sep = "\n")
+                    displayFile = tempJsonFile
+
+                    if (showAs == 'table') {
+                        displayTable(object, file = displayFile)
+                    }
+                    else if (showAs == 'json') {
+                        displayTextFile(object, file = displayFile, editor = editor) 
+                    }
+                }
+                
+                if (showAs != "") {
+                    return(finalDF)
+                }
+                else {
+                    return(invisible(finalDF))
+                }
+            }
+            else {
+                mesg = paste("[INFO] The dataset ", phtAcc, " is not found within the study ", phsAcc, ". You may want to make sure the input dataset belongs to the study used for initializing the Study class.\n", sep="")
+                cat(mesg)
+            }
+
+        })
+
+
+
+
+
+
+# ---------------------------------- 
 # Method: getStudyVariableInfo 
 # ---------------------------------- 
 
@@ -19,6 +146,7 @@
 #' @param phtAcc a character string. The dbGaP dataset accession.
 #' @param phvAccList a character vector. The dbGaP phenotype variable accessions.
 #' @param dataType a character string. Specifies the data type of returned variables. The possible value is either 'num' (for numeric variable) or 'cat' (for categorical variable).
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @param showAs a character string. (optional) When the value is 'table', displays the data as a table through a platform specific table viewer; When it is 'json', displays the json text through a plain text editor; When it is 'text', displays in a brief left-justified text format.
 #' @param editor a character string. (optional) The name of your favorite plain text editor. It should be executable from a command-line prompt of the respective platform. For example, notepad (Windows), vim, emacs (Unix), gedit (Ubuntu), nedit (CentOS), etc.
 #' @return a data frame. The meta-info of input variables. 
@@ -44,6 +172,10 @@
 # getStudyVariableInfo(s, phvAccList = c('phv00251310.v1', 'phv00251320.v1', 'phv00251339.v1'), dataType='num') # phs000007.v29
 # df <- getStudyVariableInfo(s, phtAcc='pht004815.v1', dataType = 'num')  # phs000007.v29
 # df <- getStudyVariableInfo(s, phtAcc='pht004815.v1', dataType = 'cat')  # phs000007.v29
+#
+# s2 <- Study(phsAcc = 'phs001255.v1.p1')  # The no-data study
+# df <- getStudyVariableInfo(s2, phtAcc = c('pht005990.v1'), dataStudyOnly=F)
+# df <- getStudyVariableInfo(s2, phvAccList = c('phv00273621.v1'), dataStudyOnly=F)
 
 
 setGeneric(
@@ -56,188 +188,207 @@ setGeneric(
 setMethod(
           f = "getStudyVariableInfo",
           signature = c("Study"),
-          definition = function(object, ..., phtAcc = "", phvAccList = vector(), dataType = "", showAs = "", editor = "") {
+          definition = function(object, ..., phtAcc = "", phvAccList = vector(), dataType = "", dataStudyOnly = TRUE, showAs = "", editor = "") {
 
               phsAcc = object@phsAcc
               extDataDir = object@extDataDir 
               prjTempDir = object@prjTempDir
+              extAllIdInfoFile <- object@extAllIdInfoFile 
 
 
               ##### clean Validate PhvAccList ####
               cleanPhvAccList = vector() 
               if (length(phvAccList) > 0) {
-                  cleanPhvAccList <- checkPhvAccList(object, phvAccList = phvAccList) 
+                  cleanPhvAccList <- checkPhvAccList(object, phvAccList = phvAccList, dataStudyOnly = dataStudyOnly) 
               }
 
-              # Get dataDic data
-              if (!is.null(cleanPhvAccList)) {
+              hasPhvList = FALSE
+              if (is.vector(phvAccList)) {
+                  if (length(phvAccList) > 0) {
+                      hasPhvList = TRUE 
+                  }
+              }
 
-                  dataDicComboDF <- getDataDicByStudy(object, phsAcc) 
+
+              ##### clean phtAcc ####
+              inputPhtAcc = phtAcc
+
+              if (inputPhtAcc != "") {
+                  phtAcc <- cleanObjAcc(object, acc = phtAcc, type = 'pht') 
+              }
+
+              validPht = FALSE
+              if (inputPhtAcc != "") {
+                  if (phtAcc != "") {
+                      validPht = TRUE
+                  }
+              }
+
+              hasDataDic = FALSE
+              dataDicComboDF <- getDataDicByStudy(object, phsAcc = phsAcc, dataStudyOnly = dataStudyOnly) 
 
 
-                  if (!is.null(dataDicComboDF)) {
+              if (!is.null(dataDicComboDF)) {
 
-                      # process phvAccList
-                      if (length(cleanPhvAccList > 0)) {
+                  if (nrow(dataDicComboDF) > 0) {
+                      hasDataDic = TRUE 
+                  }
+              }
 
-                          phvInfoDF = dataDicComboDF[dataDicComboDF$variable_accession %in% cleanPhvAccList,]
 
-                          finalDF = data.frame()
-                          if (dataType == 'num' | dataType == 'cat') {
-                              finalDF <- getStudyVariableInfoByDataType(object, dataType = dataType, dataDicDF = phvInfoDF)
-                          }
-                          else {
-                              finalDF <- phvInfoDF 
-                          }
+              if (hasDataDic) {
+                  ########################
+                  # Process noDataStudy
+                  ########################
 
-                          if (showAs != "") {
-                              finalJson <- toJSON(finalDF, pretty=T)
+                  if (hasPhvList) {
 
-                              # Write json to a temp file 
-                              tempJsonFile <- file.path(prjTempDir, 'temp_phtVarInfoJson.json')
-                              write(finalJson, file = tempJsonFile, ncolumns = if(is.character(finalJson)) 1 else 5, append = F, sep = "\n")
-                              displayFile = tempJsonFile
+                      ########################
+                      # Process PhvList 
+                      ########################
 
-                              if (showAs == 'table') {
-                                  displayTable(object, file = displayFile)
-                              }
-                              else if (showAs == 'json') {
-                                  displayTextFile(object, file = displayFile, editor = editor) 
-                              }
-                          }
+                      phvInfoDF = dataDicComboDF[dataDicComboDF$variable_accession %in% cleanPhvAccList,]
 
-                          if (showAs == "") {
-                              return(finalDF)
-                          }
-                          else {
-                              return(invisible(finalDF))
-                          }
 
+                      finalDF = data.frame()
+                      if (dataType == 'num' | dataType == 'cat') {
+                          finalDF <- getStudyVariableInfoByDataType(object, dataType = dataType, dataDicDF = phvInfoDF)
                       }
-                      # process phtAcc 
+                      else {
+                          finalDF <- phvInfoDF 
+                      }
+
+                      if (showAs != "") {
+                          finalJson <- toJSON(finalDF, pretty=T)
+
+                          # Write json to a temp file 
+                          tempJsonFile <- file.path(prjTempDir, 'temp_phtVarInfoJson.json')
+                          write(finalJson, file = tempJsonFile, ncolumns = if(is.character(finalJson)) 1 else 5, append = F, sep = "\n")
+                          displayFile = tempJsonFile
+
+                          if (showAs == 'table') {
+                              displayTable(object, file = displayFile)
+                          }
+                          else if (showAs == 'json') {
+                              displayTextFile(object, file = displayFile, editor = editor) 
+                          }
+                      }
+
+                      if (showAs == "") {
+                          return(finalDF)
+                      }
+                      else {
+                          return(invisible(finalDF))
+                      }
+
+
+
+                  } # hasPhvList
+                  else {
+
+                      if (validPht) {
+
+                          phtVarInfoDF <- subset(dataDicComboDF, dataDicComboDF$dataset_accession == phtAcc &  dataDicComboDF$study_accession == phsAcc)
+
+                          if (nrow(phtVarInfoDF) == 0) {
+
+
+                              mesg = paste("[INFO] The dataset ", phtAcc, " is not found within the study ", phsAcc, ". You may want to make sure the input dataset belongs to the study used for initializing the Study class.\n", sep="")
+                              cat(mesg)
+
+                          }
+                          else {
+
+
+                              finalDF = data.frame()
+
+                              if (dataType == 'num' | dataType == 'cat') {
+                                  finalDF <- getStudyVariableInfoByDataType(object, dataType = dataType, dataDicDF = phtVarInfoDF)
+                              }
+                              else {
+                                  finalDF <- phtVarInfoDF 
+                              }
+
+
+                              if (showAs != "") {
+                                  finalJson <- toJSON(finalDF, pretty=T)
+
+                                  # Write json to a temp file 
+                                  tempJsonFile <- file.path(prjTempDir, 'temp_phtVarInfoJson.json')
+                                  write(finalJson, file = tempJsonFile, ncolumns = if(is.character(finalJson)) 1 else 5, append = F, sep = "\n")
+                                  displayFile = tempJsonFile
+
+                                  if (showAs == 'table') {
+                                      displayTable(object, file = displayFile)
+                                  }
+                                  else if (showAs == 'json') {
+                                      displayTextFile(object, file = displayFile, editor = editor) 
+                                  }
+                              }
+
+                              if (showAs != "") {
+                                  return(finalDF)
+                              }
+                              else {
+                                  return(invisible(finalDF))
+                              }
+                          }
+                      } # end if validPht
                       else {
 
-                          #if (length(phvAccList) == 0) {
+                          #########################
+                          # Get data by dataType
+                          #########################
+                          # No pht input and not phvAccList provided
+                          if (inputPhtAcc == "") {
 
-                              ##### clean phtAcc ####
-                              inputPhtAcc = phtAcc
+                              phvInfoDF <- dataDicComboDF
 
-                              if (inputPhtAcc != "") {
-                                  phtAcc <- cleanObjAcc(object, acc = phtAcc, type = 'pht') 
+                              finalDF = data.frame()
+                              if (dataType == 'num' | dataType == 'cat') {
+                                  finalDF <- getStudyVariableInfoByDataType(object, dataType = dataType, dataDicDF = phvInfoDF)
                               }
-
-                              validPht = FALSE
-                              if (inputPhtAcc != "") {
-                                  if (phtAcc != "") {
-                                      validPht = TRUE
-                                  }
-                              }
-
-                              if (validPht) {
-
-                                  phtVarInfoDF <- subset(dataDicComboDF, dataDicComboDF$dataset_accession == phtAcc &  dataDicComboDF$study_accession == phsAcc)
-
-                                  if (nrow(phtVarInfoDF) == 0) {
-                                      type = 'process'
-                                      level = 'error'
-                                      show = T
-                                      mesg = paste("There is no variable meta-info found for dataset ", phtAcc, " within the class study ", phsAcc, ". You may want to initialize the study class with the study corresponding to the dataset or vice versa.\n", sep="")
-                                      writeLog(object,  type = type, level = level, message = mesg, show = show) 
-                                  }
-                                  else {
-
-                                      finalDF = data.frame()
-                                      if (dataType == 'num' | dataType == 'cat') {
-                                          finalDF <- getStudyVariableInfoByDataType(object, dataType = dataType, dataDicDF = phtVarInfoDF)
-                                      }
-                                      else {
-                                          finalDF <- phtVarInfoDF 
-                                      }
-
-                                      if (showAs != "") {
-                                          finalJson <- toJSON(finalDF, pretty=T)
-
-                                          # Write json to a temp file 
-                                          tempJsonFile <- file.path(prjTempDir, 'temp_phtVarInfoJson.json')
-                                          write(finalJson, file = tempJsonFile, ncolumns = if(is.character(finalJson)) 1 else 5, append = F, sep = "\n")
-                                          displayFile = tempJsonFile
-
-                                          if (showAs == 'table') {
-                                              displayTable(object, file = displayFile)
-                                          }
-                                          else if (showAs == 'json') {
-                                              displayTextFile(object, file = displayFile, editor = editor) 
-                                          }
-                                      }
-
-                                      if (showAs != "") {
-                                          return(finalDF)
-                                      }
-                                      else {
-                                          return(invisible(finalDF))
-                                      }
-                                  }
-                              }
-                              # No valid pht
                               else {
+                                  finalDF <- phvInfoDF 
+                              }
 
-                                  # No pht input and not phvAccList provided
-                                  if (inputPhtAcc == "") {
+                              if (showAs != "") {
+                                  finalJson <- toJSON(finalDF, pretty=T)
 
-                                      phvInfoDF <- dataDicComboDF
+                                  # Write json to a temp file 
+                                  tempJsonFile <- file.path(prjTempDir, 'temp_phtVarInfoJson.json')
+                                  write(finalJson, file = tempJsonFile, ncolumns = if(is.character(finalJson)) 1 else 5, append = F, sep = "\n")
+                                  displayFile = tempJsonFile
 
-                                      finalDF = data.frame()
-                                      if (dataType == 'num' | dataType == 'cat') {
-                                          finalDF <- getStudyVariableInfoByDataType(object, dataType = dataType, dataDicDF = phvInfoDF)
-                                      }
-                                      else {
-                                          finalDF <- phvInfoDF 
-                                      }
-
-                                      if (showAs != "") {
-                                          finalJson <- toJSON(finalDF, pretty=T)
-
-                                          # Write json to a temp file 
-                                          tempJsonFile <- file.path(prjTempDir, 'temp_phtVarInfoJson.json')
-                                          write(finalJson, file = tempJsonFile, ncolumns = if(is.character(finalJson)) 1 else 5, append = F, sep = "\n")
-                                          displayFile = tempJsonFile
-
-                                          if (showAs == 'table') {
-                                              displayTable(object, file = displayFile)
-                                          }
-                                          else if (showAs == 'json') {
-                                              displayTextFile(object, file = displayFile, editor = editor) 
-                                          }
-                                      }
-
-                                      if (showAs != "") {
-                                          return(finalDF)
-                                      }
-                                      else {
-                                          return(invisible(finalDF))
-                                      }
+                                  if (showAs == 'table') {
+                                      displayTable(object, file = displayFile)
+                                  }
+                                  else if (showAs == 'json') {
+                                      displayTextFile(object, file = displayFile, editor = editor) 
                                   }
                               }
 
-
-                              if (inputPhtAcc != "") {
-
-                                  if (phtAcc != "") {
-
-                                  }
+                              if (showAs != "") {
+                                  return(finalDF)
                               }
-                              # inputAcc == ""
                               else {
-
+                                  return(invisible(finalDF))
                               }
-                              #} #  length(phvAccList) > 0
+                          }
+                      } # end else validPht
+                  } # end else hasPhvList
+
+              } # end hasDataDic
+              else {
+                  mesg = paste("[INFO] No meta-info file found for the study ", phsAcc, ". You may want to make sure the input dataset belongs to the study used for initializing the Study class.\n", sep="")
+                  cat(mesg)
+              } 
 
 
-                          } # process PhtAcc
+              ######################################
 
-                      } # !is.null(dataDicComboDF)
 
-              } # phvAccList null
+
 
 
 
@@ -245,7 +396,7 @@ setMethod(
 
 
 # ------------------------------- 
-# Method: getPhvAccListByTerms 
+# Method: getStudyVariableInfoByTerms 
 # ------------------------------- 
 
 #' Search variables by terms
@@ -260,8 +411,9 @@ setMethod(
 #' @param searchIn a character string. (optional) A string with the possible value of either 'description' (default) or 'name'. If the value is 'description', the searches is against the variable descriptions. If the value is 'name', the search is against the variable names. 
 #' @param showTable a logical value. (optional) If TRUE, displays the variable meta-info in a platform specific table viewer; Not display if FALSE (default).
 #' @param searchInPhvAccList a character vector. (optional) list of variable accessions. If not provided, the search will be against the variable descriptions of all variables of the study. If provided, the search will be against only the variables specified in list.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a data frame. The meta-info of the variables that have the search terms in the variable name or description. 
-#' @export getPhvAccListByTerms 
+#' @export getStudyVariableInfoByTerms 
 #' @examples
 #' \dontrun{
 #'
@@ -269,32 +421,36 @@ setMethod(
 #' t1 = c('Diabetes Treatment', 'Smoking Status')
 #' t2 = c('Year 10')
 #' t3 = c('6 Months') 
-#' df <- getPhvAccListByTerms(s, terms_1=t1, terms_2=t2, terms_3=t3, showTable = T)
+#' df <- getStudyVariableInfoByTerms(s, terms_1=t1, terms_2=t2, terms_3=t3, showTable = T)
 #'}
 
 
 # s <- Study(phsAcc = 'phs000001.v3.p1')
-# getPhvAccListByTerms(s, terms_1 = c('Diabetes Treatment', 'Study Visit'), showJson = FALSE)
-# test <- getPhvAccListByTerms(s, terms_1 = c('Diabetes Treatment', 'Smoking Status'), terms_2 = c('Year 10'), showTable = T)
-# test <- getPhvAccListByTerms(s, terms_1 = c('Diabetes Treatment', 'Smoking Status'), terms_2 = c('Year 10'), terms_3 = c('6 Months'), showTable = T)
-# test <- getPhvAccListByTerms(s, terms_1 = c('Diabetes Treatment', 'Smoking Status'), terms_2 = c('Year 10'), terms_3 = c('6 Months'), searchIn = 'description', showTable = T)
-# test <- getPhvAccListByTerms(s, terms_1 = c('SYS', 'SMK', 'DIAS'), searchIn = 'name', showTable = T)
-#  test <- getPhvAccListByTerms(s, terms_1 = c('SYS', 'SMK', 'DIAS'), terms_2 = c('T1'), searchIn = 'name', showTable = T)
-# test <- getPhvAccListByTerms(s, terms_1 = c('SYS', 'SMK', 'DIAS'), terms_2 = c('T1'), terms_3 = c('13'), searchIn = 'name', showTable = T)
+# getStudyVariableInfoByTerms(s, terms_1 = c('Diabetes Treatment', 'Study Visit'), showJson = FALSE)
+# test <- getStudyVariableInfoByTerms(s, terms_1 = c('Diabetes Treatment', 'Smoking Status'), terms_2 = c('Year 10'), showTable = T)
+# test <- getStudyVariableInfoByTerms(s, terms_1 = c('Diabetes Treatment', 'Smoking Status'), terms_2 = c('Year 10'), terms_3 = c('6 Months'), showTable = T)
+# test <- getStudyVariableInfoByTerms(s, terms_1 = c('Diabetes Treatment', 'Smoking Status'), terms_2 = c('Year 10'), terms_3 = c('6 Months'), searchIn = 'description', showTable = T)
+# test <- getStudyVariableInfoByTerms(s, terms_1 = c('SYS', 'SMK', 'DIAS'), searchIn = 'name', showTable = T)
+#  test <- getStudyVariableInfoByTerms(s, terms_1 = c('SYS', 'SMK', 'DIAS'), terms_2 = c('T1'), searchIn = 'name', showTable = T)
+# test <- getStudyVariableInfoByTerms(s, terms_1 = c('SYS', 'SMK', 'DIAS'), terms_2 = c('T1'), terms_3 = c('13'), searchIn = 'name', showTable = T)
 #
-# test <- getPhvAccListByTerms(s, terms_1 = c('ECG', 'X-RAY'), terms_2 = c('ATRIAL'), terms_3 = c('EXAM 6'), showTable = T)   # phs000007.v29
+# test <- getStudyVariableInfoByTerms(s, terms_1 = c('ECG', 'X-RAY'), terms_2 = c('ATRIAL'), terms_3 = c('EXAM 6'), showTable = T)   # phs000007.v29
+
+# NoDataStudy
+# s2 <- Study(phsAcc = 'phs001255.v1.p1')
+# df <- getStudyVariableInfoByTerms(s2, terms_1='ID', terms_2='sample', terms_3='De-id', showTable = T, dataStudyOnly = F)
 
 setGeneric(
-           name = "getPhvAccListByTerms",
+           name = "getStudyVariableInfoByTerms",
            def = function(object, terms_1, ...) {
-               standardGeneric("getPhvAccListByTerms")
+               standardGeneric("getStudyVariableInfoByTerms")
            })
 
-#' @describeIn getPhvAccListByTerms of class Study 
+#' @describeIn getStudyVariableInfoByTerms of class Study 
 setMethod(
-          f = "getPhvAccListByTerms",
+          f = "getStudyVariableInfoByTerms",
           signature = c("Study", "character"),
-          definition = function(object, terms_1, ..., terms_2 = vector(), terms_3 = vector() , searchIn = 'description', showTable = FALSE, searchInPhvAccList = vector()) {
+          definition = function(object, terms_1, ..., terms_2 = vector(), terms_3 = vector() , searchIn = 'description', showTable = FALSE, searchInPhvAccList = vector(), dataStudyOnly = TRUE) {
 
               phsAcc = object@phsAcc
 
@@ -304,7 +460,7 @@ setMethod(
               if (length(terms_1) > 0) {
 
                   # phs000001.v3.p1_data_dic_combo.rds
-                  dataDicComboDF <- getDataDicByStudy(object, phsAcc) 
+                  dataDicComboDF <- getDataDicByStudy(object, phsAcc = phsAcc, dataStudyOnly = dataStudyOnly) 
 
                   if (!is.null(dataDicComboDF)) {
 
@@ -315,7 +471,7 @@ setMethod(
                       ###########################################
                       if (length(searchInPhvAccList) > 0) {
                           # validateInput = F is much faster
-                          searchDF <- getVariableInfoByPhvAcc(object, phvAccList = retPhvAccList_1, validateInput = F, showBrief = F) 
+                          searchDF <- getVariableInfoByPhvAcc(object, phvAccList = retPhvAccList_1, validateInput = F, showBrief = F, dataStudyOnly = dataStudyOnly) 
                       }
 
                       retDFList = lapply(terms_1, function(term) 
@@ -332,17 +488,18 @@ setMethod(
 
                       mergedDF <- do.call('rbind', retDFList)
 
-
                       retPhvAccList_1 = vector() 
                       retPhvAccList_2 = vector() 
                       if (nrow(mergedDF) > 0) {
                           retPhvAccList_1 <- as.vector(mergedDF$variable_accession)
 
+
                           if (length(terms_2) > 0 ) {
 
                               if (length(retPhvAccList_1) > 0) {
+
                                   # validateInput = F is much faster
-                                  searchDF <- getVariableInfoByPhvAcc(object, phvAccList = retPhvAccList_1, validateInput = F, showBrief = F) 
+                                  searchDF <- getVariableInfoByPhvAcc(object, phvAccList = retPhvAccList_1, validateInput = F, showBrief = F, dataStudyOnly = dataStudyOnly) 
 
                                   retDFList = lapply(terms_2, function(term) {
 
@@ -373,7 +530,7 @@ setMethod(
                           if (length(retPhvAccList_2) > 0) {
 
                               # validateInput = F is much faster
-                              searchDF <- getVariableInfoByPhvAcc(object, phvAccList = retPhvAccList_2, validateInput = F, showBrief = F) 
+                              searchDF <- getVariableInfoByPhvAcc(object, phvAccList = retPhvAccList_2, validateInput = F, showBrief = F, dataStudyOnly = dataStudyOnly) 
 
                               retDFList = lapply(terms_3, function(term) {
                                   # Search desc or name
@@ -555,7 +712,10 @@ setMethod(
 #' \dontrun{
 #'
 #' s <- Study(phsAcc = 'phs000001.v3.p1')
-#' getIdInfo(s)
+#' getIdInfo(s, infoType = 'subject')
+#' # or
+#' s <- Study(phsAcc = 'phs000007.v29')
+#' getIdInfo(s, infoType = 'pedigree')
 #'}
 
 
@@ -2773,8 +2933,9 @@ setMethod(
 # List of functions
 ###############################
 
+# getStudyDatasetInfo 
 # getStudyVariableInfo
-# getPhvAccListByTerms
+# getStudyVariableInfoByTerms
 # getStudyVariableData
 # getIdInfo
 # variableSummary

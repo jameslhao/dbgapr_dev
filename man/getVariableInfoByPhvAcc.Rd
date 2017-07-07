@@ -9,7 +9,7 @@
 getVariableInfoByPhvAcc(object, phvAccList, ...)
 
 \S4method{getVariableInfoByPhvAcc}{Study,character}(object, phvAccList, ...,
-  showTable = F, showBrief = T, validateInput = T)
+  dataStudyOnly = TRUE, showTable = F, showBrief = T, validateInput = T)
 }
 \arguments{
 \item{object}{Study class object.}
@@ -17,6 +17,8 @@ getVariableInfoByPhvAcc(object, phvAccList, ...)
 \item{phvAccList}{a character vector. The dbGaP phenotype variable accessions.}
 
 \item{...}{There are optional arguments.}
+
+\item{dataStudyOnly}{a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not.}
 
 \item{showTable}{(optional) a logical value. If TRUE, displays the variable meta-info in a platform specific table viewer; Not display if FALSE (default).}
 

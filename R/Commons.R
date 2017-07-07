@@ -47,6 +47,7 @@ Commons <- setClass(
                                  prjSetupLog = 'character',
 
                                  prjDataDir = 'character', 
+                                 prjMetaDir = 'character', 
                                  prjTempDir = 'character', 
                                  procLogArchDir = 'character', 
                                  dataProcLog = 'character', 
@@ -58,6 +59,7 @@ Commons <- setClass(
 
                                  # New!
                                  extAllStudyInfoFile = 'character', 
+                                 extAllIdInfoFile = 'character',
 
                                  comboInfoFile = 'character',
                                  lastComboInfoFile = 'character',
@@ -83,6 +85,7 @@ Commons <- setClass(
                                      prjSetupLog = '',
 
                                      prjDataDir = '', 
+                                     prjMetaDir = '', 
                                      prjTempDir = '', 
                                      procLogArchDir = '', 
                                      dataProcLog = '', 
@@ -94,9 +97,10 @@ Commons <- setClass(
                                      extPhenoSharedIdNamesFile = '',
 
                                      extAllStudyInfoFile = '', 
+                                     extAllIdInfoFile = '',
 
                                      comboInfoFiel = '',
-                                     lastComboInfoFiel = '',
+                                     lastComboInfoFile = '',
 
                                      gapworkDir = '',
                                      dataDir = '',
@@ -161,6 +165,9 @@ setMethod("initialize",
 
               # New! all-study-info file in dot dir
               extAllStudyInfoFile <- file.path(prjDotExtDataDir, 'all_released_study_info.txt.gz')
+
+              # All study_id, dataset_id, variable_id info file
+              extAllIdInfoFile <- file.path(prjDotExtDataDir, 'study_dataset_variable_ids.txt.gz')
               
 
               .Object@prjDotDir <- prjDotDir
@@ -179,6 +186,7 @@ setMethod("initialize",
 
               # New!
               .Object@extAllStudyInfoFile <- extAllStudyInfoFile 
+              .Object@extAllIdInfoFile <- extAllIdInfoFile 
 
 
               #############################
@@ -222,6 +230,7 @@ setMethod("initialize",
               # Physical directory are created and assigned to object throught createPrjDir()
               prjDir = '' 
               prjDataDir = '' 
+              prjMetaDir = '' 
               prjTempDir = '' 
 
               # Note: 
@@ -259,6 +268,7 @@ setMethod("initialize",
                   if (prjDir !=  "") {
 
                       prjDataDir = prjDirFiles$prjDataDir
+                      prjMetaDir = prjDirFiles$prjMetaDir
                       prjTempDir = prjDirFiles$prjTempDir
                       procLogArchDir = prjDirFiles$procLogArchDir
                       dataProcLog = prjDirFiles$dataProcLog
@@ -268,6 +278,7 @@ setMethod("initialize",
                       # Pass to global
                       .Object@prjDir <- prjDir 
                       .Object@prjDataDir <- prjDataDir 
+                      .Object@prjMetaDir <- prjMetaDir 
                       .Object@prjTempDir <- prjTempDir 
                       .Object@procLogArchDir <- procLogArchDir 
                       .Object@dataProcLog <- dataProcLog 

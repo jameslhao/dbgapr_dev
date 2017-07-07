@@ -6,14 +6,19 @@
 \alias{checkObjStudyByAcc,Study,character-method}
 \title{(internal) Get study of a dataset or variable}
 \usage{
-checkObjStudyByAcc(object, acc)
+checkObjStudyByAcc(object, acc, ...)
 
-\S4method{checkObjStudyByAcc}{Study,character}(object, acc)
+\S4method{checkObjStudyByAcc}{Study,character}(object, acc, ...,
+  dataStudyOnly = TRUE)
 }
 \arguments{
 \item{object}{Study class object.}
 
 \item{acc}{a character string. A dataset or variable accession.}
+
+\item{...}{There are optional arguments.}
+
+\item{dataStudyOnly}{a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not.}
 }
 \value{
 a character string. (invisible) The study accession to which the input dataset or variable belongs.

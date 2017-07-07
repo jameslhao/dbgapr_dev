@@ -2874,7 +2874,12 @@ setMethod(
                   displayFile = availStudyInfo_jsonFile
                   displayTextFile(object, file = displayFile, editor = editor) 
               }
+              else if (showAs == 'table') {
+                  displayFile = availStudyInfo_jsonFile
+                  displayTable(object, file = displayFile)
+              }
               else {
+                  cat("The value of argument 'showAs' is neither 'table', 'json', or 'text'. Fallback to 'table' as default\n") 
                   displayFile = availStudyInfo_jsonFile
                   displayTable(object, file = displayFile)
               }
@@ -2946,7 +2951,12 @@ setMethod(
                   displayFile = availStudyDatasetInfoJsonFile 
                   displayTextFile(object, file = displayFile, editor = editor) 
               }
+              else if (showAs == 'table') {
+                  displayFile = availStudyDatasetInfoJsonFile 
+                  displayTable(object, file = displayFile)
+              }
               else {
+                  cat("The value of argument 'showAs' is neither 'table', 'json', or 'text'. Fallback to 'table' as default\n") 
                   displayFile = availStudyDatasetInfoJsonFile 
                   displayTable(object, file = displayFile)
               }
@@ -3258,6 +3268,8 @@ setMethod(
 #' @name getDataDicByStudy
 #' @param object Commons class object.
 #' @param phsAcc a character string. The dbGaP study accession.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
+#' @export getDataDicByStudy
 #' @return a data frame. The dataset meta-info of the study.
 #' @export getDataDicByStudy
 #' @keywords internal
@@ -3270,7 +3282,7 @@ setMethod(
 
 setGeneric(
            name = "getDataDicByStudy",
-           def = function(object, phsAcc) {
+           def = function(object, phsAcc, ...) {
                standardGeneric("getDataDicByStudy")
            })
 
@@ -3278,9 +3290,9 @@ setGeneric(
 setMethod(
           f = "getDataDicByStudy",
           signature = c("Commons", "character"),
-          definition = function(object, phsAcc) {
+          definition = function(object, phsAcc, ..., dataStudyOnly = TRUE) {
               
-              varMetaDF <- getExtData(object, type = 'variable', phsAcc = phsAcc)
+              varMetaDF <- getExtData(object, type = 'variable', phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
 
               return(varMetaDF)
 
@@ -3739,6 +3751,151 @@ setMethod(
                   return (TRUE)
               }
           })
+
+
+# ----------------------------
+# Method: composeObjAcc
+# ----------------------------
+
+#' Compose dbGaP object accession 
+#'
+#' The method composes the study, dataset, variable accession from the given object id and version. If object version is not provided, it returns the object accession without version. 
+#'
+#' @name composeObjAcc
+#' @param object Commons class object.
+#' @param objId an integer. A dbGaP object id. 
+#' @param type an integer. The type of object, such as 'study', 'dataset', or 'variable'. 
+#' @param ... There are optional arguments.
+#' @param objVer an integer. (optional) The object version.
+#' @return a character string. The object accession with or without version. 
+#' @export composeObjAcc 
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#'
+#' c <- Commons()
+#' composeObjAcc(c, objId = 1255, type = 'study', objVer = 1)
+#'}
+
+#
+setGeneric(
+    name = "composeObjAcc",
+    def = function(object, objId, type, ...) {
+        standardGeneric("composeObjAcc")
+    })
+
+    #' @describeIn composeObjAcc A method of class Commons 
+    setMethod(
+        f = "composeObjAcc",
+        signature = c("Commons"),
+        definition = function(object, objId, type, ..., objVer = NULL) {
+
+            objAcc = ''
+            phx = ''
+            accWidth = ''
+            
+
+            typeOk = TRUE 
+            if (type == 'study') {
+                phx = 'phs'
+                accWidth = 6 
+            }
+            else if (type == 'dataset') {
+                phx = 'pht'
+                accWidth = 6 
+            }
+            else if (type == 'variable') {
+                phx = 'phv'
+                accWidth = 8 
+            }
+            else {
+                typeOk = FALSE 
+
+                msg <- paste("[ERROR] The input type value ", type, " isn't correct. It needs to be either 'study', 'dataset', or 'variable'.\n", sep = "")
+                cat(msg)
+            }
+
+            ################
+            # Compose
+            ################
+            if (typeOk) {
+
+                ######################
+                # Make zero padding
+                ######################
+                # 1255 to 001255
+                vec<- c(objId) 
+                zeroPadObjId <- formatC(vec, width=accWidth, format="d", flag="0") 
+
+                if (!is.null(objVer)) {
+
+                    # returns "phs001255.v1"
+                    objAcc <- paste0(phx, as.character(zeroPadObjId), ".v", as.character(objVer)) 
+                }
+                else {
+                    # returns "phs001255"
+                    objAcc <- paste0(phx, as.character(zeroPadObjId)) 
+                }
+            }
+
+            return(objAcc)
+        })
+
+# ----------------------------
+# Method: parseIdsFromPhvAcc
+# ----------------------------
+
+#' Parse ids from dbGaP variable accession
+#'
+#' The method parses out id strings from a dbGaP variable accession.
+#'
+#' @name parseIdsFromPhvAcc
+#' @param object Commons class object.
+#' @param phvAcc a character string. The dbGaP variable accession with or without the p# (participant-set number), e.g. phv00273621.v1.
+#' @return a named character list. The list of parsed id strings including 'phvAcc' for dataset acession, 'phvAccNoVer' for the dataset accession with the v# (version number) removed, 'phvAccId' for dataset id, and 'phvAccVer' for variable version.
+#' @export parseIdsFromPhvAcc
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#'
+#' c <- Commons()
+#' phvAccIds <- parseIdsFromPhvAcc(c, phvAcc = 'phv00273621.v1.p1')
+#'}
+
+# phvAccIds <- parseIdsFromPhvAcc(c, phvAcc = 'phv00273621.v1')
+#
+setGeneric(
+    name = "parseIdsFromPhvAcc",
+    def = function(object, phvAcc) {
+        standardGeneric("parseIdsFromPhvAcc")
+    })
+
+    #' @describeIn parseIdsFromPhvAcc A method of class Commons 
+    setMethod(
+        f = "parseIdsFromPhvAcc",
+        signature = c("Commons"),
+        definition = function(object, phvAcc) {
+
+            # Validate accession 
+            phvAcc <- cleanObjAcc(object, acc = phvAcc, type = 'phv') 
+            phvAccIds = list()
+
+            if (phvAcc != "") {
+
+                pattns = stringr::str_match(phvAcc, "^(phv0+)(\\d+)\\.v(\\d+)")
+                phvAccIds <- list(phvAcc = pattns[1],  phvAccNoVer = pattns[2], phvAccId = pattns[3])
+
+                phvWithZero = pattns[2]
+                phvAccId = pattns[3]
+                phvAccNoVer = paste(phvWithZero, phvAccId, sep='')
+                phvAccVer = pattns[4]
+                phvAccPnum =''
+
+                phvAccIds <- list(phvAcc = phvAcc,  phvAccNoVer = phvAccNoVer, phvAccId = phvAccId, phvAccVer = phvAccVer)
+            }
+
+            return(phvAccIds)
+        })
 
 
 # ----------------------------
@@ -4355,6 +4512,7 @@ setMethod(
 #' @param type a character string. The object type that is either 'study' (all_study_info), 'dataset' (study_dataset_info), 'variable' (study_variable_info), 'id' (study_id_variable_name), 'code' (study_variable_code_value), or 'manifest' (study_file_manifest).
 #' @param ... There are optional arguments. 
 #' @param phsAcc a character string. (optional) The study accession. It is required when the type argument value is not 'study'.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a data frame. The meta-data of respective type provided through the input. 
 #' @export getExtData 
 #' @keywords internal
@@ -4384,11 +4542,10 @@ setGeneric(name = "getExtData",
 setMethod(
           f = "getExtData",
           signature = c("Commons", "character"),
-          definition = function(object, type, ..., phsAcc = "") {
-
+          definition = function(object, type, ..., phsAcc = "", dataStudyOnly = TRUE) {
 
               prjDataDir = object@prjDataDir 
-
+              prjMetaDir <- object@prjMetaDir
 
               # This_study_version level
               # ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/phs000429/phs000429.v1/
@@ -4405,7 +4562,6 @@ setMethod(
                   infoFile = object@extAllStudyInfoFile 
 
 
-
                   if (file.exists(infoFile)) {
                       infoDF <- read.table(infoFile, header=TRUE, fill = TRUE, sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
 
@@ -4418,16 +4574,22 @@ setMethod(
                       level = 'error'
                       show = T
                       mesg = paste(
-                                   "The study-info file is not found. Checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
-                                   " --- ", infoFile, sep="" 
-                                   )
+                          "The study-info file is not found. Checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
+                          " --- ", infoFile, sep="" 
+                      )
                       writeLog(object,  type = type, level = level, message = mesg, show = show) 
+
                   }
               }
               else {
 
                   # Validate accession 
                   inputPhsAcc = phsAcc
+
+
+
+
+
                   if (inputPhsAcc != "") {
                       phsAcc <- cleanObjAcc(object, acc = phsAcc, type = 'phs') 
                   }
@@ -4439,12 +4601,19 @@ setMethod(
                       phsAccNoVer = parseIdsFromStAcc$phsAccNoVer 
 
                       studyExtDataDir = file.path(prjDataDir, phsAccNoVer, phsAcc, 'supplemental_data')
+                      studyExtMetaDir = file.path(prjMetaDir, phsAccNoVer, phsAcc, 'supplemental_data')
+
                       if (type == 'dataset') {
                           # New!
                           # /c/Users/mars/Documents/myprj/gapwork/data/phs000429/phs000429.v1/supplemental_data/phs000429.v1_study_dataset_info.txt.gz
                           # /c/Users/mars/Documents/myprj/gapwork/data/phs000001/phs000001.v3/supplemental_data/phs000001.v3_study_dataset_info.txt.gz
 
+
                           infoFileName = paste0(phsAcc, "_study_dataset_info.txt.gz") 
+
+                          ################################
+                          # Get PhtInfoFile of DataStudy
+                          ################################
                           infoFile = file.path(studyExtDataDir, infoFileName) 
 
                           if (file.exists(infoFile)) {
@@ -4455,15 +4624,35 @@ setMethod(
                               }
                           }
                           else {
-                              cat("\n")
-                              type = 'process'
-                              level = 'error'
-                              show = T
-                              mesg = paste(
-                                           "The dataset info file is not found for study ", phsAcc, ". Checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
-                                           " --- ", infoFile, sep="" 
-                                           )
-                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
+
+                              if (dataStudyOnly) {
+                                  cat("\n")
+                                  type = 'process'
+                                  level = 'error'
+                                  show = T
+                                  mesg = paste(
+                                      "The dataset-info file is not found for study ", phsAcc, ". To look for the dataset info of the study that has no data under the project, rerun the command with the argument dataStudyOnly=TRUE. Otherwise, checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
+                                      " --- ", infoFile, sep="" 
+                                  )
+                                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                              }
+                              else {
+                                  #mesg = paste("Meta-info is available but there is no data file found under the project directory for this study, ", phsAcc, ".\n", sep="")
+                                  #message(mesg)
+
+                                  ###################################
+                                  # Get PhtInfoFile of noDataStudy
+                                  ###################################
+                                  noDataInfoFile = file.path(studyExtMetaDir, infoFileName) 
+
+                                  if (file.exists(noDataInfoFile)) {
+                                      noDataInfoDF <- read.table(noDataInfoFile, header=TRUE, fill = TRUE, quote = "", sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
+
+                                      if (nrow(noDataInfoDF) > 0) {
+                                          return(noDataInfoDF)
+                                      }
+                                  }
+                              }
                           }
                       }
                       else if (type == 'variable') {
@@ -4471,28 +4660,58 @@ setMethod(
                           # New!
                           # /c/Users/mars/Documents/myprj/gapwork/data/phs000429/phs000429.v1/supplemental_data/phs000429.v1_study_variable_info.txt.gz
                           infoFileName = paste0(phsAcc, "_study_variable_info.txt.gz") 
+
+                          ################################
+                          # Get PhtInfoFile of DataStudy
+                          ################################
                           infoFile = file.path(studyExtDataDir, infoFileName) 
 
 
                           if (file.exists(infoFile)) {
 
                               infoDF <- read.table(infoFile, header=TRUE, fill = TRUE, quote = "", sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
-
                               if (nrow(infoDF) > 0) {
                                   return (infoDF)
+
                               }
                           }
                           else {
-                              type = 'process'
-                              level = 'error'
-                              show = T
-                              mesg = paste(
-                                           "The variable-info file is not found for study ", phsAcc, ". Checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.", " --- ", infoFile, sep="")
-                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
+
+                              if (dataStudyOnly) {
+
+                                  type = 'process'
+                                  level = 'error'
+                                  show = T
+                                  mesg = paste(
+                                      "The variable-info file is not found for study ", phsAcc, ". To look for the variable info of the study that has no data under the project, rerun the command with the argument dataStudyOnly=TRUE. Otherwise, checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.", " --- ", infoFile, sep="")
+                                      writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                  
+                              }
+                              else {
+                                  #mesg = paste("Meta-info is available but there is no data file found under the project directory for this study, ", phsAcc, ".\n", sep="")
+                                  #message(mesg)
+
+                                  ###################################
+                                  # Get PhvInfoFile of noDataStudy
+                                  ###################################
+                                  noDataInfoFile = file.path(studyExtMetaDir, infoFileName) 
+
+                                  if (file.exists(noDataInfoFile)) {
+                                      noDataInfoDF <- read.table(noDataInfoFile, header=TRUE, fill = TRUE, quote = "", sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
+
+                                      if (nrow(noDataInfoDF) > 0) {
+                                          return(noDataInfoDF)
+                                      }
+                                  }
+                              }
                           }
 
                       }
                       else if (type == 'id') {
+
+                          ###############################
+                          # Get study id variable data 
+                          ###############################
                           # New!
                           # /c/Users/mars/Documents/myprj/gapwork/data/phs000429/phs000429.v1/supplemental_data/phs000429.v1_study_id_variable_name.txt.gz
                           infoFileName = paste0(phsAcc, "_study_id_variable_name.txt.gz") 
@@ -4508,18 +4727,43 @@ setMethod(
                               }
                           }
                           else {
-                              cat("\n")
-                              type = 'process'
-                              level = 'error'
-                              show = T
-                              mesg = paste(
-                                           "The study id variable-name-info file is not found for study ", phsAcc, ". Checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
-                                           " --- ", infoFile, sep="" 
-                                           )
-                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
+
+                              if (dataStudyOnly) {
+
+                                  cat("\n")
+                                  type = 'process'
+                                  level = 'error'
+                                  show = T
+                                  mesg = paste(
+                                      "The study id-variable-name info file is not found for study ", phsAcc, ". To look for the id-variable-name info file of the study that has no data under the project, rerun the command with the argument dataStudyOnly=TRUE. Otherwise, checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
+                                      " --- ", infoFile, sep="" 
+                                  )
+                                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                              }
+                              else {
+                                  
+                                  #mesg = paste("Meta-info is available but there is no data file found under the project directory for this study, ", phsAcc, ".\n", sep="")
+                                  #message(mesg)
+
+                                  ###################################
+                                  # Get IdVarNameInfoFile of noDataStudy
+                                  ###################################
+                                  noDataInfoFile = file.path(studyExtMetaDir, infoFileName) 
+
+                                  if (file.exists(noDataInfoFile)) {
+                                      noDataInfoDF <- read.table(noDataInfoFile, header=TRUE, fill = TRUE, quote = "", sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
+
+                                      if (nrow(noDataInfoDF) > 0) {
+                                          return(noDataInfoDF)
+                                      }
+                                  }
+                              }
                           }
                       }
                       else if (type == 'code') {
+                          ###############################
+                          # Get study code value data 
+                          ###############################
 
                           # New!
                           # /c/Users/mars/Documents/myprj/gapwork/data/phs000429/phs000429.v1/supplemental_data/phs000429.v1_study_variable_code_value.txt.gz
@@ -4536,15 +4780,36 @@ setMethod(
                               }
                           }
                           else {
-                              cat("\n")
-                              type = 'process'
-                              level = 'error'
-                              show = T
-                              mesg = paste(
-                                           "The study variable-code-value-info file is not found for study ", phsAcc, ". Checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
-                                           " --- ", infoFile, sep="" 
-                                           )
-                              writeLog(object,  type = type, level = level, message = mesg, show = show) 
+
+                              if (dataStudyOnly) {
+                                  cat("\n")
+                                  type = 'process'
+                                  level = 'error'
+                                  show = T
+                                  mesg = paste(
+                                      "The study variable-code-value-info file is not found for study ", phsAcc, ". To look for the variable-code-value-info file of the study that has no data under the project, rerun the command with the argument dataStudyOnly=TRUE. Otherwise, checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
+                                      " --- ", infoFile, sep="" 
+                                  )
+                                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                              }
+                              else {
+
+                                  #mesg = paste("Meta-info is available but there is no data file found under the project directory for this study, ", phsAcc, ".\n", sep="")
+                                  #message(mesg)
+
+                                  ########################################
+                                  # Get VarCodValInfoFile of noDataStudy
+                                  ########################################
+                                  noDataInfoFile = file.path(studyExtMetaDir, infoFileName) 
+
+                                  if (file.exists(noDataInfoFile)) {
+                                      noDataInfoDF <- read.table(noDataInfoFile, header=TRUE, fill = TRUE, quote = "", sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
+
+                                      if (nrow(noDataInfoDF) > 0) {
+                                          return(noDataInfoDF)
+                                      }
+                                  }
+                              }
                           }
                       }
                       else if (type == 'manifest') {
@@ -4592,8 +4857,7 @@ setMethod(
                   }
               }
 
-
-
+              return()
 
           })
 
@@ -4808,6 +5072,7 @@ setMethod(
 #' @param ... There are optional arguments. 
 #' @param phsAcc a character string. A study accession. It is required when studyPhtInfoDF is not provided. 
 #' @param studyPhtInfoDF a data frame. The dataset info table of the study. 
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a character string. The dataset accession that have a match with available studies. 
 #' @export getAvailPhtVer 
 #' @keywords internal
@@ -4828,7 +5093,7 @@ setGeneric(name = "getAvailPhtVer",
 setMethod(
           f = "getAvailPhtVer",
           signature = c("Commons", "character"),
-          definition = function(object, randPhtAcc, ..., phsAcc = NA, studyPhtInfoDF = data.frame()) {
+          definition = function(object, randPhtAcc, ..., phsAcc = NA, studyPhtInfoDF = data.frame(), dataStudyOnly = TRUE) {
 
               # Parse ids from phtAcc
               phtAccIds = parseIdsFromPhtAcc(object, phtAcc = randPhtAcc)
@@ -4839,7 +5104,7 @@ setMethod(
 
                   if (!is.na(phsAcc)) {
 
-                      tempDF <- getExtData(object, type = 'dataset', phsAcc = phsAcc)
+                      tempDF <- getExtData(object, type = 'dataset', phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
 
                       if (!is.null(tempDF)) {
                           studyPhtInfoDF <- tempDF 
@@ -4889,6 +5154,195 @@ setMethod(
               }
           })
 
+
+# --------------------------- 
+# Method: getMetaByObjAcc 
+# --------------------------- 
+
+#' Get metadta of a dbGaP object 
+#'
+#' The method returns the metadat a given dataset or variable accession. 
+#'
+#' @param object Commons class object.
+#' @param acc a character string. The dbGaP dataset, or variable accession. 
+#' @param a character string. The type of the input accession that can be either 'dataseet' or 'variable'. 
+#' @return a data frame. The metadata of the input object. 
+#' @export getMetaByObjAcc
+#' @keywords internal
+#' @examples
+#' \dontrun{
+#'
+#' c <- Commons()
+#' df <- getMetaByObjAcc(c, acc = 'pht000824.v5', type = 'dataset')
+#' # or
+#' df <- getMetaByObjAcc(c, acc = 'phv00000090.v2', type = 'variable')
+#'}
+
+setGeneric(
+    name = "getMetaByObjAcc",
+    def = function(object, acc, type) {
+        standardGeneric("getMetaByObjAcc")
+    })
+
+    #' @describeIn getMetaByObjAcc returns dataset accession
+    setMethod(
+        f = "getMetaByObjAcc",
+        signature = c("Commons"),
+        definition = function(object, acc, type) {
+
+            prjMetaDir <- object@prjMetaDir
+
+            ###############################################
+            # Expand the search to all released studies 
+            ###############################################
+
+            # Lookup respective study_id by the dataset_id
+            extAllIdInfoFile <- object@extAllIdInfoFile
+            extAllIdInfoDF <- read.table(extAllIdInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
+
+            if (type == 'dataset') {
+
+                # Parse ids from phtAcc
+                phtAccIds = parseIdsFromPhtAcc(object, phtAcc = acc)
+                phtAccId = phtAccIds$phtAccId
+                phtAccNoVer = phtAccIds$phtAccNoVer
+
+                subIdInfoDF <- dplyr::filter(extAllIdInfoDF, extAllIdInfoDF$dataset_id == phtAccId)
+                matchStudyId <- unique(subIdInfoDF[['study_id']])
+
+                matchStudyAccNoVer <- composeObjAcc(object, objId=matchStudyId, type='study')
+
+                # Look for studyPhsId under prjMetaData Dir 
+                finalPhtDF = data.frame()
+                if (dir.exists(prjMetaDir)) {
+
+                    # Get all study-version dirs in the project directory
+                    allDirs <- list.dirs(path = prjMetaDir, full.names = TRUE, recursive = F)
+
+                    # Keep only the item with study-acc match 
+                    # "W://gapr_prj/metadata/phs001255"
+
+                    X <- allDirs
+                    studyDir <- X[grepl(matchStudyAccNoVer, X)]
+
+                    studyVerDirs <- list.dirs(path = studyDir, full.names = TRUE, recursive = F)
+
+                    # Loop through each studyVerDirs, look for the dataset acc
+                    # "W://gapr_prj/metadata/phs001255/phs001255.v1"
+                    for (studyVerDir in studyVerDirs) {
+
+                        # "W://gapr_prj/metadata/phs001255/phs001255.v1/supplemental_data/phs001255.v1_study_dataset_info.txt.gz"
+                        phsAcc <- basename(studyVerDir)
+                        phtInfoFileName = paste0(phsAcc, "_study_dataset_info.txt.gz")
+                        phtInfoFile <- file.path(studyVerDir, 'supplemental_data', phtInfoFileName)
+
+                        if (file.exists(phtInfoFile)) {
+
+                            # Read the phtInfoFile
+                            phtInfoDF <- read.table(phtInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
+                            subDF <- dplyr::filter(phtInfoDF, phtInfoDF$dataset_accession == acc)
+
+                            if (nrow(subDF) == 1) {
+
+                                #studyAcc <- subDF$study_accession
+                                #datasetAcc <- subDF$dataset_accession
+                                #datasetName <- subDF$name
+                                #datasetDesc <- subDF$description
+
+                                finalPhtDF = subDF 
+
+                                # Jump out of for loop
+                                break
+                            } 
+                        }
+                    }
+                }
+
+                return(finalPhtDF)
+            }
+
+            if (type == 'variable') {
+
+                # Parse ids 
+                phvAccIds <- parseIdsFromPhvAcc(object, phvAcc = 'phv00273621.v1.p1')
+                phvAccId = phvAccIds$phvAccId
+                phvAccNoVer = phvAccIds$phvAccNoVer
+
+                # Get match study_id 
+                subIdInfoDF <- dplyr::filter(extAllIdInfoDF, extAllIdInfoDF$variable_id == phvAccId)
+                matchStudyId <- unique(subIdInfoDF[['study_id']])
+                matchStudyAccNoVer <- composeObjAcc(object, objId=matchStudyId, type='study')
+
+                # Look for studyPhsId under prjMetaData Dir 
+                finalPhtDF = data.frame()
+                if (dir.exists(prjMetaDir)) {
+
+                    # Get all study-version dirs in the project directory
+                    allDirs <- list.dirs(path = prjMetaDir, full.names = TRUE, recursive = F)
+
+                    # Keep only the item with study-acc match 
+                    # "W://gapr_prj/metadata/phs001255"
+
+                    X <- allDirs
+                    studyDir <- X[grepl(matchStudyAccNoVer, X)]
+
+                    studyVerDirs <- list.dirs(path = studyDir, full.names = TRUE, recursive = F)
+
+                    # Loop through each studyVerDirs, look for the dataset acc
+                    # "W://gapr_prj/metadata/phs001255/phs001255.v1"
+                    for (studyVerDir in studyVerDirs) {
+
+                        # Get study_variable_info file of the study
+                        # "W://gapr_prj/metadata/phs001255/phs001255.v1/supplemental_data/phs001255.v1_study_variable_info.txt.gz"
+                        phsAcc <- basename(studyVerDir)
+                        phvInfoFileName = paste0(phsAcc, "_study_variable_info.txt.gz")
+                        phvInfoFile <- file.path(studyVerDir, 'supplemental_data', phvInfoFileName)
+
+                        phvCodeValFileName = paste0(phsAcc, "_study_variable_code_value.txt.gz")
+                        phvCodeValFile <- file.path(studyVerDir, 'supplemental_data', phvCodeValFileName) 
+
+                        codeValCombo = ''
+                        if (file.exists(phvCodeValFile)) {
+                            varCodeValDF <- read.table(phvCodeValFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
+                            codeValCombo <- buildVarCodeValCombo(object, catVarAcc = acc, varCodeValDF = varCodeValDF)
+                        }
+                        #matchVarCodeValDF <- dplyr::filter(varCodeValDF, varCodeValDF$variable_accession == catVarAcc)
+
+                        if (file.exists(phvInfoFile)) {
+
+                            # Read the phtInfoFile
+                            phvInfoDF <- read.table(phvInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
+                            subDF <- dplyr::filter(phvInfoDF, phvInfoDF$variable_accession == acc)
+
+
+                            if (nrow(subDF) == 1) {
+
+                                # Display Info
+                                varAcc <- subDF$variable_accession
+                                varType <- subDF$dataset_type_category
+                                studyAcc <- subDF$study_accession
+                                datasetAcc <- subDF$dataset_accession
+                                datasetName <- subDF$dataset_name
+                                varUnit <- subDF$units
+                                varName <- subDF$name
+                                varDesc <- subDF$description
+
+                                subDF['code_value_combo'] <- c(codeValCombo) 
+
+                                finalPhtDF = subDF 
+
+                                # Jump out of for loop
+                                break
+                            } 
+                        }
+
+                    }
+                }
+
+                return (finalPhtDF)
+            }
+        })
+
 #######################
 # List of functions
 #######################
@@ -4915,6 +5369,7 @@ setMethod(
 # convertEnumVarColName
 # saveGapPlot
 # isStudyAcc
+# composeObjAcc
 # parseIdsFromPhtAcc
 # parseIdsFromStAcc
 # cleanObjAcc
@@ -4925,3 +5380,4 @@ setMethod(
 # parseDataDic
 # buildVarCodeValCombo
 # getAvailPhtVer 
+# getMetaByObjAcc 

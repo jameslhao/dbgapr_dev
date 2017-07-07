@@ -138,6 +138,7 @@ setMethod(
 #' @param object Study class object.
 #' @param phvAccList a character vector. The dbGaP phenotype variable accessions.
 #' @param ... There are optional arguments.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @param showTable (optional) a logical value. If TRUE, displays the variable meta-info in a platform specific table viewer; Not display if FALSE (default).
 #' @param showBrief (optional) a logical value. If TRUE (default), console displays a brief version of the variable info. Not display if FALSE.
 #' @param validateInput (optional). If TRUE, checks the input variable accessions to make sure they belong to downloaded data under the user project. No check if FALSE.
@@ -165,13 +166,14 @@ setGeneric(
 setMethod(
           f = "getVariableInfoByPhvAcc",
           signature = c("Study", "character"),
-          definition = function(object, phvAccList, ..., showTable = F, showBrief = T, validateInput = T) {
+          definition = function(object, phvAccList, ..., dataStudyOnly = TRUE, showTable = F, showBrief = T, validateInput = T) {
 
               phsAcc = object@phsAcc
 
               ############################
               # Validate phvAcc list
               ############################
+
 
               if (length(phvAccList) > 0 ) {
 
@@ -180,14 +182,13 @@ setMethod(
                       ###########################
                       # Validate PhvAccList
                       ###########################
-                      cleanPhvAccList <- checkPhvAccList(object, phvAccList = phvAccList) 
+                      cleanPhvAccList <- checkPhvAccList(object, phvAccList = phvAccList, dataStudyOnly = dataStudyOnly) 
                   }
                   # Skip check to make it run faster (used when calling from a different function where the phvAccList has been done.)
                   else {
                       cleanPhvAccList = lapply(phvAccList, function(x) { a <- cleanObjAcc(object, acc = x, type = 'phv') })
                   }
                   phvAccList = unlist(cleanPhvAccList, recursive=FALSE)
-
 
                   if (length(phvAccList) > 0) {
 
@@ -196,16 +197,15 @@ setMethod(
                       ####################
                       parseIdsFromStAcc =  parseIdsFromStAcc(object, phsAcc = phsAcc)
                       phsAccNoVer = parseIdsFromStAcc$phsAccNoVer
-                      dataDicComboDF <- getDataDicByStudy(object, phsAcc) 
+                      dataDicComboDF <- getDataDicByStudy(object, phsAcc = phsAcc, dataStudyOnly = dataStudyOnly) 
 
                       ########################################
                       # Get all rows that match PhvAccList
                       ########################################
                       phvInfoDF = dataDicComboDF[dataDicComboDF$variable_accession %in% phvAccList,]
 
-
                       
-                      varCodeValDF <- getExtData(object, type = 'code', phsAcc = phsAcc)
+                      varCodeValDF <- getExtData(object, type = 'code', phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
 
                       if (!is.null(varCodeValDF)) {
 
@@ -322,6 +322,7 @@ setMethod(
 #' @param dataType a character string. The variable datatype. The possible value is either 'num' (for numeric variable) or 'cat' (for categorical variable).
 #' @param ... There are optional arguments.
 #' @param dataDicDF a data frame. (optional) Dataset data dictionary data.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return  a data frame. The variable meta-info. 
 #' @export getStudyVariableInfoByDataType 
 #' @keywords internal
@@ -349,7 +350,7 @@ setGeneric(
 setMethod(
           f = "getStudyVariableInfoByDataType",
           signature = c("Study", "character"),
-          definition = function(object, dataType, ..., dataDicDF = data.frame()) {
+          definition = function(object, dataType, ..., dataDicDF = data.frame(), dataStudyOnly = TRUE) {
 
               phsAcc = object@phsAcc
               extDataDir = object@extDataDir 
@@ -359,7 +360,8 @@ setMethod(
               #dataDicComboDF <- getDataDicByStudy(object, phsAcc) 
 
               if (nrow(dataDicDF) == 0) {
-                  dataDicDF <- getDataDicByStudy(object, phsAcc) 
+                  #dataDicDF <- getDataDicByStudy(object, phsAcc) 
+                  dtaDicDF <- getDataDicByStudy(object, phsAcc = phsAcc, dataStudyOnly = dataStudyOnly) 
               }
 
               #############################
@@ -400,6 +402,8 @@ setMethod(
 #' @name checkPhvAccList
 #' @param object Study class object.
 #' @param phvAccList a character vector. A list of the dbGaP variable accessions. 
+#' @param ... There are optional arguments. 
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a character vector. A validated list of the variable accessions.
 #' @export checkPhvAccList 
 #' @keywords internal
@@ -417,7 +421,7 @@ setMethod(
 #
 setGeneric(
            name = "checkPhvAccList",
-           def = function(object, phvAccList) {
+           def = function(object, phvAccList, ...) {
                standardGeneric("checkPhvAccList")
            })
 
@@ -425,7 +429,7 @@ setGeneric(
 setMethod(
           f = "checkPhvAccList",
           signature = c("Study", "character"),
-          definition = function(object, phvAccList) {
+          definition = function(object, phvAccList, dataStudyOnly = TRUE) {
 
               phsAcc = object@phsAcc
               fileInfoFile = object@fileInfoFile
@@ -445,10 +449,11 @@ setMethod(
               ###########################
               # Get all vairable list
               ###########################
-              studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc)
+              studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
               cleanPhvAccList = vector()
 
               if (!is.null(studyDataDicInfo)) {
+
 
                   subDF <- unique(studyDataDicInfo['variable_accession'])
                   allVarList <- subDF[['variable_accession']] 
@@ -522,7 +527,7 @@ setMethod(
                           if (nrow(matchVarDF) > 1) {
                               randPhtAcc <- matchVarDF$dataset_accession[1]
                               # Get avaiable phtAcc
-                              availPhtAcc <- getAvailPhtVer(object, randPhtAcc=randPhtAcc, phsAcc=phsAcc)
+                              availPhtAcc <- getAvailPhtVer(object, randPhtAcc=randPhtAcc, phsAcc=phsAcc, dataStudyOnly=dataStudyOnly)
                           }
                           else {
                               availPhtAcc <- toString(matchVarDF$dataset_accession[1])
@@ -564,6 +569,8 @@ setMethod(
 #'
 #' @param object Study class object.
 #' @param acc a character string. A dataset or variable accession.
+#' @param ... There are optional arguments. 
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a character string. (invisible) The study accession to which the input dataset or variable belongs.
 #' @export checkObjStudyByAcc 
 #' @keywords internal
@@ -585,7 +592,7 @@ setMethod(
 
 setGeneric(
            name = "checkObjStudyByAcc",
-           def = function(object, acc) {
+           def = function(object, acc, ...) {
                standardGeneric("checkObjStudyByAcc")
            })
 
@@ -593,7 +600,7 @@ setGeneric(
 setMethod(
           f = "checkObjStudyByAcc",
           signature = c("Study", "character"),
-          definition = function(object, acc) {
+          definition = function(object, acc, ..., dataStudyOnly = TRUE) {
 
               phsAcc = object@phsAcc
               prjDataDir = object@prjDataDir
@@ -634,7 +641,7 @@ setMethod(
                       # Get match studyAcc of the input acc (pht or phv)
                       ####################################################
                       # New!
-                      studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc)
+                      studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
 
                       if (!is.null(studyDataDicInfo)) {
 
@@ -1203,6 +1210,7 @@ setMethod(
 #' @param object Study class object.
 #' @param phvAccList a character vector. The dbGaP variable accessions.
 #' @param ... There are optional arguments.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @param cleanNumVal a logical value. (optional). If TRUE, from numeric variables, converts non-numeric values to NA. If FALSE (default), not convert.  
 #' @param emptyToNa a logical value. (optional). If TRUE, converts the empty values to NA; If FALSE (default), not convert.
 #' @param colNameWithAcc a logical value. (optional). If TRUE, includes the variable accessions in the column names (e.g. AGEPHOT_phv00000027.v2); If FALSE, not include (e.g. AGEPHOT).
@@ -1242,7 +1250,7 @@ setGeneric(
 setMethod(
           f = "getVariableDataByPhvAcc",
           signature = c("Study", "character"),
-          definition = function(object, phvAccList, ..., cleanNumVal = FALSE, emptyToNa = FALSE, colNameWithAcc = FALSE, checkList = T) {
+          definition = function(object, phvAccList, ..., dataStudyOnly = TRUE, cleanNumVal = FALSE, emptyToNa = FALSE, colNameWithAcc = FALSE, checkList = T) {
 
               # Allow not list and vector as input. Convert to vector of it is a list.
               if (is.list(phvAccList)) {
@@ -1254,7 +1262,7 @@ setMethod(
               ###########################
               cleanPhvAccList = vector()
               if (checkList) {
-                  cleanPhvAccList <- checkPhvAccList(object, phvAccList = phvAccList) 
+                  cleanPhvAccList <- checkPhvAccList(object, phvAccList = phvAccList, dataStudyOnly = dataStudyOnly) 
               }
               else {
                   cleanPhvAccList <- phvAccList 
@@ -1269,9 +1277,9 @@ setMethod(
 
                   # ExtData sharedIdNames
                   # New!
-                  specialVarDF <- getExtData(object, type = 'id', phsAcc = phsAcc)
-                  allStudyInfo <- getExtData(object, type = 'study')
-                  studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc)
+                  specialVarDF <- getExtData(object, type = 'id', phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
+                  allStudyInfo <- getExtData(object, type = 'study', dataStudyOnly = dataStudyOnly)
+                  studyDataDicInfo <- getExtData(object, type = 'variable', phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
 
 
                   ###################################################################
@@ -1291,7 +1299,7 @@ setMethod(
                           # Get StudyDataDicDF
                           parseIdsFromStAcc =  parseIdsFromStAcc(object, phsAcc = phsAcc)
                           phsAccNoVer = parseIdsFromStAcc$phsAccNoVer
-                          studyDataDicDF <- getDataDicByStudy(object, phsAcc) 
+                          studyDataDicDF <- getDataDicByStudy(object, phsAcc, dataStudyOnly = dataStudyOnly) 
 
 
                           ##################
@@ -1318,7 +1326,7 @@ setMethod(
                               if (nrow(matchVarDF) > 1) {
                                   randPhtAcc <- matchVarDF$dataset_accession[1]
                                   # Get avaiable phtAcc
-                                  availPhtAcc <- getAvailPhtVer(object, randPhtAcc=randPhtAcc, phsAcc=phsAcc)
+                                  availPhtAcc <- getAvailPhtVer(object, randPhtAcc=randPhtAcc, phsAcc=phsAcc, dataStudyOnly=dataStudyOnly)
                               }
                               else {
                                   availPhtAcc <- toString(matchVarDF$dataset_accession[1])

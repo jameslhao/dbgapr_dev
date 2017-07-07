@@ -8,7 +8,8 @@
 \usage{
 ftpDownload(object, ...)
 
-\S4method{ftpDownload}{Commons}(object, ..., phsAcc = "")
+\S4method{ftpDownload}{Commons}(object, ..., phsAcc = "",
+  dataStudyOnly = TRUE, overwrite = FALSE)
 }
 \arguments{
 \item{object}{Commons class object}
@@ -16,6 +17,10 @@ ftpDownload(object, ...)
 \item{...}{There are optional arguments.}
 
 \item{phsAcc}{a character string. The dbGaP study accession. Only the files of the given study are downloaded when a study accession is provided.}
+
+\item{dataStudyOnly}{a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not.}
+
+\item{overwrite}{a logical value. When TRUE, downloads the supplemental metadata files if they aren't already downloaded. When FALSE (default, downloads the metadata files even the they already exist.}
 }
 \value{
 a logical value. If TRUE, all files are downloaded OK. If FALSE, there is at least one failed download.
@@ -35,5 +40,6 @@ c <- Commons()
 ftpDownload(c)
 # or
 ftpDownload(c, phsAcc = 'phs000001.v3.p1')
+ftpDownload(c, dataStudyOnly=FALSE)
 }
 }

@@ -37,8 +37,9 @@
 #' \emph{Study class}
 #'
 #' \itemize{
+#' \item \code{\link{getStudyDatasetInfo}}
 #' \item \code{\link{getStudyVariableInfo}}
-#' \item \code{\link{getPhvAccListByTerms}}
+#' \item \code{\link{getStudyVariableInfoByTerms}}
 #' \item \code{\link{getStudyVariableData}}
 #' \item \code{\link{getIdInfo}}
 #' \item \code{\link{variableSummary}}

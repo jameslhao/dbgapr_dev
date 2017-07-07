@@ -6,14 +6,17 @@
 \alias{getDataDicByStudy,Commons,character-method}
 \title{(internal) Get study variable meta-info (data dictionary)}
 \usage{
-getDataDicByStudy(object, phsAcc)
+getDataDicByStudy(object, phsAcc, ...)
 
-\S4method{getDataDicByStudy}{Commons,character}(object, phsAcc)
+\S4method{getDataDicByStudy}{Commons,character}(object, phsAcc, ...,
+  dataStudyOnly = TRUE)
 }
 \arguments{
 \item{object}{Commons class object.}
 
 \item{phsAcc}{a character string. The dbGaP study accession.}
+
+\item{dataStudyOnly}{a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not.}
 }
 \value{
 a data frame. The dataset meta-info of the study.
