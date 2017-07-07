@@ -324,6 +324,7 @@ setMethod(f ="getPrjDir",
 #' @param userDataDir a character string. The path to the top level directory of decrypted dbGaP phenotype data files.
 #' @param ... There are optional arguments. 
 #' @param phsAcc a character string. The dbGaP study accession.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a data frame. (invisible) The meta-info of merged data files.
 #' @export prepareData 
 #' @examples
@@ -347,7 +348,7 @@ setGeneric(name = "prepareData",
 setMethod(
           f = "prepareData",
           signature = c("Commons", "character"),
-          definition = function(object, userDataDir, ..., phsAcc = "") {
+          definition = function(object, userDataDir, ..., phsAcc = "", dataStudyOnly = TRUE) {
 
               # reload object
               object <- Commons()
@@ -374,7 +375,7 @@ setMethod(
 
                           cat("\nDownload supplemental meta-data from ftp ...\n")
                           cat("\n")
-                          downloadOk <- ftpDownload(object, phsAcc = phsAcc)
+                          downloadOk <- ftpDownload(object, phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
 
                           if (downloadOk) {
 
