@@ -16,10 +16,11 @@ collection of functions that make it easier to organize, view, and use
 the phenotype data downloaded from the dbGaP**. The following are a few
 highlights of the package.
 
+-   Make data meta-info of all released studies readily available for
+    search and view.
+-   Query data meta-info and retrieve data by accessions.
 -   Organize downloaded phenotype data files in a central location
     by studies.
--   Make data meta-info readily available for search and view.
--   Query data meta-info and retrieve data by accessions.
 -   Basic plotting for data visualization.
 
 This document is a step-by-step introduction of how to setup and use the
@@ -511,11 +512,9 @@ a data frame.
 
     c <- Commons()
     df <- getAllStudyInfo(c)
-    # or        
-    # display result as a table
+    # or display result as a table
     df <- getAllStudyInfo(c, showAs='table')           
-    # or
-    # display result in json with notepad
+    # or display result in json with notepad
     df <- getAllStudyInfo(c, showAs='json', editor='notepad') 
 
 ### Get info of all datasets
@@ -526,15 +525,30 @@ as a data frame.
 
     c <- Commons()
     df <- getAllDatasetInfo(c)
-    # or
-    # display result as a table 
+    # or display result as a table 
     df <-  getAllDatasetInfo(c, showAs='table')
-    # or
-    # display result in json format with notepad
+    # or display result in json format with notepad
     df <- getAllDatasetInfo(c, showAs='json', editor='notepad')
-    # or
-    # display result in a text format 
+    # or display result in a text format 
     df <-  getAllDatasetInfo(c, showAs='text')
+
+### Get study dataset info
+
+The meta-info of datasets under a specified study can be queried and
+viewed by `getStudyDatasetInfo()`. The dataset-info is returned as a
+data frame.
+
+    s <- Study(phsAcc='phs000001.v3.p1')            
+    # all study datasets 
+    df <- getStudyDatasetInfo(s)                   
+    # or display result as a table
+    df <- getStudyDatasetInfo(s, showAs='table')
+    # or a specific dataset 
+    df <- getStudyDatasetInfo(s, phtAcc='pht000370.v2.p1')        
+    #
+    # or the dataset of a study that has no data file under project directory  
+    s2 <- Study(phsAcc='phs001255.v3.p1')            
+    df <- getStudyDatasetInfo(s2, phtAcc = 'pht005990.v1', dataStudyOnly = FALSE) 
 
 ### Get study variable info
 
@@ -545,26 +559,28 @@ data frame.
     s <- Study(phsAcc='phs000001.v3.p1')            
     # all study variables
     df <- getStudyVariableInfo(s)                   
-    # or
-    # display result as a table
+    # or display result as a table
     df <- getStudyVariableInfo(s, showAs='table')
-    # or
-    # all dataset variables
+    # or all dataset variables
     df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1')        
-    # or
-    # all dataset variables of numeric type  
+    # or all dataset variables of numeric type  
     df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1', dataType = 'num')
-    # or     
-    # a list of variables
+    # or a list of variables
     acc_list = c('phv00054119.v1.p1.c2', 'phv00054118.v1.p1')
     df <- getStudyVariableInfo(s, phvAccList=acc_list)   
+    #
+    # or for a study that has no data file under project directory
+    s2 <- Study(phsAcc = 'phs001255.v1.p1') 
+    df <- getStudyVariableInfo(s2, phtAcc = 'pht005990.v1', dataStudyOnly=F)
+    # or
+    df <- getStudyVariableInfo(s2, phvAccList = c('phv00273621.v1', 'phv00273622.v1'), dataStudyOnly = F)
 
 ### Search study variables by terms
 
 After viewing the meta-info of multiple variables through above
 function, specific variables can be selected based on the terms present
 in either the variable descriptions or the variable names. To conduct
-the search, use `getPhvAccListByTerms()` as below.
+the search, use `getStudyVariableInfoByTerms()` as below.
 
     s <- Study(phsAcc='phs000001.v3.p1')            
 
@@ -574,25 +590,41 @@ the search, use `getPhvAccListByTerms()` as below.
     t2 = c('Year 10')
     t3 = c('6 Months') 
     # term match with 'Diabetes Treatment' OR 'Smoking Status'
-    df <- getPhvAccListByTerms(s, terms_1=t1)
+    df <- getStudyVariableInfoByTerms(s, terms_1=t1)
+    # or display matching variable in a table
+    df <- getStudyVariableInfoByTerms(s, terms_1=t1, showTable=T)
+    # or term match with ('Diabetes Treatment' OR 'Smoking Status') AND 'Year 10'
+    df <- getStudyVariableInfoByTerms(s, terms_1=t1, terms_2=t2, showTable=T)
+    # or term match with ('Diabetes Treatment' OR 'Smoking Status') AND 'Year 10' AND '6 Months'
+    df <- getStudyVariableInfoByTerms(s, terms_1=t1, terms_2=t2, terms_3=t3, showTable=T)
+    #
+    # or for a study that has no data file under project directory
+    s2 <- Study(phsAcc = 'phs001255.v1.p1') 
+    df <- getStudyVariableInfoByTerms(s2, terms_1='ID', showTable = T, dataStudyOnly = FALSE)
     # or
-    #  display matching variable in a table
-    df <- getPhvAccListByTerms(s, terms_1=t1, showTable=T)
-    # or
-    # term match with ('Diabetes Treatment' OR 'Smoking Status') AND 'Year 10'
-    df <- getPhvAccListByTerms(s, terms_1=t1, terms_2=t2, showTable=T)
-    # or
-    # term match with ('Diabetes Treatment' OR 'Smoking Status') AND 'Year 10' AND '6 Months'
-    df <- getPhvAccListByTerms(s, terms_1=t1, terms_2=t2, terms_3=t3, showTable=T)
+    df <- getStudyVariableInfoByTerms(s2, terms_1='ID', terms_2='sample', showTable = T, dataStudyOnly = F)
+    df <- getStudyVariableInfoByTerms(s2, terms_1='ID', terms_2='sample', terms_3='De-id', showTable = T, dataStudyOnly = F)
 
     ##### Search for matches in variable names #####
     t4 = 'SMK'
     t5 = 'AGE'
     # term match with 'SMK'
-    df <- getPhvAccListByTerms(s, terms_1=t4, searchIn='name', showTable=T)
-    # or
-    # term match with 'SMK' AND 'AGE' 
-    df <- getPhvAccListByTerms(s, terms_1=t4, terms_2=t5, searchIn='name', showTable=T)
+    df <- getStudyVariableInfoByTerms(s, terms_1=t4, searchIn='name', showTable=T)
+    # or term match with 'SMK' AND 'AGE' 
+    df <- getStudyVariableInfoByTerms(s, terms_1=t4, terms_2=t5, searchIn='name', showTable=T)
+    #
+
+### Get ID info
+
+The dataset of subject, sample, or pedigree ID information can be
+obtained by calling `getIdInfo()` as below.
+
+    s <- Study(phsAcc = 'phs000001.v3.p1')            
+    # get subject ID info 
+    df <- getIdInfo(s, infoType = 'subject')
+    # or get pedigree ID info 
+    s2 <- Study(phsAcc = 'phs000007.v29')
+    df <- getIdInfo(s2, infoType = 'pedigree')
 
 ### Get study variable data
 
@@ -603,8 +635,7 @@ accession or a list of variable accessions. Thi is done by calling
     s <- Study(phsAcc = 'phs000001.v3.p1')            
     # get data of variables in a dataset 
     df <- getStudyVariableData(s, phtAcc='pht000370.v2.p1')
-    # or
-    # get data of a list of variables
+    # or get data of a list of variables
     # acc_list = c('phv00054119.v1.p1.c2', 'phv00053733.v2')
     df <- getStudyVariableData(s, phvAccList=acc_list)
 
@@ -620,8 +651,7 @@ following.
     # variable data of a set of specified subjects in a dataset 
     subj_ids = c(219, 220, 221)
     df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', dbgapIdsOrFile=subj_ids)
-    # or
-    # variable data of a set of specified subjects in a dataset 
+    # or variable data of a set of specified subjects in a dataset 
     # The subject id file is a plain text file with one dbGaP_Subject_ID per line.
     subj_file = "~/temp/subj_ids.txt"
     df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', dbgapIdsOrFile=subj_file)
@@ -797,8 +827,7 @@ The histogram of a numeric variable can be drawn by calling
     s <- Study(phsAcc='phs000001.v3.p1')            
     # with density plot
     df <- variableHistogram(s, phvAcc='phv00053747.v2')
-    # or
-    # without Density plotâ‹…
+    # or without Density plot
     df <- variableHistogram(s, phvAcc='phv00053747.v2', withDensity=F)    
 
 <img src="figure/histogram_phv00053747.v2_LNUCSCORE.png" width="600px" />
