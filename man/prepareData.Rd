@@ -40,5 +40,8 @@ c <- Commons()
 prepareData(c, userDataDir = '/home/user/data')
 # or
 prepareData(c, userDataDir = '/home/user/data', phsAcc = 'phs000001.v3.p1')
+# or to include the data meta-info of all the studies released in dbGaP.
+# Note: This step may take serveral hours.
+prepareData(c, userDataDir='/home/user/data', dataStudyOnly = FALSE)
 }
 }

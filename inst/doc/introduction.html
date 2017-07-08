@@ -137,7 +137,7 @@ devtools::<span class="kw">install_github</span>(<span class="st">&quot;jameslha
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">Commons</span>()
 <span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/username/decrypted_dbgap_data_dir'</span>)
 <span class="co">#</span>
-<span class="co"># Or if you want to include the data meta-info of not only the studies that have data files downloaded but also all the studies released in dbGaP.</span>
+<span class="co"># or to include the data meta-info of also all the studies released in dbGaP, not limited to the studies that have downloaded data files.</span>
 <span class="co"># Please note that it may take serveral hours longer by doing this.  </span>
 <span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/username/decrypted_dbgap_data_dir'</span>, <span class="dt">dataStudyOnly =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p>Note:</p>
@@ -200,7 +200,7 @@ devtools::<span class="kw">install_github</span>(<span class="st">&quot;jameslha
 <span class="co"># or to limit the download to a specific study</span>
 <span class="kw">ftpDownload</span>(c, <span class="dt">phsAcc=</span><span class="st">&quot;phs000001.v3.p1&quot;</span>)
 
-<span class="co"># Or if you want to include the data meta-info of not only the studies that have data files downloaded but also all the studies released in dbGaP.</span>
+<span class="co"># or to include the data meta-info of also all the studies released in dbGaP, not limited to the studies that have downloaded data files.</span>
 <span class="co"># Please note that it may take serveral hours longer by doing this.  </span>
 <span class="kw">ftpDownload</span>(c, <span class="dt">dataStudyOnly =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p>Note:</p>

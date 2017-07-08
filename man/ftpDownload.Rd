@@ -41,5 +41,8 @@ ftpDownload(c)
 # or
 ftpDownload(c, phsAcc = 'phs000001.v3.p1')
 ftpDownload(c, dataStudyOnly=FALSE)
+# or to include the data meta-info of all the studies released in dbGaP.
+# Note: This step may take serveral hours.
+ftpDownload(c, dataStudyOnly = FALSE)
 }
 }
