@@ -23,7 +23,7 @@ getAllDatasetInfo(object, ...)
 a data frame. The meta-info of all datasets available under the project directory.
 }
 \description{
-The method returns meta-info of all datasets available under the project directory.
+The method returns meta-info of all datasets of the studies that have data files available under the project directory.
 }
 \section{Methods (by class)}{
 \itemize{

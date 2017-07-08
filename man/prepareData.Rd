@@ -9,7 +9,7 @@
 prepareData(object, userDataDir, ...)
 
 \S4method{prepareData}{Commons,character}(object, userDataDir, ...,
-  phsAcc = "")
+  phsAcc = "", dataStudyOnly = TRUE)
 }
 \arguments{
 \item{object}{Commons class object.}
@@ -19,6 +19,8 @@ prepareData(object, userDataDir, ...)
 \item{...}{There are optional arguments.}
 
 \item{phsAcc}{a character string. The dbGaP study accession.}
+
+\item{dataStudyOnly}{a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not.}
 }
 \value{
 a data frame. (invisible) The meta-info of merged data files.

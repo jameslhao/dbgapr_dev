@@ -34,6 +34,9 @@ The method retrieves either subject, sample, or pedigree information of a given 
 \dontrun{
 
 s <- Study(phsAcc = 'phs000001.v3.p1')
-getIdInfo(s)
+getIdInfo(s, infoType = 'subject')
+# or
+s <- Study(phsAcc = 'phs000007.v29')
+getIdInfo(s, infoType = 'pedigree')
 }
 }

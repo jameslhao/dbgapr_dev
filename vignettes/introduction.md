@@ -119,6 +119,10 @@ results of each of these steps.
 
     c <- Commons()
     prepareData(c, userDataDir='/home/username/decrypted_dbgap_data_dir')
+    #
+    # Or if you want to include the data meta-info of not only the studies that have data files downloaded but also all the studies released in dbGaP.
+    # Please note that it may take serveral hours longer by doing this.  
+    prepareData(c, userDataDir='/home/username/decrypted_dbgap_data_dir', dataStudyOnly = FALSE)
 
 Note:
 
@@ -221,6 +225,10 @@ needs to be downloaded from the dbGaP ftp site through `ftpDownload()`.
     ftpDownload(c)
     # or to limit the download to a specific study
     ftpDownload(c, phsAcc="phs000001.v3.p1")
+
+    # Or if you want to include the data meta-info of not only the studies that have data files downloaded but also all the studies released in dbGaP.
+    # Please note that it may take serveral hours longer by doing this.  
+    ftpDownload(c, dataStudyOnly = FALSE)
 
 Note:
 

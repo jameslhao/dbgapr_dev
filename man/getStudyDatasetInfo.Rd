@@ -28,7 +28,7 @@ getStudyDatasetInfo(object, ...)
 a data frame. The meta-info of input variables.
 }
 \description{
-The method returns the dataset info of the study. When dataset accession is not providedd, it returns the meta-info of all datasets of the class study. Only the spcified dataset info is returned When the dataset accession is provided.
+The method returns the dataset info of the study. When dataset accession is not providedd, it returns the meta-info of all datasets of the class study. Only the spcified dataset info is returned when the dataset accession is provided.
 }
 \section{Methods (by class)}{
 \itemize{
@@ -39,10 +39,12 @@ The method returns the dataset info of the study. When dataset accession is not 
 \dontrun{
 
 s <- Study(phsAcc = 'phs000001.v3.p1')
+# all study datasets
 getStudyDatasetInfo(s)
-# or
+# or a specific dataset
 getStudyDatasetInfo(s, phtAcc = 'pht000370.v2.p1')
-or
-getStudyDatasetInfo(s, phtAcc = 'pht000370.v2.p1')
+# or a dataset of a study that has no data file under project directory
+s2 <- Study(phsAcc = 'phs001255.v1')
+getStudyDatasetInfo(s2, phtAcc = 'pht005990.v1', dataStudyOnly=F)
 }
 }

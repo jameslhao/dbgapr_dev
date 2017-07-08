@@ -12,7 +12,7 @@
 
 <meta name="author" content="Luning Hao, NIH/NCBI/dbGaP" />
 
-<meta name="date" content="2017-07-07" />
+<meta name="date" content="2017-07-08" />
 
 <title>Introduction to dbgapr</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Introduction to dbgapr</h1>
 <h4 class="author"><em>Luning Hao, NIH/NCBI/dbGaP</em></h4>
-<h4 class="date"><em>2017-07-07</em></h4>
+<h4 class="date"><em>2017-07-08</em></h4>
 
 
 
@@ -135,7 +135,11 @@ devtools::<span class="kw">install_github</span>(<span class="st">&quot;jameslha
 <p>Now it is time to call <code>prepareData()</code> and get all the data and metadata ready for search, view, and query. This is a wrapper function that calls other functions descripted next. <strong>When this function is called, the next four functions all the way to <code>mergeDatasetConsent()</code> can be skipped.</strong>. However, you may still want to read the instruction of the skipped functions to understand what has been done and how to check the results of each of these steps.</p>
 <p><strong>The step may take quite a while to finish.</strong></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">Commons</span>()
-<span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/username/decrypted_dbgap_data_dir'</span>)</code></pre></div>
+<span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/username/decrypted_dbgap_data_dir'</span>)
+<span class="co">#</span>
+<span class="co"># Or if you want to include the data meta-info of not only the studies that have data files downloaded but also all the studies released in dbGaP.</span>
+<span class="co"># Please note that it may take serveral hours longer by doing this.  </span>
+<span class="kw">prepareData</span>(c, <span class="dt">userDataDir=</span><span class="st">'/home/username/decrypted_dbgap_data_dir'</span>, <span class="dt">dataStudyOnly =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p>Note:</p>
 <blockquote>
 <p>The userDataDir is the top level directory that contains all the dbGaP phenotype data files intended to be copied (or moved) to the project directory. Before calling this function.</p>
@@ -194,7 +198,11 @@ devtools::<span class="kw">install_github</span>(<span class="st">&quot;jameslha
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c &lt;-<span class="st"> </span><span class="kw">Commons</span>()
 <span class="kw">ftpDownload</span>(c)
 <span class="co"># or to limit the download to a specific study</span>
-<span class="kw">ftpDownload</span>(c, <span class="dt">phsAcc=</span><span class="st">&quot;phs000001.v3.p1&quot;</span>)</code></pre></div>
+<span class="kw">ftpDownload</span>(c, <span class="dt">phsAcc=</span><span class="st">&quot;phs000001.v3.p1&quot;</span>)
+
+<span class="co"># Or if you want to include the data meta-info of not only the studies that have data files downloaded but also all the studies released in dbGaP.</span>
+<span class="co"># Please note that it may take serveral hours longer by doing this.  </span>
+<span class="kw">ftpDownload</span>(c, <span class="dt">dataStudyOnly =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p>Note:</p>
 <blockquote>
 <p>The downloaded supplemental file ‘all_released_study_info.txt.gz’ is located under the ~/ncbi/dbgapr_conf directory as shown below.</p>
