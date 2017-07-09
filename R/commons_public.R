@@ -478,6 +478,7 @@ setMethod(
                       ##################################################################
 
                       getFnames <- function(userDataDir, phsStr) {
+
                           # Search for phenotype .gz or .txt(ungzip) file 
                           # Example: phs000001.v3.pht000001.v2.p1.c1.genspecphenotype.EDO.txt.gz
                           #pattn = paste("phs[0-9]+", ".*pht[0-9]+.*.[gz|txt]$", sep="")
@@ -523,8 +524,12 @@ setMethod(
                       }
 
                       # It indicates an input error if phsStr == ""
+
+
                       if (phsStr != "") {
+
                           fnames <- getFnames(userDataDir, phsStr)
+
 
                           if (length(fnames) == 0) {
                               type = 'process'
@@ -557,6 +562,7 @@ setMethod(
                                   mesg = paste("Total ", length(fileInfoSets), " files copied to the project directory.", sep="")
                               }
                               writeLog(object,  type = type, level = level, message = mesg, show = show)
+                              cat("\n")
 
                               return (invisible(mergedFileInfoDF))
                           }
@@ -624,6 +630,7 @@ setMethod(
           definition = function(object, ..., phsAcc = "", dataStudyOnly=TRUE, overwrite=FALSE ) {
 
 
+
               prjDataDir = object@prjDataDir
               prjMetaDir = object@prjMetaDir
               dataProcLog = object@dataProcLog 
@@ -643,7 +650,10 @@ setMethod(
 
 
 
-              ###### S3 func  Download to destDir #####
+              ################
+              # S3 Function
+              ################
+              # Download to destDir
               downloadFile <- function(url, destFile) {
 
                   # This_study_version level
@@ -716,23 +726,36 @@ setMethod(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
               ##################################
               # Download all released studies
               ##################################
-              dload_method = 'auto'
+
+              # Note: download.file() returns 0 if successds, 1 if failed
+              loadOk_0 = 1
+              loadOk_1 = 1
+              loadOk_2 = 1
+              loadOk_3 = 1
+              loadOk_4 = 1
+              loadOk_5 = 1
+              loadOk_6 = 1
+              #dload_method = 'auto'
+
               cat("\nDownloading supplemental metadata of studies ... ( overwrite = ", overwrite, " dataOnlyStudy = ", dataStudyOnly,  " )\n\n")
-
-              # Download AllStudyInfoFile to ncbi/dbgapr_conf dir
-
-              # Example ftp files
-              # URL  : ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/all_released_study_info.txt.gz
-              # File : /Users/hao/Documents/ncbi/dbgapr_conf/supplemental_data/all_released_study_info.txt.gz"
-              extAllStudyInfoFile <- object@extAllStudyInfoFile
-
-              destFile = extAllStudyInfoFile
-              url = paste(baseUrl, "/", basename(destFile), sep = "")
-              loadOk_0 <- downloadFile(url, destFile)
-
 
               ###########################
               # Download all ID info 
@@ -743,7 +766,25 @@ setMethod(
               destFile = extAllIdInfoFile 
               url = paste(baseUrl, "/", basename(destFile), sep = "")
 
-              loadOk_0 <- downloadFile(url, destFile)
+              #loadOk_0 <- downloadFile(url, destFile)
+              loadOk_0 <- download.file(url=url, destfile=destFile, method= 'auto', quiet=T)
+
+
+              ###########################
+              # Download AllStudyhInfo 
+              ###########################
+              # Download AllStudyInfoFile to ncbi/dbgapr_conf dir
+
+              # Example ftp files
+              # URL  : ftp://ftp.ncbi.nlm.nih.gov/dbgap/r-tool/studies/all_released_study_info.txt.gz
+              # File : /Users/hao/Documents/ncbi/dbgapr_conf/supplemental_data/all_released_study_info.txt.gz"
+              extAllStudyInfoFile <- object@extAllStudyInfoFile
+
+              destFile = extAllStudyInfoFile
+              url = paste(baseUrl, "/", basename(destFile), sep = "")
+              #loadOk_0 <- downloadFile(url, destFile)
+              loadOk_0 <- download.file(url=url, destfile=destFile, method= 'auto', quiet=T)
+
 
 
               ##################################
@@ -792,13 +833,6 @@ setMethod(
                   }
 
                   #### study specific study_info and their datasets  ####
-                  loadOk_0 = 1
-                  loadOk_1 = 1
-                  loadOk_2 = 1
-                  loadOk_3 = 1
-                  loadOk_4 = 1
-                  loadOk_5 = 1
-                  loadOk_6 = 1
 
                   ##############
                   # Download
@@ -912,6 +946,152 @@ setMethod(
               } # End S3 function
 
 
+
+
+              #####################################################
+              # Download study metadata of noDataStudy 
+              #####################################################
+              # Under prjMetaDir
+              # Including the studies that don't have data under the project directory
+
+
+              # Create all_released_study_info dir
+              dataStudyOnlyMetaLoadOk = TRUE 
+
+              if (!dataStudyOnly) {
+
+                  cat("\nDownloading supplemental metadata of all released studies ... ( overwrite =", overwrite, ")\n")
+                  message("\nThis step may take quite a while (up to several hours) to finish.\n")
+
+                  #dataStudyOnlyDir = file.path(prjDir, "metadata")
+
+                  if (!dir.exists(prjMetaDir)) {
+                      dir.create(prjMetaDir)
+                  }
+
+
+                  # Get the external studyInfo data
+                  allStudyInfo <- getExtData(object, type = 'study')
+
+                  if (!is.null(allStudyInfo)) {
+
+                      studyAccVec <- allStudyInfo[['this_study_accession']]
+
+                      retList <- lapply(studyAccVec, function(thisPhsAcc) {
+
+                          ####################
+                          # Compose studyDir
+                          ####################
+                          parseIdsFromPhsAcc =  parseIdsFromStAcc(object, phsAcc = thisPhsAcc)
+                          phsAccNoVer = parseIdsFromPhsAcc$phsAccNoVer
+
+                          # Example:
+                          # W://gapr_prj/metadata/phs001362/phs001362.v1
+                          metaStudyDir <- file.path(prjMetaDir, phsAccNoVer, thisPhsAcc)
+                          metaStudySupplDir <- file.path(metaStudyDir, 'supplemental_data')
+                          dataStudyDir <- file.path(prjDataDir, phsAccNoVer, thisPhsAcc)
+                          dataStudySupplDir <- file.path(dataStudyDir, "supplemental_data")
+
+
+                          ################
+                          # S3 function 
+                          ################
+                          # Copy or Download metaData files
+                          handleMetaFiles <- function(metaStudyDir, dataStudySupplDir, metaStudySupplDir) {
+
+                              #### study specific study_info and their datasets  ####
+
+                              # Copy study data supplementao_data dir exists and not empty 
+                              if (dir.exists(dataStudySupplDir)) {
+
+                                  if (length(dir(dataStudyDir, all.files=FALSE)) > 0) {
+                                      file.copy(dataStudySupplDir, metaStudyDir, recursive=TRUE)
+
+                                      if (dir.exists(metaStudySupplDir)) {
+
+                                          if (length(dir(metaStudyDir, all.files=FALSE)) > 0) {
+                                              cat("Supplmental data files of study", thisPhsAcc, "are copied from\n---", dataStudySupplDir, "to ---", metaStudySupplDir, "\n")  
+                                          }
+                                      }
+                                  }
+
+                              }
+                              else {
+                                  pattn = paste0(phsAcc, "$")
+                                  match <- grepl(pattn, metaStudyDir)
+                                  if (match == TRUE) {
+                                      loadOk_0 <- downloadByStudy(metaStudyDir)
+                                  }
+                              }
+
+
+                              return(loadOk)
+                          }  # end of S3
+
+
+
+                          if (inputPhsAcc != "") {
+
+                              ##########################
+                              # For specified studies 
+                              ##########################
+
+                              if (phsAcc != "") {
+
+                                  ######################
+                                  # Check match study
+                                  ######################
+                                  if (thisPhsAcc == phsAcc) {
+
+                                      if (!dir.exists(metaStudyDir)) {
+                                          dir.create(metaStudyDir, recursive = TRUE)
+                                      }
+
+                                      # Overwrite or not 
+                                      if(overwrite) {
+                                          loadOk <- handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
+                                      }
+                                      else {
+
+                                          # Empty dir 
+                                          if(length(dir(metaStudyDir, all.files=FALSE)) == 0){
+                                              loadOk <- handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
+                                          }
+                                      }
+
+                                  }
+                              }
+                          }
+                          else {
+
+                              #####################
+                              # For all studies 
+                              #####################
+
+
+                              if (!dir.exists(metaStudyDir)) {
+                                  dir.create(metaStudyDir, recursive = TRUE)
+                              }
+
+                              if (length(dir(metaStudyDir, all.files=FALSE)) == 0) {
+                                  loadOk <- handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
+                              }
+                              else {
+                                  if(overwrite) {
+                                      loadOk <- handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
+                                  }
+                              }
+
+                          }
+                      })
+                  }
+              } # end of dataStudyOnly
+
+
+
+
+
+
               ############################################
               # Loop through all files under prjDataDir
               ############################################
@@ -922,7 +1102,6 @@ setMethod(
               if (file.exists(extAllStudyInfoFile)) {
 
 
-                  loadOk = F 
 
                   ##################################################
                   # Download study metadata of existing studies
@@ -953,6 +1132,7 @@ setMethod(
                                           match <- grepl(pattn, studyDir)
                                           if (match == TRUE) {
                                               loadOk <- downloadByStudy(studyDir)
+                                              return(loadOk)
                                           }
                                       }
                                   }
@@ -971,6 +1151,7 @@ setMethod(
                                       match <- grepl("phs\\d+\\.v\\d+$", studyDir)
                                       if (match == TRUE) {
                                           loadOk <- downloadByStudy(studyDir)
+                                          return(loadOk)
                                       }
                                   }
                               }
@@ -979,6 +1160,7 @@ setMethod(
                           # remove null value
                           retList <- unlist(retList[!sapply(retList, is.null)])
                           allTrue <- all(retList)
+                          existDataMetaLoadOk <- allTrue
 
                           if (allTrue == F & overwrite == T) {
                               mesg = paste0("\nThe ftp download of at least one supplemental file failed. For more details, lookup the ERROR messages in the log file ", dataProcLog, " .\nThe problem could simply be a temporary glitch of the internet connection. To complete the download, run ftpDownload() again with the study of the file specified. See ?ftoDowload() for details. \nIf the problem persists, write to dbgap-help@ncbi.nlm.nih.gov for help.\n")
@@ -1003,154 +1185,14 @@ setMethod(
                           writeLog(object,  type = type, level = level, message = mesg, show = show)
                       }
 
-                      existDataMetaLoadOk = allTrue 
                   }
 
-                  #####################################################
-                  # Download study metadata of all released studies 
-                  #####################################################
-                  # Including the studies that don't have data under the project directory
 
-
-                  # Create all_released_study_info dir
-                  dataStudyOnlyMetaLoadOk = TRUE 
-
-                  if (!dataStudyOnly) {
-
-                      cat("\n\nDownloading supplemental metadata of all released studies ... ( overwrite =", overwrite, ")\n\n")
-                      message("\nThis step may take quite a while (up to several hours) to finish.\n\n")
-
-                      #dataStudyOnlyDir = file.path(prjDir, "metadata")
-
-                      if (!dir.exists(prjMetaDir)) {
-                          dir.create(prjMetaDir)
-                      }
-
-
-                      # Get the external studyInfo data
-                      allStudyInfo <- getExtData(object, type = 'study')
-
-                      if (!is.null(allStudyInfo)) {
-
-                          studyAccVec <- allStudyInfo[['this_study_accession']]
-
-                          retList <- lapply(studyAccVec, function(thisPhsAcc) {
-
-                              ####################
-                              # Compose studyDir
-                              ####################
-                              parseIdsFromPhsAcc =  parseIdsFromStAcc(object, phsAcc = thisPhsAcc)
-                              phsAccNoVer = parseIdsFromPhsAcc$phsAccNoVer
-
-                              # Example:
-                              # W://gapr_prj/metadata/phs001362/phs001362.v1
-                              metaStudyDir <- file.path(prjMetaDir, phsAccNoVer, thisPhsAcc)
-                              metaStudySupplDir <- file.path(metaStudyDir, 'supplemental_data')
-                              dataStudyDir <- file.path(prjDataDir, phsAccNoVer, thisPhsAcc)
-                              dataStudySupplDir <- file.path(dataStudyDir, "supplemental_data")
-
-
-                              ################
-                              # S3 function 
-                              ################
-                              # Copy or Download metaData files
-                              handleMetaFiles <- function(metaStudyDir, dataStudySupplDir, metaStudySupplDir) {
-
-                                  loadOk = F 
-                                  # Copy study data supplementao_data dir exists and not empty 
-                                  if (dir.exists(dataStudySupplDir)) {
-
-                                      if (length(dir(dataStudyDir, all.files=FALSE)) > 0) {
-                                          file.copy(dataStudySupplDir, metaStudyDir, recursive=TRUE)
-
-                                          if (dir.exists(metaStudySupplDir)) {
-
-                                              if (length(dir(metaStudyDir, all.files=FALSE)) > 0) {
-                                                  cat("Supplmental data files of study", thisPhsAcc, "are copied from\n---", dataStudySupplDir, "to ---", metaStudySupplDir, "\n")  
-                                              }
-                                          }
-                                      }
-
-                                  }
-                                  else {
-                                      pattn = paste0(phsAcc, "$")
-                                      match <- grepl(pattn, metaStudyDir)
-                                      if (match == TRUE) {
-                                          loadOk <- downloadByStudy(metaStudyDir)
-                                      }
-                                  }
-
-                                  return(loadOk)
-                              }  # end of S3
-
-                              
-
-                              if (inputPhsAcc != "") {
-
-                                  ##########################
-                                  # For specified studies 
-                                  ##########################
-
-                                  if (phsAcc != "") {
-
-                                      ######################
-                                      # Check match study
-                                      ######################
-                                      if (thisPhsAcc == phsAcc) {
-
-                                          if (!dir.exists(metaStudyDir)) {
-                                              dir.create(metaStudyDir, recursive = TRUE)
-                                          }
-
-                                          # Overwrite or not 
-                                          if(overwrite) {
-                                              loadOk <- handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
-                                          }
-                                          else {
-
-                                              # Empty dir 
-                                              if(length(dir(metaStudyDir, all.files=FALSE)) == 0){
-                                                  loadOk <- handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
-                                              }
-                                          }
-
-                                      }
-                                  }
-                              }
-                              else {
-
-                                  #####################
-                                  # For all studies 
-                                  #####################
-
-
-                                  if (!dir.exists(metaStudyDir)) {
-                                      dir.create(metaStudyDir, recursive = TRUE)
-                                  }
-
-                                  if (length(dir(metaStudyDir, all.files=FALSE)) == 0) {
-                                      handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
-                                  }
-                                  else {
-                                      if(overwrite) {
-                                          handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
-                                      }
-                                  }
-
-                              }
-                          })
-                      }
-                  }
               }
 
-              if(is.null(loadOk)) {
-                  return(FALSE)
-              }
-              else {
-                  if(loadOk) {
-                      return(TRUE)
-                  }
-              }
+              return (existDataMetaLoadOk)
+
+
           })
 
 

@@ -4076,7 +4076,7 @@ setMethod(
 
                   if (type == 'phs') {
                       # Format check
-                      acc.rex <- "^phs\\d{6}.v\\d+$"
+                      acc.rex <- "^phs\\d{6}\\.v\\d+$"
                       acc.match <- grepl(acc.rex, acc, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
 
                       if (acc.match == FALSE) {
@@ -4089,7 +4089,7 @@ setMethod(
                   }
                   if (type == 'pht') {
                       # Format check
-                      acc.rex <- "^pht\\d{6}.v\\d+$"
+                      acc.rex <- "^pht\\d{6}\\.v\\d+$"
                       acc.match <- grepl(acc.rex, acc, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
 
                       if (acc.match == FALSE) {
@@ -4102,7 +4102,7 @@ setMethod(
                   }
                   if (type == 'phv') {
                       # Format check
-                      acc.rex <- "^phv\\d{8}.v\\d+$"
+                      acc.rex <- "^phv\\d{8}\\.v\\d+$"
                       acc.match <- grepl(acc.rex, acc, ignore.case = FALSE, perl = FALSE, fixed = FALSE, useBytes = FALSE)
 
                       if (acc.match == FALSE) {
