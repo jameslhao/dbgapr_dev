@@ -324,6 +324,7 @@ setMethod(f ="getPrjDir",
 #' @param userDataDir a character string. The path to the top level directory of decrypted dbGaP phenotype data files.
 #' @param ... There are optional arguments. 
 #' @param phsAcc a character string. The dbGaP study accession.
+#' @param overwrite a logical value. When TRUE, ftp downloads the supplemental metadata files if they aren't already downloaded. When FALSE (default, ftp downloads the metadata files even the they already exist. 
 #' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a data frame. (invisible) The meta-info of merged data files.
 #' @export prepareData 
@@ -349,7 +350,7 @@ setGeneric(name = "prepareData",
 setMethod(
           f = "prepareData",
           signature = c("Commons", "character"),
-          definition = function(object, userDataDir, ..., phsAcc = "", dataStudyOnly = TRUE) {
+          definition = function(object, userDataDir, ..., phsAcc = "", overwrite = FALSE, dataStudyOnly = TRUE) {
 
               # reload object
               object <- Commons()
@@ -376,7 +377,7 @@ setMethod(
 
                           cat("\nDownload supplemental meta-data from ftp ...\n")
                           cat("\n")
-                          downloadOk <- ftpDownload(object, phsAcc = phsAcc, dataStudyOnly = dataStudyOnly)
+                          downloadOk <- ftpDownload(object, phsAcc = phsAcc, overwrite = overwrite, dataStudyOnly = dataStudyOnly)
 
                           if (downloadOk) {
 
@@ -1907,9 +1908,15 @@ setMethod(
                                   codeValCombo = ''
                                   finalPhtDF = data.frame()
 
+                                  ###################
+                                  # Lapply function
+                                  ###################
+
                                   availStudyDatasetVarInfoList <- lapply(studyAccList, function(thisPhsAcc, inputPhvAcc = acc) {
 
+
                                       varInfoDF <- getExtData(object, type = 'variable', phsAcc = thisPhsAcc)
+
 
                                       if (!is.null(varInfoDF)) {
 
@@ -1917,6 +1924,7 @@ setMethod(
 
                                           # Loop through all available studies.
                                           # Only match study has non-zero retura.n
+
                                           if (nrow(subDF) > 0) {
 
                                               # Multipe dataset versions could have the same phvAcc.
@@ -1937,7 +1945,25 @@ setMethod(
                                   # Remove null items
                                   matchStudyDatasetVarList <- availStudyDatasetVarInfoList[!sapply(availStudyDatasetVarInfoList, is.null)] 
 
+
+                                  varAcc = ""
+                                  varType = ""
+                                  studyAcc = ""
+                                  datasetAcc = ""
+                                  datasetName = ""
+                                  varUnit = ""
+                                  varName = ""
+                                  varDesc = ""
                                   codeValCombo = NA 
+                                  maleCount = ""
+                                  femaleCount = ""
+                                  max = ""
+                                  min = ""
+                                  sd = ""
+                                  nonNullCount = ""
+                                  nullCount = ""
+
+                                  femailCount = ""
                                   if (length(matchStudyDatasetVarList) > 0) {
 
                                       # Display Info
@@ -1949,6 +1975,15 @@ setMethod(
                                       varUnit <- matchStudyDatasetVarList[[1]]$units
                                       varName <- matchStudyDatasetVarList[[1]]$name
                                       varDesc <- matchStudyDatasetVarList[[1]]$description
+                                      codeValCombo <- matchStudyDatasetVarList[[1]]$codeValCombo
+                                      maleCount <- matchStudyDatasetVarList[[1]]$maleCount
+                                      femaleCount <- matchStudyDatasetVarList[[1]]$femaleCount
+                                      max <- matchStudyDatasetVarList[[1]]$max
+                                      min <- matchStudyDatasetVarList[[1]]$min
+                                      sd <- matchStudyDatasetVarList[[1]]$sd
+                                      nonNullCount <- matchStudyDatasetVarList[[1]]$nonNullCount
+                                      nullCount <- matchStudyDatasetVarList[[1]]$nullCount
+
 
                                       ###############################
                                       # Build variable CodeValCombo
@@ -1962,7 +1997,6 @@ setMethod(
 
                                   }
                                   else {
-
 
                                       finalPhvDF <- getMetaByObjAcc(object, acc = acc, type = 'variable')
 
@@ -1990,7 +2024,14 @@ setMethod(
 
                                   }
 
-                                  if (varName != "") {
+                                  varNameOk = FALSE
+                                  if (!is.null(varName)) {
+                                      if (varName != "") {
+                                          varNameOk = TRUE 
+                                      }
+                                  }
+
+                                  if (varNameOk) {
 
                                       if (display == TRUE) {
                                           cat("\n")
@@ -2023,40 +2064,56 @@ setMethod(
                                           cat(info)
                                           cat("\n")
 
-                                          if (!is.na(maleCount)) {
-                                              info <- sprintf("%-13s %-3s %s", "Male Count", ":", maleCount) 
-                                              cat(info)
-                                              cat("\n")
+                                          if (!is.null(maleCount)) {
+                                              if (!is.na(maleCount)) {
+                                                  info <- sprintf("%-13s %-3s %s", "Male Count", ":", maleCount) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
                                           }
-                                          if (!is.na(femaleCount)) {
-                                              info <- sprintf("%-13s %-3s %s", "Female Count", ":", femaleCount) 
-                                              cat(info)
-                                              cat("\n")
+                                          if (!is.null(femaleCount)) {
+                                              if (!is.na(femaleCount)) {
+                                                  info <- sprintf("%-13s %-3s %s", "Female Count", ":", femaleCount) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
                                           }
-                                          if (!is.na(max)) {
-                                              info <- sprintf("%-13s %-3s %s", "Max", ":", max) 
-                                              cat(info)
-                                              cat("\n")
+                                          if (!is.null(max)) {
+                                              if (!is.na(max)) {
+                                                  info <- sprintf("%-13s %-3s %s", "Max", ":", max) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
                                           }
-                                          if (!is.na(min)) {
-                                              info <- sprintf("%-13s %-3s %s", "Min", ":", min) 
-                                              cat(info)
-                                              cat("\n")
+                                          if (!is.null(min)) {
+                                              if (!is.na(min)) {
+                                                  info <- sprintf("%-13s %-3s %s", "Min", ":", min) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
                                           }
-                                          if (!is.na(sd)) {
-                                              info <- sprintf("%-13s %-3s %s", "SD", ":", sd) 
-                                              cat(info)
-                                              cat("\n")
+
+                                          if (!is.null(sd)) {
+                                              if (!is.na(sd)) {
+                                                  info <- sprintf("%-13s %-3s %s", "SD", ":", sd) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
                                           }
-                                          if (!is.na(nonNullCount)) {
-                                              info <- sprintf("%-13s %-3s %s", "Non-null", ":", nonNullCount) 
-                                              cat(info)
-                                              cat("\n")
+                                          if (!is.null(nonNullCount)) {
+                                              if (!is.na(nonNullCount)) {
+                                                  info <- sprintf("%-13s %-3s %s", "Non-null", ":", nonNullCount) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
                                           }
-                                          if (!is.na(nullCount)) {
-                                              info <- sprintf("%-13s %-3s %s", "Null", ":", nullCount) 
-                                              cat(info)
-                                              cat("\n")
+
+                                          if (!is.null(nullCount)) {
+                                              if (!is.na(nullCount)) {
+                                                  info <- sprintf("%-13s %-3s %s", "Null", ":", nullCount) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
                                           }
 
                                       }
