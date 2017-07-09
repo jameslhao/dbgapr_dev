@@ -922,6 +922,8 @@ setMethod(
               if (file.exists(extAllStudyInfoFile)) {
 
 
+                  loadOk = F 
+
                   ##################################################
                   # Download study metadata of existing studies
                   ##################################################
@@ -941,7 +943,6 @@ setMethod(
                           retList <- lapply(studyDirs, function(studyDir) 
                           {
 
-                              loadOk = F 
 
                               if (dir.exists(studyDir) & studyDir != prjDataDir ) {
                                   # Check match study
@@ -970,7 +971,6 @@ setMethod(
                                       match <- grepl("phs\\d+\\.v\\d+$", studyDir)
                                       if (match == TRUE) {
                                           loadOk <- downloadByStudy(studyDir)
-                                          return(loadOk)
                                       }
                                   }
                               }
@@ -1051,11 +1051,12 @@ setMethod(
 
 
                               ################
-                              # S3 function: 
+                              # S3 function 
                               ################
                               # Copy or Download metaData files
                               handleMetaFiles <- function(metaStudyDir, dataStudySupplDir, metaStudySupplDir) {
 
+                                  loadOk = F 
                                   # Copy study data supplementao_data dir exists and not empty 
                                   if (dir.exists(dataStudySupplDir)) {
 
@@ -1078,6 +1079,8 @@ setMethod(
                                           loadOk <- downloadByStudy(metaStudyDir)
                                       }
                                   }
+
+                                  return(loadOk)
                               }  # end of S3
 
                               
@@ -1101,13 +1104,13 @@ setMethod(
 
                                           # Overwrite or not 
                                           if(overwrite) {
-                                              handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
+                                              loadOk <- handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
                                           }
                                           else {
 
                                               # Empty dir 
                                               if(length(dir(metaStudyDir, all.files=FALSE)) == 0){
-                                                  handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
+                                                  loadOk <- handleMetaFiles(metaStudyDir, dataStudySupplDir, metaStudySupplDir)
                                               }
                                           }
 
@@ -1137,6 +1140,15 @@ setMethod(
                               }
                           })
                       }
+                  }
+              }
+
+              if(is.null(loadOk)) {
+                  return(FALSE)
+              }
+              else {
+                  if(loadOk) {
+                      return(TRUE)
                   }
               }
           })
