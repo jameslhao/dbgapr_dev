@@ -1267,7 +1267,7 @@ setMethod(
 
 
                       # Process files under userDataDir
-                      message("\nProcessing and parsing the meta-info of data files. It may take quite a while ...\n")
+                      message("\nProcessing and parsing meta-info of the data files. It may take quite a while ...\n")
 
                       ##########################################
                       # Parse each pht file info and record it 
