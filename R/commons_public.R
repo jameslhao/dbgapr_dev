@@ -1995,6 +1995,8 @@ setMethod(
                                       matchStudyDatasetVarDF <- matchStudyDatasetVarList[[1]]
                                       matchStudyDatasetVarDF['code_value_combo'] <- c(codeValCombo) 
 
+                                      finalPhvDF <- matchStudyDatasetVarDF 
+
                                   }
                                   else {
 
@@ -2118,7 +2120,7 @@ setMethod(
 
                                       }
 
-                                      return (invisible(finalPhtDF))
+                                      return (invisible(finalPhvDF))
                                   }
                                   else {
                                       errmsg = paste(
