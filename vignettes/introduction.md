@@ -520,9 +520,11 @@ a data frame.
 
     c <- Commons()
     df <- getAllStudyInfo(c)
-    # or display result as a table
+    # or 
+    # display result as a table
     df <- getAllStudyInfo(c, showAs='table')           
-    # or display result in json with notepad
+    # or 
+    # display result in json with notepad
     df <- getAllStudyInfo(c, showAs='json', editor='notepad') 
 
 ### Get info of all datasets
@@ -533,11 +535,14 @@ as a data frame.
 
     c <- Commons()
     df <- getAllDatasetInfo(c)
-    # or display result as a table 
+    # or 
+    #display result as a table 
     df <-  getAllDatasetInfo(c, showAs='table')
-    # or display result in json format with notepad
+    # or 
+    # display result in json format with notepad
     df <- getAllDatasetInfo(c, showAs='json', editor='notepad')
-    # or display result in a text format 
+    # or 
+    # display result in a text format 
     df <-  getAllDatasetInfo(c, showAs='text')
 
 ### Get study dataset info
@@ -549,12 +554,15 @@ data frame.
     s <- Study(phsAcc='phs000001.v3.p1')            
     # all study datasets 
     df <- getStudyDatasetInfo(s)                   
-    # or display result as a table
+    # or 
+    # display result as a table
     df <- getStudyDatasetInfo(s, showAs='table')
-    # or a specific dataset 
+    # or 
+    # a specific dataset 
     df <- getStudyDatasetInfo(s, phtAcc='pht000370.v2.p1')        
     #
-    # or the dataset of a study that has no data file under project directory  
+    # or 
+    # the dataset of a study that has no data file under project directory  
     s2 <- Study(phsAcc='phs001255.v3.p1')            
     df <- getStudyDatasetInfo(s2, phtAcc = 'pht005990.v1', dataStudyOnly = FALSE) 
 
@@ -567,17 +575,22 @@ data frame.
     s <- Study(phsAcc='phs000001.v3.p1')            
     # all study variables
     df <- getStudyVariableInfo(s)                   
-    # or display result as a table
+    # or 
+    # display result as a table
     df <- getStudyVariableInfo(s, showAs='table')
-    # or all dataset variables
+    # or 
+    # all dataset variables
     df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1')        
-    # or all dataset variables of numeric type  
+    # or 
+    # all dataset variables of numeric type  
     df <- getStudyVariableInfo(s, phtAcc='pht000370.v2.p1', dataType = 'num')
-    # or a list of variables
+    # or 
+    # a list of variables
     acc_list = c('phv00054119.v1.p1.c2', 'phv00054118.v1.p1')
     df <- getStudyVariableInfo(s, phvAccList=acc_list)   
     #
-    # or for a study that has no data file under project directory
+    # or 
+    # for a study that has no data file under project directory
     s2 <- Study(phsAcc = 'phs001255.v1.p1') 
     df <- getStudyVariableInfo(s2, phtAcc = 'pht005990.v1', dataStudyOnly=F)
     # or
@@ -599,14 +612,18 @@ the search, use `getStudyVariableInfoByTerms()` as below.
     t3 = c('6 Months') 
     # term match with 'Diabetes Treatment' OR 'Smoking Status'
     df <- getStudyVariableInfoByTerms(s, terms_1=t1)
-    # or display matching variable in a table
+    # or 
+    # display matching variable in a table
     df <- getStudyVariableInfoByTerms(s, terms_1=t1, showTable=T)
-    # or term match with ('Diabetes Treatment' OR 'Smoking Status') AND 'Year 10'
+    # or 
+    # term match with ('Diabetes Treatment' OR 'Smoking Status') AND 'Year 10'
     df <- getStudyVariableInfoByTerms(s, terms_1=t1, terms_2=t2, showTable=T)
-    # or term match with ('Diabetes Treatment' OR 'Smoking Status') AND 'Year 10' AND '6 Months'
+    # or 
+    # term match with ('Diabetes Treatment' OR 'Smoking Status') AND 'Year 10' AND '6 Months'
     df <- getStudyVariableInfoByTerms(s, terms_1=t1, terms_2=t2, terms_3=t3, showTable=T)
     #
-    # or for a study that has no data file under project directory
+    # or 
+    # for a study that has no data file under project directory
     s2 <- Study(phsAcc = 'phs001255.v1.p1') 
     df <- getStudyVariableInfoByTerms(s2, terms_1='ID', showTable = T, dataStudyOnly = FALSE)
     # or
@@ -630,7 +647,8 @@ obtained by calling `getIdInfo()` as below.
     s <- Study(phsAcc = 'phs000001.v3.p1')            
     # get subject ID info 
     df <- getIdInfo(s, infoType = 'subject')
-    # or get pedigree ID info 
+    # or 
+    # get pedigree ID info 
     s2 <- Study(phsAcc = 'phs000007.v29')
     df <- getIdInfo(s2, infoType = 'pedigree')
 
@@ -643,8 +661,9 @@ accession or a list of variable accessions. Thi is done by calling
     s <- Study(phsAcc = 'phs000001.v3.p1')            
     # get data of variables in a dataset 
     df <- getStudyVariableData(s, phtAcc='pht000370.v2.p1')
-    # or get data of a list of variables
-    # acc_list = c('phv00054119.v1.p1.c2', 'phv00053733.v2')
+    # or 
+    # get data of a list of variables
+    acc_list = c('phv00054119.v1.p1.c2', 'phv00053733.v2')
     df <- getStudyVariableData(s, phvAccList=acc_list)
 
 Note:
@@ -659,7 +678,8 @@ following.
     # variable data of a set of specified subjects in a dataset 
     subj_ids = c(219, 220, 221)
     df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', dbgapIdsOrFile=subj_ids)
-    # or variable data of a set of specified subjects in a dataset 
+    # or 
+    # variable data of a set of specified subjects in a dataset 
     # The subject id file is a plain text file with one dbGaP_Subject_ID per line.
     subj_file = "~/temp/subj_ids.txt"
     df <- getDatasetDataByPhtAcc(s, phtAcc='pht000371.v2', dbgapIdsOrFile=subj_file)
@@ -730,9 +750,11 @@ obtained by calling `getIdInfo()` as below.
     s <- Study(phsAcc = 'phs000001.v3.p1')            
     # get subject id info 
     df <- getIdInfo(s, infoType='subject')
-    # or get sample id info 
+    # or 
+    # get sample id info 
     df <- getIdInfo(s, infoType='sample')
-    # or get pedigree id info 
+    # or 
+    # get pedigree id info 
     df <- getIdInfo(s, infoType='pedigree')
 
 ### Show variable data summary
@@ -835,7 +857,8 @@ The histogram of a numeric variable can be drawn by calling
     s <- Study(phsAcc='phs000001.v3.p1')            
     # with density plot
     df <- variableHistogram(s, phvAcc='phv00053747.v2')
-    # or without Density plot
+    # or 
+    # without Density plot
     df <- variableHistogram(s, phvAcc='phv00053747.v2', withDensity=F)    
 
 <img src="figure/histogram_phv00053747.v2_LNUCSCORE.png" width="600px" />
