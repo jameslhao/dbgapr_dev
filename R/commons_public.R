@@ -1562,7 +1562,6 @@ setMethod(
 #' @param acc a character string. The dbGaP study, dataset, or variable accession. 
 #' @param display a logical value. (optional) If TRUE (default), console displays the meta-info. If FALSE, not display. 
 #' @param ... There are optional arguments.
-#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a data frame. (invisible) The meta-info of the input object.
 #' @export accInfo
 #' @examples
