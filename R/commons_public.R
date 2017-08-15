@@ -1924,6 +1924,9 @@ setMethod(
 
                                       varInfoDF <- getExtData(object, type = 'variable', phsAcc = thisPhsAcc)
 
+                                      if (is.null(varInfoDF)) {
+                                          varInfoDF <- getExtData(object, type = 'variable', phsAcc = thisPhsAcc, dataStudyOnly=FALSE)
+                                      }
 
                                       if (!is.null(varInfoDF)) {
 
@@ -1951,7 +1954,6 @@ setMethod(
 
                                   # Remove null items
                                   matchStudyDatasetVarList <- availStudyDatasetVarInfoList[!sapply(availStudyDatasetVarInfoList, is.null)] 
-
 
                                   varAcc = ""
                                   varType = ""
@@ -2056,16 +2058,21 @@ setMethod(
                                           info <- sprintf("%-13s %-3s %s", "Value Type", ":", varType) 
                                           cat(info)
                                           cat("\n")
-                                          if (!is.na(codeValCombo)) {
-                                              info <- sprintf("%-13s %-3s %s", "Code Value", ":", codeValCombo) 
-                                              cat(info)
-                                              cat("\n")
+
+
+                                          if (!is.null(codeValCombo)) {
+                                              if (!is.na(codeValCombo)) {
+                                                  info <- sprintf("%-13s %-3s %s", "Code Value", ":", codeValCombo) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
+                                              if (!is.na(varUnit)) {
+                                                  info <- sprintf("%-13s %-3s %s", "Units", ":", varUnit) 
+                                                  cat(info)
+                                                  cat("\n")
+                                              }
                                           }
-                                          if (!is.na(varUnit)) {
-                                              info <- sprintf("%-13s %-3s %s", "Units", ":", varUnit) 
-                                              cat(info)
-                                              cat("\n")
-                                          }
+
                                           info <- sprintf("%-13s %-3s %s ( %s )", "Dataset", ":", datasetAcc, datasetName) 
                                           cat(info)
                                           cat("\n")

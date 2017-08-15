@@ -4693,7 +4693,7 @@ setMethod(
                                   show = T
                                   mesg = paste(
                                       "The variable-info file is not found for study ", phsAcc, ". To look for the variable info of the study that has no data under the project, rerun the command with the argument dataStudyOnly=TRUE. Otherwise, checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.", " --- ", infoFile, sep="")
-                                      writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                      #writeLog(object,  type = type, level = level, message = mesg, show = show) 
                                   
                               }
                               else {
@@ -4779,8 +4779,6 @@ setMethod(
                           infoFileName = paste0(phsAcc, "_study_variable_code_value.txt.gz") 
                           infoFile = file.path(studyExtDataDir, infoFileName) 
 
-
-
                           if (file.exists(infoFile)) {
                               infoDF <- read.table(infoFile, header=TRUE, fill = TRUE, sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
 
@@ -4791,7 +4789,7 @@ setMethod(
                           else {
 
                               if (dataStudyOnly) {
-                                  cat("\n")
+                                  #cat("\n")
                                   type = 'process'
                                   level = 'error'
                                   show = T
@@ -4799,7 +4797,7 @@ setMethod(
                                       "The study variable-code-value-info file is not found for study ", phsAcc, ". To look for the variable-code-value-info file of the study that has no data under the project, rerun the command with the argument dataStudyOnly=TRUE. Otherwise, checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
                                       " --- ", infoFile, sep="" 
                                   )
-                                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                  #writeLog(object,  type = type, level = level, message = mesg, show = show) 
                               }
                               else {
 
