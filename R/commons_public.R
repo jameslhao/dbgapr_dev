@@ -1116,7 +1116,9 @@ setMethod(
 
                       # Keep only the item with study-acc match 
                       X <- allDirs
+
                       studyDirs <- X[grepl("phs\\d+\\.v\\d+$", X)]
+
 
                       if (length(studyDirs) > 0) {
 
@@ -1172,12 +1174,9 @@ setMethod(
                               show = F
                               writeLog(object,  type = type, level = level, message = mesg, show = show)
                           }
-
-
-
                       }
                       else {
-                          mesg = paste0("\nThere no study directory found under the project data directory. Checkout ?prepareData() to see how to move data files to the directory. --- ",  prjDataDir, "\n") 
+                          mesg = paste0("\nThere is no study directory found under the project data directory. If you are processing downloaded data files, not just phenotype metadata files, checkout ?prepareData() to see how to move data files to the directory. --- ",  prjDataDir, "\n") 
                           message(mesg)
 
                           type = 'process'
@@ -1563,6 +1562,7 @@ setMethod(
 #' @param acc a character string. The dbGaP study, dataset, or variable accession. 
 #' @param display a logical value. (optional) If TRUE (default), console displays the meta-info. If FALSE, not display. 
 #' @param ... There are optional arguments.
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a data frame. (invisible) The meta-info of the input object.
 #' @export accInfo
 #' @examples
@@ -1818,8 +1818,11 @@ setMethod(
 
                               if (type == 'pht') {
 
+
+
                                   # New! Get extData all_study_info 
                                   allDatasetInfoDF <- getAllDatasetInfo(object)
+
                                   subDF <- dplyr::filter(allDatasetInfoDF, allDatasetInfoDF$dataset_accession == acc)
 
                                   studyAcc = ''
@@ -1827,6 +1830,7 @@ setMethod(
                                   datasetName = ''
                                   datasetDesc = ''
                                   finalPhtDF = data.frame()
+
 
                                   if (nrow(subDF) > 0) {
                                       hasDataInPrj = TRUE 
@@ -1847,6 +1851,7 @@ setMethod(
 
                                       finalPhtDF <- getMetaByObjAcc(object, acc = acc, type = 'dataset')
 
+
                                       studyAcc <- finalPhtDF$study_accession
                                       datasetAcc <- finalPhtDF$dataset_accession
                                       datasetName <- finalPhtDF$name
@@ -1859,31 +1864,34 @@ setMethod(
 
                                   }
 
-                                  if (datasetName != "") {
-                                      if (display == TRUE) {
-                                          cat("\n")
-                                          info <- sprintf("%-13s %-3s %s", "Object Type", ":", "Dataset") 
-                                          cat(info)
-                                          cat("\n")
-                                          info <- sprintf("%-13s %-3s %s ( %s )", "Accession", ":", acc, studyAcc) 
-                                          cat(info)
-                                          cat("\n")
-                                          info <- sprintf("%-13s %-3s %s", "Name", ":", datasetName) 
-                                          cat(info)
-                                          cat("\n")
-                                          info <- sprintf("%-13s %-3s %s", "Description", ":", datasetDesc) 
-                                          cat(info)
-                                          cat("\n")
-                                          cat("\n")
-                                      }
-                                  }
-                                  else {
-                                      errmsg = paste(
-                                          "\n[ERROR] The input dbGaP object accession ", acc, " doesn't match any study dataset under the project metadata directory.\n", sep=""
-                                      )
-                                      cat(errmsg)
+                                  if (!is.null(datasetName)) {
 
-                                      return (NULL) 
+                                      if (datasetName != "") {
+                                          if (display == TRUE) {
+                                              cat("\n")
+                                              info <- sprintf("%-13s %-3s %s", "Object Type", ":", "Dataset") 
+                                              cat(info)
+                                              cat("\n")
+                                              info <- sprintf("%-13s %-3s %s ( %s )", "Accession", ":", acc, studyAcc) 
+                                              cat(info)
+                                              cat("\n")
+                                              info <- sprintf("%-13s %-3s %s", "Name", ":", datasetName) 
+                                              cat(info)
+                                              cat("\n")
+                                              info <- sprintf("%-13s %-3s %s", "Description", ":", datasetDesc) 
+                                              cat(info)
+                                              cat("\n")
+                                              cat("\n")
+                                          }
+                                      }
+                                      else {
+                                          errmsg = paste(
+                                              "\n[ERROR] The input dbGaP object accession ", acc, " doesn't match any study dataset under the project metadata directory.\n", sep=""
+                                          )
+                                          cat(errmsg)
+
+                                          return (NULL) 
+                                      }
                                   }
 
                                   return (invisible(finalPhtDF))
@@ -2322,7 +2330,6 @@ setMethod(
               prjDataDir = object@prjDataDir 
               fileInfoFile = object@fileInfoFile
 
-
               if (file.exists(fileInfoFile)) {
 
                   # Get the list of all available study accessions
@@ -2332,17 +2339,20 @@ setMethod(
 
                   availStudyDatasetInfoList <- lapply(studyAccList, function(thisPhsAcc) {
 
+
                       # Compose file path
                       parseIdsFromPhsAcc =  parseIdsFromStAcc(object, phsAcc = thisPhsAcc)
                       thisPhsAccNoVer = parseIdsFromPhsAcc$phsAccNoVer
-                      studyDatasetInfoDF <- getDatasetMetaByStudy(object, phsAcc = thisPhsAcc)
 
+                      studyDatasetInfoDF <- getDatasetMetaByStudy(object, phsAcc = thisPhsAcc)
 
                       return (studyDatasetInfoDF)
                   })
 
+
                   # Remove null items
                   availStudyDatasetInfoList <- availStudyDatasetInfoList[!sapply(availStudyDatasetInfoList, is.null)] 
+
 
 
                   if (length(availStudyDatasetInfoList) > 0) {

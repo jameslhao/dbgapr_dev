@@ -6,7 +6,7 @@
 \alias{getDatasetMetaByStudy,Commons,character-method}
 \title{(internal) Get study variable meta-info (data dictionary)}
 \usage{
-getDatasetMetaByStudy(object, phsAcc)
+getDatasetMetaByStudy(object, phsAcc, ...)
 
 \S4method{getDatasetMetaByStudy}{Commons,character}(object, phsAcc)
 }
@@ -14,6 +14,8 @@ getDatasetMetaByStudy(object, phsAcc)
 \item{object}{Commons class object.}
 
 \item{phsAcc}{a character string. The dbGaP study accession.}
+
+\item{...}{There are optional arguments.}
 }
 \value{
 a data frame. The dataset meta-info of the study.

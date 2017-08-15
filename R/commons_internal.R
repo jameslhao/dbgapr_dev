@@ -3227,6 +3227,8 @@ setMethod(
 #' @name getDatasetMetaByStudy
 #' @param object Commons class object.
 #' @param phsAcc a character string. The dbGaP study accession.
+#' @param ... There are optional arguments. 
+#' @param dataStudyOnly a logical value. When TRUE (default), only downloads the dataset and variable metadata of the stdudies that have data files in the project directory.  When FALSE, downloads the dataset and variable metadata of all dbGaP released studies, regardless the actual phenotype data files of the studies are downloaded or not. 
 #' @return a data frame. The dataset meta-info of the study.
 #' @export getDatasetMetaByStudy
 #' @keywords internal
@@ -3239,7 +3241,7 @@ setMethod(
 
 setGeneric(
            name = "getDatasetMetaByStudy",
-           def = function(object, phsAcc) {
+           def = function(object, phsAcc, ...) {
                standardGeneric("getDatasetMetaByStudy")
            })
 
@@ -3249,8 +3251,11 @@ setMethod(
           signature = c("Commons", "character"),
           definition = function(object, phsAcc) {
 
-              datasetMetaDF <- getExtData(object, type = 'dataset', phsAcc = phsAcc)
-              
+              datasetMetaDF <- getExtData(object, type = 'dataset', phsAcc = phsAcc, dataStudyOnly = TRUE)
+
+              if (is.null(datasetMetaDF)) {
+                  datasetMetaDF <- getExtData(object, type = 'dataset', phsAcc = phsAcc, dataStudyOnly = FALSE)
+              }
               
               return(datasetMetaDF)
 
@@ -4603,6 +4608,7 @@ setMethod(
                       studyExtDataDir = file.path(prjDataDir, phsAccNoVer, phsAcc, 'supplemental_data')
                       studyExtMetaDir = file.path(prjMetaDir, phsAccNoVer, phsAcc, 'supplemental_data')
 
+
                       if (type == 'dataset') {
                           # New!
                           # /c/Users/mars/Documents/myprj/gapwork/data/phs000429/phs000429.v1/supplemental_data/phs000429.v1_study_dataset_info.txt.gz
@@ -4625,8 +4631,9 @@ setMethod(
                           }
                           else {
 
+
                               if (dataStudyOnly) {
-                                  cat("\n")
+
                                   type = 'process'
                                   level = 'error'
                                   show = T
@@ -4634,7 +4641,8 @@ setMethod(
                                       "The dataset-info file is not found for study ", phsAcc, ". To look for the dataset info of the study that has no data under the project, rerun the command with the argument dataStudyOnly=TRUE. Otherwise, checkout ?prjConfig() and ?prepareData() to make sure the project directory is setup and the data files are copied and processed.",
                                       " --- ", infoFile, sep="" 
                                   )
-                                  writeLog(object,  type = type, level = level, message = mesg, show = show) 
+                                  #cat("\n")
+                                  #writeLog(object,  type = type, level = level, message = mesg, show = show) 
                               }
                               else {
                                   #mesg = paste("Meta-info is available but there is no data file found under the project directory for this study, ", phsAcc, ".\n", sep="")
@@ -4646,6 +4654,7 @@ setMethod(
                                   noDataInfoFile = file.path(studyExtMetaDir, infoFileName) 
 
                                   if (file.exists(noDataInfoFile)) {
+
                                       noDataInfoDF <- read.table(noDataInfoFile, header=TRUE, fill = TRUE, quote = "", sep="\t", encoding="UTF-8", stringsAsFactors=FALSE)
 
                                       if (nrow(noDataInfoDF) > 0) {
@@ -5238,22 +5247,20 @@ setGeneric(
 
                         if (file.exists(phtInfoFile)) {
 
-                            # Read the phtInfoFile
-                            phtInfoDF <- read.table(phtInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
-                            subDF <- dplyr::filter(phtInfoDF, phtInfoDF$dataset_accession == acc)
+                             if (file.size(phtInfoFile) > 0){
+                                 # Read the phtInfoFile
+                                 phtInfoDF <- read.table(phtInfoFile, header = T, fill = TRUE, quote = "", sep ='\t', stringsAsFactors = FALSE, encoding="UTF-8")  
 
-                            if (nrow(subDF) == 1) {
+                                 subDF <- dplyr::filter(phtInfoDF, phtInfoDF$dataset_accession == acc)
 
-                                #studyAcc <- subDF$study_accession
-                                #datasetAcc <- subDF$dataset_accession
-                                #datasetName <- subDF$name
-                                #datasetDesc <- subDF$description
+                                 if (nrow(subDF) == 1) {
 
-                                finalPhtDF = subDF 
+                                     finalPhtDF = subDF 
 
-                                # Jump out of for loop
-                                break
-                            } 
+                                     # Jump out of for loop
+                                     break
+                                 } 
+                             }
                         }
                     }
                 }
